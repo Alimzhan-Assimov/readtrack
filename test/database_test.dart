@@ -40,19 +40,35 @@ void main() {
     expect(await db.watchWorks(type: WorkType.book).first, isEmpty);
   });
 
-  test('Bearbeiten ersetzt Tags, Löschen entfernt Zuordnungen', () async {
-    final id = await db.saveWork(fic('Fic'), tagNames: ['Fluff', 'Drama']);
-    await db.saveWork(
-      fic('Fic umbenannt').copyWith(id: Value(id)),
-      tagNames: ['Fluff'],
-    );
+  test(
+    'Bearbeiten ersetzt Tags, Löschen lässt sich rückgängig machen',
+    () async {
+      final id = await db.saveWork(fic('Fic'), tagNames: ['Fluff', 'Drama']);
+      await db.saveWork(
+        fic('Fic umbenannt').copyWith(id: Value(id)),
+        tagNames: ['Fluff'],
+      );
 
-    final work = await db.watchWork(id).first;
-    expect(work?.work.title, 'Fic umbenannt');
-    expect(work?.tags.map((t) => t.name), ['Fluff']);
+      final work = await db.watchWork(id).first;
+      expect(work?.work.title, 'Fic umbenannt');
+      expect(work?.tags.map((t) => t.name), ['Fluff']);
 
-    await db.deleteWork(id);
-    expect(await db.watchWork(id).first, isNull);
-    expect(await db.usedTags(), isEmpty);
+      final deleted = await db.deleteWork(id);
+      expect(await db.watchWork(id).first, isNull);
+      expect(await db.usedTags(), isEmpty);
+
+      await db.restoreWork(deleted!);
+      final restored = await db.watchWork(id).first;
+      expect(restored?.work.title, 'Fic umbenannt');
+      expect(restored?.tags.map((t) => t.name), ['Fluff']);
+    },
+  );
+
+  test('Sortierung nach Titel ignoriert Groß-/Kleinschreibung', () async {
+    for (final title in ['beta', 'Gamma', 'Alpha']) {
+      await db.saveWork(fic(title));
+    }
+    final sorted = await db.watchWorks(sort: WorkSort.title).first;
+    expect(sorted.map((w) => w.work.title), ['Alpha', 'beta', 'Gamma']);
   });
 }

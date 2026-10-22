@@ -1,41 +1,50 @@
 import 'package:flutter/material.dart';
 
 import '../data/database.dart';
-import '../screens/work_detail_screen.dart';
 import '../ui/format.dart';
 import '../ui/labels.dart';
+import 'work_cover.dart';
 
 class WorkTile extends StatelessWidget {
-  const WorkTile({super.key, required this.item});
+  const WorkTile({
+    super.key,
+    required this.item,
+    required this.onTap,
+    this.selected = false,
+    this.heroTag,
+  });
 
   final WorkWithDetails item;
+  final VoidCallback onTap;
+
+  /// Hervorgehoben, wenn der Eintrag gerade in der Detailspalte offen ist.
+  final bool selected;
+  final Object? heroTag;
 
   static const _maxTags = 5;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     final w = item.work;
     final subtitle = [?w.author, ?item.fandom?.name].join(' · ');
     final stats = workStats(w);
+    final total = w.chapterCount ?? 0;
+    final current = w.currentChapter ?? 0;
 
     return Card(
+      color: selected ? scheme.secondaryContainer : null,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => WorkDetailScreen(workId: w.id)),
-        ),
+        onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CircleAvatar(
-                backgroundColor: theme.colorScheme.secondaryContainer,
-                foregroundColor: theme.colorScheme.onSecondaryContainer,
-                child: Icon(w.type.icon),
-              ),
-              const SizedBox(width: 12),
+              WorkCover(work: w, width: 52, heroTag: heroTag),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,7 +59,7 @@ class WorkTile extends StatelessWidget {
                       Text(
                         subtitle,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
+                          color: scheme.onSurfaceVariant,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -77,14 +86,30 @@ class WorkTile extends StatelessWidget {
                           ],
                         ),
                       ),
+                    if (total > 0 && current > 0)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: LinearProgressIndicator(
+                                value: (current / total).clamp(0, 1).toDouble(),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '$current/$total',
+                              style: theme.textTheme.labelSmall,
+                            ),
+                          ],
+                        ),
+                      ),
                   ],
                 ),
               ),
               const SizedBox(width: 8),
-              Tooltip(
-                message: w.status.label,
-                child: Icon(w.status.icon, color: theme.colorScheme.primary),
-              ),
+              _StatusBadge(w.status),
             ],
           ),
         ),
@@ -108,6 +133,49 @@ class _SmallTag extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(label, style: theme.textTheme.labelSmall),
+    );
+  }
+}
+
+/// Beschrifteter Lesestatus. Ein reines Symbol wäre z. B. bei „Abgebrochen“
+/// (⊗) leicht mit einem Löschen-Button zu verwechseln.
+class _StatusBadge extends StatelessWidget {
+  const _StatusBadge(this.status);
+
+  final ReadingStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final (background, foreground) = switch (status) {
+      ReadingStatus.reading => (
+        scheme.primaryContainer,
+        scheme.onPrimaryContainer,
+      ),
+      ReadingStatus.finished => (
+        scheme.tertiaryContainer,
+        scheme.onTertiaryContainer,
+      ),
+      _ => (scheme.surfaceContainerHighest, scheme.onSurfaceVariant),
+    };
+    return Container(
+      padding: const EdgeInsets.fromLTRB(6, 3, 8, 3),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(status.icon, size: 14, color: foreground),
+          const SizedBox(width: 4),
+          Text(
+            status.label,
+            style: theme.textTheme.labelSmall?.copyWith(color: foreground),
+          ),
+        ],
+      ),
     );
   }
 }

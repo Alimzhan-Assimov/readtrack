@@ -48,7 +48,6 @@ class TagInput extends StatelessWidget {
           decoration: InputDecoration(
             labelText: 'Tag hinzufügen',
             hintText: 'z. B. Action, Harem, Kingdom Building',
-            border: const OutlineInputBorder(),
             suffixIcon: IconButton(
               icon: const Icon(Icons.add),
               tooltip: 'Tag hinzufügen',

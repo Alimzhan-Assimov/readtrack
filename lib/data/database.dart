@@ -89,6 +89,14 @@ class WorkWithDetails {
   final List<Tag> tags;
 }
 
+class DeletedWork {
+  DeletedWork(this.work, this.tagIds, this.chapters);
+
+  final Work work;
+  final List<int> tagIds;
+  final List<Chapter> chapters;
+}
+
 @DriftDatabase(tables: [Fandoms, Tags, Works, WorkTags, Chapters])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
@@ -115,6 +123,7 @@ class AppDatabase extends _$AppDatabase {
     WorkType? type,
     int? fandomId,
     int? tagId,
+    WorkSort sort = WorkSort.updated,
   }) {
     final query = _worksWithFandom();
     final term = search.trim();
@@ -137,7 +146,20 @@ class AppDatabase extends _$AppDatabase {
         ),
       );
     }
-    query.orderBy([OrderingTerm.desc(works.updatedAt)]);
+    final byTitle = OrderingTerm.asc(works.title.collate(Collate.noCase));
+    query.orderBy(switch (sort) {
+      WorkSort.updated => [OrderingTerm.desc(works.updatedAt)],
+      WorkSort.added => [OrderingTerm.desc(works.addedAt)],
+      WorkSort.title => [byTitle],
+      WorkSort.rating => [
+        OrderingTerm(
+          expression: works.rating,
+          mode: OrderingMode.desc,
+          nulls: NullsOrder.last,
+        ),
+        byTitle,
+      ],
+    });
     return query.watch().asyncMap(_withTags);
   }
 
@@ -245,8 +267,40 @@ class AppDatabase extends _$AppDatabase {
         changes.copyWith(updatedAt: Value(DateTime.now())),
       );
 
-  Future<void> deleteWork(int id) =>
-      (delete(works)..where((w) => w.id.equals(id))).go();
+  /// Löscht ein Werk und gibt alles zurück, was [restoreWork] zum
+  /// Rückgängigmachen braucht.
+  Future<DeletedWork?> deleteWork(int id) {
+    return transaction(() async {
+      final work = await (select(
+        works,
+      )..where((w) => w.id.equals(id))).getSingleOrNull();
+      if (work == null) return null;
+      final tagIds =
+          await (selectOnly(workTags)
+                ..addColumns([workTags.tagId])
+                ..where(workTags.workId.equals(id)))
+              .map((r) => r.read(workTags.tagId)!)
+              .get();
+      final savedChapters = await (select(
+        chapters,
+      )..where((c) => c.workId.equals(id))).get();
+      await (delete(works)..where((w) => w.id.equals(id))).go();
+      return DeletedWork(work, tagIds, savedChapters);
+    });
+  }
+
+  Future<void> restoreWork(DeletedWork deleted) {
+    return transaction(() async {
+      await into(works).insert(deleted.work);
+      await batch((b) {
+        b.insertAll(workTags, [
+          for (final tagId in deleted.tagIds)
+            WorkTagsCompanion.insert(workId: deleted.work.id, tagId: tagId),
+        ]);
+        b.insertAll(chapters, deleted.chapters);
+      });
+    });
+  }
 
   Future<int?> _fandomIdFor(String? name) async {
     final n = name?.trim() ?? '';

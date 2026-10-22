@@ -31,3 +31,13 @@ enum ReadingStatus {
   const ReadingStatus(this.label);
   final String label;
 }
+
+enum WorkSort {
+  updated('Zuletzt geändert'),
+  added('Zuletzt hinzugefügt'),
+  title('Titel A–Z'),
+  rating('Beste Bewertung');
+
+  const WorkSort(this.label);
+  final String label;
+}

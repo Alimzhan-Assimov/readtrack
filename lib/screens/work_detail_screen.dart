@@ -6,12 +6,25 @@ import '../data/database.dart';
 import '../data/database_scope.dart';
 import '../ui/format.dart';
 import '../ui/labels.dart';
+import '../ui/layout.dart';
+import '../widgets/work_cover.dart';
 import 'work_edit_screen.dart';
 
 class WorkDetailScreen extends StatefulWidget {
-  const WorkDetailScreen({super.key, required this.workId});
+  const WorkDetailScreen({
+    super.key,
+    required this.workId,
+    this.embedded = false,
+    this.onDeleted,
+  });
 
   final int workId;
+
+  /// Als rechte Spalte neben der Liste statt als eigene Seite.
+  final bool embedded;
+
+  /// Wird nach dem Löschen aufgerufen. Ohne Callback wird die Seite geschlossen.
+  final VoidCallback? onDeleted;
 
   @override
   State<WorkDetailScreen> createState() => _WorkDetailScreenState();
@@ -55,29 +68,27 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
     );
   }
 
-  Future<void> _confirmDelete(Work w) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Eintrag löschen?'),
-        content: Text(
-          '„${w.title}“ wird endgültig aus deiner Bibliothek entfernt.',
+  /// Löscht sofort und bietet „Rückgängig“ an, statt vorher nachzufragen.
+  Future<void> _delete(Work w) async {
+    final db = _db;
+    final messenger = ScaffoldMessenger.of(context);
+    final deleted = await db.deleteWork(w.id);
+    if (deleted == null || !mounted) return;
+    if (widget.onDeleted case final onDeleted?) {
+      onDeleted();
+    } else {
+      Navigator.of(context).pop();
+    }
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text('„${w.title}“ gelöscht'),
+        persist: false,
+        action: SnackBarAction(
+          label: 'Rückgängig',
+          onPressed: () => db.restoreWork(deleted),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Abbrechen'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Löschen'),
-          ),
-        ],
       ),
     );
-    if (confirmed != true) return;
-    await _db.deleteWork(w.id);
-    if (mounted) Navigator.of(context).pop();
   }
 
   @override
@@ -88,7 +99,7 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
         final item = snapshot.data;
         if (item == null) {
           return Scaffold(
-            appBar: AppBar(),
+            appBar: AppBar(automaticallyImplyLeading: !widget.embedded),
             body: Center(
               child: snapshot.connectionState == ConnectionState.waiting
                   ? const CircularProgressIndicator()
@@ -109,6 +120,7 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: !widget.embedded,
         actions: [
           IconButton(
             icon: const Icon(Icons.edit_outlined),
@@ -120,151 +132,154 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
           IconButton(
             icon: const Icon(Icons.delete_outline),
             tooltip: 'Löschen',
-            onPressed: () => _confirmDelete(w),
+            onPressed: () => _delete(w),
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
-        children: [
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              Chip(
-                avatar: Icon(w.type.icon, size: 18),
-                label: Text(w.type.label),
-              ),
-              Chip(
-                avatar: Icon(w.format.icon, size: 18),
-                label: Text(w.format.label),
-              ),
-              PopupMenuButton<ReadingStatus>(
-                initialValue: w.status,
-                tooltip: 'Lesestatus ändern',
-                onSelected: (s) =>
-                    _db.updateWork(w.id, WorksCompanion(status: Value(s))),
-                itemBuilder: (context) => [
-                  for (final s in ReadingStatus.values)
-                    PopupMenuItem(
-                      value: s,
-                      child: ListTile(
-                        leading: Icon(s.icon),
-                        title: Text(s.label),
+      body: LayoutBuilder(
+        builder: (context, constraints) => ListView(
+          padding: readablePadding(constraints.maxWidth, bottom: 32),
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                WorkCover(
+                  work: w,
+                  width: 96,
+                  heroTag: widget.embedded ? null : 'cover-${w.id}',
+                ),
+                const SizedBox(width: 16),
+                Expanded(child: _buildHeader(theme, item)),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                Chip(
+                  avatar: Icon(w.type.icon, size: 18),
+                  label: Text(w.type.label),
+                ),
+                Chip(
+                  avatar: Icon(w.format.icon, size: 18),
+                  label: Text(w.format.label),
+                ),
+                _StatusMenu(
+                  status: w.status,
+                  onChanged: (s) =>
+                      _db.updateWork(w.id, WorksCompanion(status: Value(s))),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                if (w.chapterCount != null)
+                  _StatBox(
+                    value: formatNumber(w.chapterCount!),
+                    label: w.isComplete
+                        ? 'Kapitel · abgeschlossen'
+                        : 'Kapitel · laufend',
+                  ),
+                if (w.wordCount != null)
+                  _StatBox(value: formatNumber(w.wordCount!), label: 'Wörter'),
+                if (w.pageCount != null)
+                  _StatBox(value: formatNumber(w.pageCount!), label: 'Seiten'),
+              ],
+            ),
+            if (w.chapterCount != null || w.currentChapter != null)
+              _buildProgress(w),
+            if (url != null)
+              _Section(
+                title: 'Link',
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    FilledButton.icon(
+                      icon: const Icon(Icons.open_in_new),
+                      label: Text(
+                        site != null ? 'Auf $site lesen' : 'Online lesen',
                       ),
+                      onPressed: () => _openUrl(url),
                     ),
-                ],
-                child: Chip(
-                  backgroundColor: theme.colorScheme.primaryContainer,
-                  avatar: Icon(w.status.icon, size: 18),
-                  label: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(w.status.label),
-                      const Icon(Icons.arrow_drop_down, size: 18),
-                    ],
-                  ),
+                    const SizedBox(height: 4),
+                    SelectableText(url, style: theme.textTheme.bodySmall),
+                  ],
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(w.title, style: theme.textTheme.headlineSmall),
-          if (w.author != null)
+            if (item.tags.isNotEmpty)
+              _Section(
+                title: 'Tags',
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: [
+                    for (final t in item.tags) Chip(label: Text(t.name)),
+                  ],
+                ),
+              ),
+            if (w.isbn != null)
+              _Section(title: 'ISBN', child: SelectableText(w.isbn!)),
+            if (w.summary != null)
+              _Section(title: 'Zusammenfassung', child: Text(w.summary!)),
+            if (w.notes != null)
+              _Section(title: 'Notizen', child: Text(w.notes!)),
+            const SizedBox(height: 24),
             Text(
-              'von ${w.author}',
-              style: theme.textTheme.titleMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
+              'Hinzugefügt am ${formatDate(w.addedAt)} · '
+              'zuletzt geändert am ${formatDate(w.updatedAt)}',
+              style: theme.textTheme.bodySmall,
             ),
-          if (item.fandom != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Row(
-                children: [
-                  const Icon(Icons.category_outlined, size: 18),
-                  const SizedBox(width: 6),
-                  Text(item.fandom!.name),
-                ],
-              ),
-            ),
-          if (w.rating != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Row(
-                children: [
-                  for (var i = 1; i <= 5; i++)
-                    Icon(
-                      i <= w.rating! ? Icons.star : Icons.star_border,
-                      size: 20,
-                      color: theme.colorScheme.primary,
-                    ),
-                ],
-              ),
-            ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              if (w.chapterCount != null)
-                _StatBox(
-                  value: formatNumber(w.chapterCount!),
-                  label: w.isComplete
-                      ? 'Kapitel · fertig'
-                      : 'Kapitel · laufend',
-                ),
-              if (w.wordCount != null)
-                _StatBox(value: formatNumber(w.wordCount!), label: 'Wörter'),
-              if (w.pageCount != null)
-                _StatBox(value: formatNumber(w.pageCount!), label: 'Seiten'),
-            ],
-          ),
-          if (w.chapterCount != null || w.currentChapter != null)
-            _buildProgress(w),
-          if (url != null)
-            _Section(
-              title: 'Link',
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  FilledButton.icon(
-                    icon: const Icon(Icons.open_in_new),
-                    label: Text(
-                      site != null ? 'Auf $site lesen' : 'Online lesen',
-                    ),
-                    onPressed: () => _openUrl(url),
-                  ),
-                  const SizedBox(height: 4),
-                  SelectableText(url, style: theme.textTheme.bodySmall),
-                ],
-              ),
-            ),
-          if (item.tags.isNotEmpty)
-            _Section(
-              title: 'Tags',
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 4,
-                children: [
-                  for (final t in item.tags) Chip(label: Text(t.name)),
-                ],
-              ),
-            ),
-          if (w.isbn != null)
-            _Section(title: 'ISBN', child: SelectableText(w.isbn!)),
-          if (w.summary != null)
-            _Section(title: 'Zusammenfassung', child: Text(w.summary!)),
-          if (w.notes != null)
-            _Section(title: 'Notizen', child: Text(w.notes!)),
-          const SizedBox(height: 24),
-          Text(
-            'Hinzugefügt am ${formatDate(w.addedAt)} · '
-            'zuletzt geändert am ${formatDate(w.updatedAt)}',
-            style: theme.textTheme.bodySmall,
-          ),
-        ],
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildHeader(ThemeData theme, WorkWithDetails item) {
+    final w = item.work;
+    final fandom = item.fandom;
+    final rating = w.rating;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(w.title, style: theme.textTheme.headlineSmall),
+        if (w.author != null)
+          Text(
+            'von ${w.author}',
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        if (fandom != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Row(
+              children: [
+                const Icon(Icons.category_outlined, size: 18),
+                const SizedBox(width: 6),
+                Flexible(child: Text(fandom.name)),
+              ],
+            ),
+          ),
+        if (rating != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Row(
+              children: [
+                for (var i = 1; i <= 5; i++)
+                  Icon(
+                    i <= rating ? Icons.star : Icons.star_border,
+                    size: 20,
+                    color: theme.colorScheme.primary,
+                  ),
+              ],
+            ),
+          ),
+      ],
     );
   }
 
@@ -310,6 +325,43 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+class _StatusMenu extends StatelessWidget {
+  const _StatusMenu({required this.status, required this.onChanged});
+
+  final ReadingStatus status;
+  final ValueChanged<ReadingStatus> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return MenuAnchor(
+      menuChildren: [
+        for (final s in ReadingStatus.values)
+          MenuItemButton(
+            leadingIcon: Icon(s.icon),
+            trailingIcon: s == status ? const Icon(Icons.check) : null,
+            onPressed: () => onChanged(s),
+            child: Text(s.label),
+          ),
+      ],
+      builder: (context, controller, _) => ActionChip(
+        tooltip: 'Lesestatus ändern',
+        backgroundColor: scheme.primaryContainer,
+        avatar: Icon(status.icon, size: 18),
+        label: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(status.label),
+            const Icon(Icons.arrow_drop_down, size: 18),
+          ],
+        ),
+        onPressed: () =>
+            controller.isOpen ? controller.close() : controller.open(),
       ),
     );
   }
