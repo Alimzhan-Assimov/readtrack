@@ -36,7 +36,13 @@ String cleanHtml(dom.Element root, {required Uri base}) {
   _Cleaner(out, base)
     ..children(root)
     .._closeParagraph();
-  return out.toString().replaceAll(RegExp(r'<p>(?:\s|<br>)*</p>'), '').trim();
+  return out
+      .toString()
+      // No stray spaces just inside block tags.
+      .replaceAllMapped(RegExp(r'\s+(</(?:p|li|h2|h3)>)'), (m) => m.group(1)!)
+      .replaceAllMapped(RegExp(r'(<(?:p|li|h2|h3)>)\s+'), (m) => m.group(1)!)
+      .replaceAll(RegExp(r'<p>(?:\s|<br>)*</p>'), '')
+      .trim();
 }
 
 class _Cleaner {
@@ -51,6 +57,10 @@ class _Cleaner {
   /// How deep we are inside explicit text blocks (`p`, `li`, headings).
   var _textDepth = 0;
 
+  /// Line breaks seen but not written yet. Two or more in loose text start a
+  /// new paragraph, since many sites separate paragraphs with `<br><br>`.
+  var _pendingBreaks = 0;
+
   bool get _inText => _textDepth > 0 || _implicitOpen;
 
   void children(dom.Node node) {
@@ -59,7 +69,20 @@ class _Cleaner {
     }
   }
 
+  /// Writes pending line breaks before more content.
+  void _flushBreaks() {
+    final breaks = _pendingBreaks;
+    _pendingBreaks = 0;
+    if (breaks == 0) return;
+    if (breaks >= 2 && _implicitOpen && _textDepth == 0) {
+      _closeParagraph();
+      return;
+    }
+    out.write('<br>' * breaks);
+  }
+
   void _openParagraph() {
+    _flushBreaks();
     if (_textDepth == 0 && !_implicitOpen) {
       out.write('<p>');
       _implicitOpen = true;
@@ -67,6 +90,7 @@ class _Cleaner {
   }
 
   void _closeParagraph() {
+    _pendingBreaks = 0;
     if (_implicitOpen) {
       out.write('</p>');
       _implicitOpen = false;
@@ -77,7 +101,7 @@ class _Cleaner {
     if (node is dom.Text) {
       final text = node.text.replaceAll(RegExp(r'\s+'), ' ');
       if (text.trim().isEmpty) {
-        if (_inText && text.isNotEmpty) out.write(' ');
+        if (_inText && text.isNotEmpty && _pendingBreaks == 0) out.write(' ');
         return;
       }
       _openParagraph();
@@ -90,7 +114,7 @@ class _Cleaner {
 
     switch (tag) {
       case 'br':
-        if (_inText) out.write('<br>');
+        if (_inText) _pendingBreaks++;
       case 'hr':
         if (_textDepth > 0) {
           out.write('<br>');
@@ -133,6 +157,7 @@ class _Cleaner {
         _textDepth++;
         children(node);
         _textDepth--;
+        _pendingBreaks = 0;
         out.write('</$name>');
       case 'blockquote' || 'ul' || 'ol':
         _closeParagraph();
@@ -163,7 +188,11 @@ class _Cleaner {
         node.attributes['src'];
     final url = src == null ? null : _resolve(src);
     if (url == null) return;
-    if (_textDepth == 0) _closeParagraph();
+    if (_textDepth == 0) {
+      _closeParagraph();
+    } else {
+      _flushBreaks();
+    }
     out.write('<img src="${_escape(url)}"');
     final alt = node.attributes['alt']?.trim();
     if (alt != null && alt.isNotEmpty) out.write(' alt="${_escape(alt)}"');

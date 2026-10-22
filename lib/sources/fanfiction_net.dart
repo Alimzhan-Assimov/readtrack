@@ -5,11 +5,23 @@ import 'fetcher.dart';
 import 'html_clean.dart';
 import 'source.dart';
 
-/// FanFiction.Net. Behind Cloudflare, so it is read through the browser.
+/// FanFiction.Net and its sister site FictionPress (original fiction), which
+/// share the same markup. Behind Cloudflare, so read through the browser.
 class FanFictionNetSource extends StorySource {
-  const FanFictionNetSource();
+  const FanFictionNetSource()
+    : name = 'FanFiction.Net',
+      _host = 'www.fanfiction.net',
+      _type = WorkType.fanfiction;
 
-  static const _host = 'www.fanfiction.net';
+  const FanFictionNetSource.fictionPress()
+    : name = 'FictionPress',
+      _host = 'www.fictionpress.com',
+      _type = WorkType.webnovel;
+
+  @override
+  final String name;
+  final String _host;
+  final WorkType _type;
 
   /// FanFiction.Net's genre list. "Hurt/Comfort" contains the separator that
   /// joins genres, so genres are matched instead of split.
@@ -38,10 +50,7 @@ class FanFictionNetSource extends StorySource {
   ];
 
   @override
-  String get name => 'FanFiction.Net';
-
-  @override
-  List<String> get hosts => const ['fanfiction.net'];
+  List<String> get hosts => [_host.substring(4)];
 
   @override
   FetchMode get fetchMode => FetchMode.browser;
@@ -59,7 +68,7 @@ class FanFictionNetSource extends StorySource {
     final profile = doc.querySelector('#profile_top');
     final title = textOf(profile?.querySelector('b.xcontrast_txt'));
     if (profile == null || title == null) {
-      throw SourceException('This is not a FanFiction.Net story page.');
+      throw SourceException('This is not a $name story page.');
     }
     final meta = textOf(profile.querySelector('span.xgray')) ?? '';
     final segments = meta.split(' - ').map((s) => s.trim()).toList();
@@ -80,7 +89,7 @@ class FanFictionNetSource extends StorySource {
     return StoryInfo(
       url: storyUrl,
       siteName: name,
-      type: WorkType.fanfiction,
+      type: _type,
       title: title,
       author: textOf(profile.querySelector('a[href^="/u/"]')),
       summary: textOf(profile.querySelector('div.xcontrast_txt')),
@@ -88,7 +97,10 @@ class FanFictionNetSource extends StorySource {
           ? null
           // "/image/123/75/" is a thumbnail; 180 is the largest size.
           : storyUrl.resolve(image.replaceFirst(RegExp(r'/75/$'), '/180/')),
-      fandom: textOf(doc.querySelectorAll('#pre_story_links a').lastOrNull),
+      // FictionPress shows a genre category here instead of a fandom.
+      fandom: _type == WorkType.fanfiction
+          ? textOf(doc.querySelectorAll('#pre_story_links a').lastOrNull)
+          : null,
       tags: genres,
       wordCount: parseCount(field('Words')),
       isComplete: field('Status') == 'Complete',

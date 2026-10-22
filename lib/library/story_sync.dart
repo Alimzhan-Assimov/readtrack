@@ -31,7 +31,7 @@ Future<int> applyStoryInfo(AppDatabase db, Work work, StoryInfo info) async {
   await db.updateWork(
     work.id,
     WorksCompanion(
-      chapterCount: Value(info.chapters.length),
+      chapterCount: Value(info.chapterCount),
       wordCount: info.wordCount == null
           ? const Value.absent()
           : Value(info.wordCount),

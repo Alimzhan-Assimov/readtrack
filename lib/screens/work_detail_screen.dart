@@ -209,7 +209,7 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
             ),
             if (w.chapterCount != null || w.currentChapter != null)
               _buildProgress(l10n, w),
-            if (url != null && sourceFor(Uri.parse(url)) != null)
+            if (url != null && (sourceFor(Uri.parse(url))?.canRead ?? false))
               _Section(
                 title: l10n.sectionRead,
                 child: ReadSection(work: w),

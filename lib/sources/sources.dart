@@ -2,10 +2,18 @@ import 'ao3.dart';
 import 'author_today.dart';
 import 'fanfiction_net.dart';
 import 'ficbook.dart';
+import 'honeyfeed.dart';
+import 'inkitt.dart';
+import 'novel_updates.dart';
+import 'quotev.dart';
 import 'royal_road.dart';
 import 'scribble_hub.dart';
 import 'source.dart';
+import 'tapas.dart';
+import 'wattpad.dart';
 import 'webnovel.dart';
+import 'wuxiaworld.dart';
+import 'xenforo.dart';
 
 export 'fetcher.dart' show PageFetcher, SourceException;
 export 'source.dart';
@@ -18,6 +26,17 @@ const kSources = <StorySource>[
   ScribbleHubSource(),
   AuthorTodaySource(),
   FicbookSource(),
+  XenForoSource.spaceBattles,
+  XenForoSource.sufficientVelocity,
+  XenForoSource.questionableQuesting,
+  WattpadSource(),
+  FanFictionNetSource.fictionPress(),
+  QuotevSource(),
+  TapasSource(),
+  InkittSource(),
+  HoneyfeedSource(),
+  WuxiaworldSource(),
+  NovelUpdatesSource(),
 ];
 
 /// The source that can read [url], or null if the site isn't supported.
