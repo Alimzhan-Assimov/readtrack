@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Loading stories and chapters from websites -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="ReadTrack"
         android:name="${applicationName}"

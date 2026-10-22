@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import '../data/database.dart';
@@ -22,20 +24,28 @@ class WorkCover extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final placeholder = _Placeholder(work: work, width: width);
+    // A downloaded cover works offline; the online one is the fallback.
+    final path = work.coverPath;
     final url = work.coverUrl;
+    final Widget image;
+    if (path != null && File(path).existsSync()) {
+      image = Image.file(
+        File(path),
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => placeholder,
+      );
+    } else if (url != null) {
+      image = Image.network(
+        url,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => placeholder,
+      );
+    } else {
+      image = placeholder;
+    }
     Widget cover = ClipRRect(
       borderRadius: BorderRadius.circular(width / 8),
-      child: SizedBox(
-        width: width,
-        height: width * 1.5,
-        child: url == null
-            ? placeholder
-            : Image.network(
-                url,
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => placeholder,
-              ),
-      ),
+      child: SizedBox(width: width, height: width * 1.5, child: image),
     );
     if (heroTag != null) cover = Hero(tag: heroTag!, child: cover);
     return cover;

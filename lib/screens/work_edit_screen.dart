@@ -6,6 +6,8 @@ import '../data/database.dart';
 import '../data/database_scope.dart';
 import '../data/default_tags.dart';
 import '../l10n/l10n.dart';
+import '../library/story_sync.dart';
+import '../sources/sources.dart';
 import '../ui/labels.dart';
 import '../ui/layout.dart';
 import '../widgets/suggest_field.dart';
@@ -14,9 +16,12 @@ import '../widgets/tag_input.dart';
 /// Form for creating ([existing] == null) or editing a work.
 /// Pops with the work's id as the result after saving.
 class WorkEditScreen extends StatefulWidget {
-  const WorkEditScreen({super.key, this.existing});
+  const WorkEditScreen({super.key, this.existing, this.imported});
 
   final WorkWithDetails? existing;
+
+  /// Details loaded from a site to prefill a new entry.
+  final StoryInfo? imported;
 
   @override
   State<WorkEditScreen> createState() => _WorkEditScreenState();
@@ -90,6 +95,24 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _isbn.text = w?.isbn ?? '';
     _summary.text = w?.summary ?? '';
     _notes.text = w?.notes ?? '';
+    if (widget.imported case final info?) _prefill(info);
+  }
+
+  void _prefill(StoryInfo info) {
+    _type = info.type;
+    _format = WorkFormat.online;
+    _isComplete = info.isComplete ?? false;
+    _tags = TagInput.merge(const [], info.tags.join(','));
+    _title.text = info.title;
+    _author.text = info.author ?? '';
+    _fandom.text = info.fandom ?? '';
+    _url.text = info.url.toString();
+    _chapters.text = '${info.chapters.length}';
+    _words.text = info.wordCount?.toString() ?? '';
+    _pages.text = info.pageCount?.toString() ?? '';
+    _summary.text = info.summary ?? '';
+    // Not saved yet, so leaving should ask first.
+    _dirty = true;
   }
 
   @override
@@ -164,12 +187,19 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
       pageCount: Value(_parseInt(_pages.text)),
       rating: Value(_rating),
       notes: Value(_text(_notes)),
+      coverUrl: switch (widget.imported?.coverUrl) {
+        final cover? => Value(cover.toString()),
+        null => const Value.absent(),
+      },
     );
     final id = await _db.saveWork(
       data,
       fandomName: _fandom.text,
       tagNames: tags,
     );
+    if (widget.imported case final info?) {
+      await _db.saveChapterList(id, chapterListing(info));
+    }
     // Navigator.pop bypasses PopScope, so there is no prompt after saving.
     if (mounted) Navigator.of(context).pop(id);
   }
@@ -268,7 +298,19 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
       WorkType.comic,
     }.contains(_type);
 
+    final imported = widget.imported;
     return [
+      if (imported != null)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Card.filled(
+            child: ListTile(
+              leading: const Icon(Icons.cloud_done_outlined),
+              title: Text(l10n.importedFrom(imported.siteName)),
+              subtitle: Text(l10n.importedSummary(imported.chapters.length)),
+            ),
+          ),
+        ),
       DropdownButtonFormField<WorkType>(
         initialValue: _type,
         decoration: _decoration(l10n.fieldType),

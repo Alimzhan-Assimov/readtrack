@@ -1,17 +1,27 @@
+import 'dart:io';
+
 import 'package:drift/drift.dart' show Value, driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:readtrack/data/database.dart';
+import 'package:readtrack/library/download_service.dart';
+import 'package:readtrack/library/storage.dart';
 import 'package:readtrack/main.dart';
 
 void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
 
   late AppDatabase db;
+  late LibraryStorage storage;
 
   setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
+    final temp = Directory.systemTemp.createTempSync('readtrack_test');
+    storage = LibraryStorage(
+      dataDir: Directory('${temp.path}/books'),
+      exportDir: Directory('${temp.path}/exports'),
+    );
     await db.saveWork(
       WorksCompanion.insert(
         type: WorkType.fanfiction,
@@ -30,7 +40,13 @@ void main() {
     tester.view.physicalSize = Size(width, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(ReadTrackApp(db: db));
+    await tester.pumpWidget(
+      ReadTrackApp(
+        db: db,
+        storage: storage,
+        downloads: DownloadService(db, storage),
+      ),
+    );
     await tester.pumpAndSettle();
   }
 
@@ -82,6 +98,8 @@ void main() {
     await pumpApp(tester, width: 400);
     await tester.tap(find.text('Add'));
     await tester.pumpAndSettle();
+    await tester.tap(find.text('Enter manually'));
+    await tester.pumpAndSettle();
 
     await tester.enterText(
       find.widgetWithText(TextFormField, 'Title *'),
@@ -100,6 +118,8 @@ void main() {
   ) async {
     await pumpApp(tester, width: 400);
     await tester.tap(find.text('Add'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Enter manually'));
     await tester.pumpAndSettle();
 
     await tester.enterText(

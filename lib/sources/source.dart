@@ -1,0 +1,191 @@
+import 'dart:typed_data';
+
+import 'package:html/dom.dart' as dom;
+import 'package:html/parser.dart' as html_parser;
+
+import '../data/enums.dart';
+import 'browser_fetcher.dart';
+import 'fetcher.dart';
+
+/// One chapter as listed on the site.
+class ChapterRef {
+  const ChapterRef({
+    required this.number,
+    required this.title,
+    required this.url,
+    this.locked = false,
+  });
+
+  /// 1-based position in the story.
+  final int number;
+  final String title;
+  final Uri url;
+
+  /// Paywalled or otherwise unavailable for reading.
+  final bool locked;
+}
+
+/// Everything a site tells us about a story.
+class StoryInfo {
+  const StoryInfo({
+    required this.url,
+    required this.siteName,
+    required this.type,
+    required this.title,
+    required this.chapters,
+    this.author,
+    this.summary,
+    this.coverUrl,
+    this.fandom,
+    this.tags = const [],
+    this.wordCount,
+    this.pageCount,
+    this.isComplete,
+  });
+
+  final Uri url;
+  final String siteName;
+  final WorkType type;
+  final String title;
+  final String? author;
+  final String? summary;
+  final Uri? coverUrl;
+  final String? fandom;
+  final List<String> tags;
+  final List<ChapterRef> chapters;
+  final int? wordCount;
+  final int? pageCount;
+  final bool? isComplete;
+}
+
+class ChapterContent {
+  const ChapterContent({required this.html, this.title});
+
+  final String? title;
+
+  /// Cleaned HTML, see `cleanHtml` in html_clean.dart.
+  final String html;
+}
+
+enum FetchMode {
+  /// Plain HTTP requests.
+  http,
+
+  /// A real browser window, for sites behind Cloudflare.
+  browser,
+
+  /// Plain HTTP, falling back to the browser when the site refuses it.
+  httpThenBrowser,
+}
+
+/// A website ReadTrack can import stories from.
+abstract class StorySource {
+  const StorySource();
+
+  String get name;
+
+  /// Host names without "www.".
+  List<String> get hosts;
+
+  FetchMode get fetchMode;
+
+  bool matches(Uri uri) => hosts.contains(_bareHost(uri));
+
+  /// The canonical story URL for any link into the story (e.g. a chapter),
+  /// or null if [uri] doesn't point to a story.
+  Uri? storyUrl(Uri uri);
+
+  Future<StoryInfo> fetchStory(Uri storyUrl, PageFetcher fetcher);
+
+  Future<ChapterContent> fetchChapter(ChapterRef chapter, PageFetcher fetcher);
+
+  static String _bareHost(Uri uri) {
+    final host = uri.host.toLowerCase();
+    for (final prefix in const ['www.', 'm.']) {
+      if (host.startsWith(prefix)) return host.substring(prefix.length);
+    }
+    return host;
+  }
+}
+
+/// Opens the right kind of [PageFetcher] for a source. Close it when done.
+PageFetcher openFetcher(StorySource source) => switch (source.fetchMode) {
+  FetchMode.http => HttpFetcher(),
+  FetchMode.browser => BrowserFetcher(
+    windowTitle: 'ReadTrack · ${source.name}',
+  ),
+  FetchMode.httpThenBrowser => FallbackFetcher(
+    HttpFetcher(),
+    () => BrowserFetcher(windowTitle: 'ReadTrack · ${source.name}'),
+  ),
+};
+
+/// Uses [primary] until it fails once, then switches to the fallback for the
+/// rest of the session.
+class FallbackFetcher implements PageFetcher {
+  FallbackFetcher(this._primary, this._createFallback);
+
+  final PageFetcher _primary;
+  final PageFetcher Function() _createFallback;
+  PageFetcher? _fallback;
+
+  Future<T> _run<T>(Future<T> Function(PageFetcher f) call) async {
+    final fallback = _fallback;
+    if (fallback != null) return call(fallback);
+    try {
+      return await call(_primary);
+    } on SourceException {
+      return call(_fallback = _createFallback());
+    }
+  }
+
+  @override
+  Future<String> getText(Uri uri, {Map<String, String> headers = const {}}) =>
+      _run((f) => f.getText(uri, headers: headers));
+
+  @override
+  Future<({String body, Map<String, String> headers})> getWithHeaders(
+    Uri uri, {
+    Map<String, String> headers = const {},
+  }) => _run((f) => f.getWithHeaders(uri, headers: headers));
+
+  @override
+  Future<String> postForm(Uri uri, Map<String, String> fields) =>
+      _run((f) => f.postForm(uri, fields));
+
+  @override
+  Future<Uint8List> getBytes(Uri uri) => _run((f) => f.getBytes(uri));
+
+  @override
+  Future<void> close() async {
+    await _primary.close();
+    await _fallback?.close();
+  }
+}
+
+dom.Document parseHtml(String html) => html_parser.parse(html);
+
+/// Collapses whitespace like a browser does when rendering text.
+String squash(String text) => text.replaceAll(RegExp(r'\s+'), ' ').trim();
+
+/// "45,300" / "45 300" / "45.300" -> 45300
+int? parseCount(String? text) {
+  if (text == null) return null;
+  final digits = text.replaceAll(RegExp(r'[^0-9]'), '');
+  return digits.isEmpty ? null : int.tryParse(digits);
+}
+
+String? textOf(dom.Element? element) {
+  if (element == null) return null;
+  final text = squash(element.text);
+  return text.isEmpty ? null : text;
+}
+
+/// Content of `<meta property="..." content="...">`.
+String? metaContent(dom.Document doc, String property) {
+  final value = doc
+      .querySelector('meta[property="$property"], meta[name="$property"]')
+      ?.attributes['content']
+      ?.trim();
+  return value == null || value.isEmpty ? null : value;
+}
