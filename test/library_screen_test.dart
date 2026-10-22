@@ -116,4 +116,25 @@ void main() {
     expect(find.text('My Library'), findsOneWidget);
     await unmount(tester);
   });
+
+  testWidgets('all filters fit into the list pane without scrolling', (
+    tester,
+  ) async {
+    await pumpApp(tester, width: 1200);
+    for (final label in ['Type', 'Category', 'Tag']) {
+      // The list pane is 400 dp wide; every chip must end inside it.
+      expect(tester.getRect(find.text(label)).right, lessThan(400));
+    }
+
+    await tester.tap(find.text('Type'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Book').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Nothing found'), findsOneWidget);
+
+    await tester.tap(find.text('Clear filters'));
+    await tester.pumpAndSettle();
+    expect(find.text('The New Dawn'), findsOneWidget);
+    await unmount(tester);
+  });
 }

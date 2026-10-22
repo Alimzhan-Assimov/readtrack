@@ -255,13 +255,30 @@ class _LibraryScreenState extends State<LibraryScreen> {
     );
   }
 
+  void _clearFilters() => _setFilter(() {
+    _type = null;
+    _fandom = null;
+    _tag = null;
+  });
+
+  /// All filters are compact picker chips, so they fit the 400 dp list pane
+  /// without horizontal scrolling; long selections wrap to a second line.
   Widget _buildFilters(AppLocalizations l10n) {
-    return SizedBox(
-      height: 48,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
         children: [
+          _PickerChip<WorkType>(
+            icon: Icons.auto_stories_outlined,
+            emptyLabel: l10n.filterType,
+            selected: _type,
+            loadOptions: () async => WorkType.values,
+            nameOf: (t) => t.label(l10n),
+            iconOf: (t) => t.icon,
+            onSelected: (t) => _setFilter(() => _type = t),
+          ),
           _PickerChip<Fandom>(
             icon: Icons.category_outlined,
             emptyLabel: l10n.filterCategory,
@@ -270,7 +287,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
             nameOf: (f) => f.name,
             onSelected: (f) => _setFilter(() => _fandom = f),
           ),
-          const SizedBox(width: 8),
           _PickerChip<Tag>(
             icon: Icons.sell_outlined,
             emptyLabel: l10n.filterTag,
@@ -279,22 +295,12 @@ class _LibraryScreenState extends State<LibraryScreen> {
             nameOf: (t) => t.name,
             onSelected: (t) => _setFilter(() => _tag = t),
           ),
-          const VerticalDivider(indent: 12, endIndent: 12, width: 24),
-          ChoiceChip(
-            label: Text(l10n.filterAll),
-            selected: _type == null,
-            onSelected: (_) => _setFilter(() => _type = null),
-          ),
-          for (final t in WorkType.values) ...[
-            const SizedBox(width: 8),
-            ChoiceChip(
-              avatar: Icon(t.icon, size: 18),
-              showCheckmark: false,
-              label: Text(t.label(l10n)),
-              selected: _type == t,
-              onSelected: (sel) => _setFilter(() => _type = sel ? t : null),
+          if (_type != null || _fandom != null || _tag != null)
+            ActionChip(
+              avatar: const Icon(Icons.filter_alt_off_outlined, size: 18),
+              label: Text(l10n.clearFilters),
+              onPressed: _clearFilters,
             ),
-          ],
         ],
       ),
     );
@@ -310,6 +316,7 @@ class _PickerChip<T> extends StatelessWidget {
     required this.loadOptions,
     required this.nameOf,
     required this.onSelected,
+    this.iconOf,
   });
 
   final IconData icon;
@@ -318,6 +325,9 @@ class _PickerChip<T> extends StatelessWidget {
   final Future<List<T>> Function() loadOptions;
   final String Function(T) nameOf;
   final ValueChanged<T?> onSelected;
+
+  /// Optional icon per option, shown in the list and on the selected chip.
+  final IconData Function(T)? iconOf;
 
   Future<void> _pick(BuildContext context) async {
     final l10n = context.l10n;
@@ -340,6 +350,7 @@ class _PickerChip<T> extends StatelessWidget {
             ListTile(enabled: false, title: Text(l10n.pickerEmpty)),
           for (final option in options)
             ListTile(
+              leading: iconOf == null ? null : Icon(iconOf!(option)),
               title: Text(nameOf(option)),
               selected: option == selected,
               onTap: () => Navigator.pop<(T?,)>(context, (option,)),
@@ -354,7 +365,10 @@ class _PickerChip<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final sel = selected;
     return FilterChip(
-      avatar: Icon(icon, size: 18),
+      avatar: Icon(
+        sel != null && iconOf != null ? iconOf!(sel) : icon,
+        size: 18,
+      ),
       showCheckmark: false,
       label: Row(
         mainAxisSize: MainAxisSize.min,

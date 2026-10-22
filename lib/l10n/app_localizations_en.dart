@@ -127,6 +127,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterTag => 'Tag';
 
   @override
+  String get filterType => 'Type';
+
+  @override
+  String get clearFilters => 'Clear filters';
+
+  @override
   String get filterAll => 'All';
 
   @override

@@ -42,6 +42,8 @@
   "sortTooltip": "Sort",
   "filterCategory": "Category",
   "filterTag": "Tag",
+  "filterType": "Type",
+  "clearFilters": "Clear filters",
   "filterAll": "All",
   "pickerEmpty": "Nothing here yet",
   "entryCount": "{count, plural, =1{1 entry} other{{count} entries}}",
