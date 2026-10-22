@@ -471,6 +471,17 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _coverPathMeta = const VerificationMeta(
+    'coverPath',
+  );
+  @override
+  late final GeneratedColumn<String> coverPath = GeneratedColumn<String>(
+    'cover_path',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _fandomIdMeta = const VerificationMeta(
     'fandomId',
   );
@@ -530,6 +541,17 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
     aliasedName,
     true,
     type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _readOffsetMeta = const VerificationMeta(
+    'readOffset',
+  );
+  @override
+  late final GeneratedColumn<double> readOffset = GeneratedColumn<double>(
+    'read_offset',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
     requiredDuringInsert: false,
   );
   static const VerificationMeta _wordCountMeta = const VerificationMeta(
@@ -607,11 +629,13 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
     isbn,
     sourceUrl,
     coverUrl,
+    coverPath,
     fandomId,
     status,
     isComplete,
     chapterCount,
     currentChapter,
+    readOffset,
     wordCount,
     pageCount,
     rating,
@@ -672,6 +696,12 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
         coverUrl.isAcceptableOrUnknown(data['cover_url']!, _coverUrlMeta),
       );
     }
+    if (data.containsKey('cover_path')) {
+      context.handle(
+        _coverPathMeta,
+        coverPath.isAcceptableOrUnknown(data['cover_path']!, _coverPathMeta),
+      );
+    }
     if (data.containsKey('fandom_id')) {
       context.handle(
         _fandomIdMeta,
@@ -700,6 +730,12 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
           data['current_chapter']!,
           _currentChapterMeta,
         ),
+      );
+    }
+    if (data.containsKey('read_offset')) {
+      context.handle(
+        _readOffsetMeta,
+        readOffset.isAcceptableOrUnknown(data['read_offset']!, _readOffsetMeta),
       );
     }
     if (data.containsKey('word_count')) {
@@ -787,6 +823,10 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
         DriftSqlType.string,
         data['${effectivePrefix}cover_url'],
       ),
+      coverPath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cover_path'],
+      ),
       fandomId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}fandom_id'],
@@ -808,6 +848,10 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
       currentChapter: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}current_chapter'],
+      ),
+      readOffset: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}read_offset'],
       ),
       wordCount: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
@@ -859,6 +903,9 @@ class Work extends DataClass implements Insertable<Work> {
   final String? isbn;
   final String? sourceUrl;
   final String? coverUrl;
+
+  /// Downloaded cover, so it shows offline.
+  final String? coverPath;
   final int? fandomId;
   final ReadingStatus status;
 
@@ -866,6 +913,9 @@ class Work extends DataClass implements Insertable<Work> {
   final bool isComplete;
   final int? chapterCount;
   final int? currentChapter;
+
+  /// Scroll position within [currentChapter], from 0 (top) to 1 (end).
+  final double? readOffset;
   final int? wordCount;
   final int? pageCount;
 
@@ -884,11 +934,13 @@ class Work extends DataClass implements Insertable<Work> {
     this.isbn,
     this.sourceUrl,
     this.coverUrl,
+    this.coverPath,
     this.fandomId,
     required this.status,
     required this.isComplete,
     this.chapterCount,
     this.currentChapter,
+    this.readOffset,
     this.wordCount,
     this.pageCount,
     this.rating,
@@ -924,6 +976,9 @@ class Work extends DataClass implements Insertable<Work> {
     if (!nullToAbsent || coverUrl != null) {
       map['cover_url'] = Variable<String>(coverUrl);
     }
+    if (!nullToAbsent || coverPath != null) {
+      map['cover_path'] = Variable<String>(coverPath);
+    }
     if (!nullToAbsent || fandomId != null) {
       map['fandom_id'] = Variable<int>(fandomId);
     }
@@ -938,6 +993,9 @@ class Work extends DataClass implements Insertable<Work> {
     }
     if (!nullToAbsent || currentChapter != null) {
       map['current_chapter'] = Variable<int>(currentChapter);
+    }
+    if (!nullToAbsent || readOffset != null) {
+      map['read_offset'] = Variable<double>(readOffset);
     }
     if (!nullToAbsent || wordCount != null) {
       map['word_count'] = Variable<int>(wordCount);
@@ -975,6 +1033,9 @@ class Work extends DataClass implements Insertable<Work> {
       coverUrl: coverUrl == null && nullToAbsent
           ? const Value.absent()
           : Value(coverUrl),
+      coverPath: coverPath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(coverPath),
       fandomId: fandomId == null && nullToAbsent
           ? const Value.absent()
           : Value(fandomId),
@@ -986,6 +1047,9 @@ class Work extends DataClass implements Insertable<Work> {
       currentChapter: currentChapter == null && nullToAbsent
           ? const Value.absent()
           : Value(currentChapter),
+      readOffset: readOffset == null && nullToAbsent
+          ? const Value.absent()
+          : Value(readOffset),
       wordCount: wordCount == null && nullToAbsent
           ? const Value.absent()
           : Value(wordCount),
@@ -1022,6 +1086,7 @@ class Work extends DataClass implements Insertable<Work> {
       isbn: serializer.fromJson<String?>(json['isbn']),
       sourceUrl: serializer.fromJson<String?>(json['sourceUrl']),
       coverUrl: serializer.fromJson<String?>(json['coverUrl']),
+      coverPath: serializer.fromJson<String?>(json['coverPath']),
       fandomId: serializer.fromJson<int?>(json['fandomId']),
       status: $WorksTable.$converterstatus.fromJson(
         serializer.fromJson<String>(json['status']),
@@ -1029,6 +1094,7 @@ class Work extends DataClass implements Insertable<Work> {
       isComplete: serializer.fromJson<bool>(json['isComplete']),
       chapterCount: serializer.fromJson<int?>(json['chapterCount']),
       currentChapter: serializer.fromJson<int?>(json['currentChapter']),
+      readOffset: serializer.fromJson<double?>(json['readOffset']),
       wordCount: serializer.fromJson<int?>(json['wordCount']),
       pageCount: serializer.fromJson<int?>(json['pageCount']),
       rating: serializer.fromJson<int?>(json['rating']),
@@ -1054,6 +1120,7 @@ class Work extends DataClass implements Insertable<Work> {
       'isbn': serializer.toJson<String?>(isbn),
       'sourceUrl': serializer.toJson<String?>(sourceUrl),
       'coverUrl': serializer.toJson<String?>(coverUrl),
+      'coverPath': serializer.toJson<String?>(coverPath),
       'fandomId': serializer.toJson<int?>(fandomId),
       'status': serializer.toJson<String>(
         $WorksTable.$converterstatus.toJson(status),
@@ -1061,6 +1128,7 @@ class Work extends DataClass implements Insertable<Work> {
       'isComplete': serializer.toJson<bool>(isComplete),
       'chapterCount': serializer.toJson<int?>(chapterCount),
       'currentChapter': serializer.toJson<int?>(currentChapter),
+      'readOffset': serializer.toJson<double?>(readOffset),
       'wordCount': serializer.toJson<int?>(wordCount),
       'pageCount': serializer.toJson<int?>(pageCount),
       'rating': serializer.toJson<int?>(rating),
@@ -1080,11 +1148,13 @@ class Work extends DataClass implements Insertable<Work> {
     Value<String?> isbn = const Value.absent(),
     Value<String?> sourceUrl = const Value.absent(),
     Value<String?> coverUrl = const Value.absent(),
+    Value<String?> coverPath = const Value.absent(),
     Value<int?> fandomId = const Value.absent(),
     ReadingStatus? status,
     bool? isComplete,
     Value<int?> chapterCount = const Value.absent(),
     Value<int?> currentChapter = const Value.absent(),
+    Value<double?> readOffset = const Value.absent(),
     Value<int?> wordCount = const Value.absent(),
     Value<int?> pageCount = const Value.absent(),
     Value<int?> rating = const Value.absent(),
@@ -1101,6 +1171,7 @@ class Work extends DataClass implements Insertable<Work> {
     isbn: isbn.present ? isbn.value : this.isbn,
     sourceUrl: sourceUrl.present ? sourceUrl.value : this.sourceUrl,
     coverUrl: coverUrl.present ? coverUrl.value : this.coverUrl,
+    coverPath: coverPath.present ? coverPath.value : this.coverPath,
     fandomId: fandomId.present ? fandomId.value : this.fandomId,
     status: status ?? this.status,
     isComplete: isComplete ?? this.isComplete,
@@ -1108,6 +1179,7 @@ class Work extends DataClass implements Insertable<Work> {
     currentChapter: currentChapter.present
         ? currentChapter.value
         : this.currentChapter,
+    readOffset: readOffset.present ? readOffset.value : this.readOffset,
     wordCount: wordCount.present ? wordCount.value : this.wordCount,
     pageCount: pageCount.present ? pageCount.value : this.pageCount,
     rating: rating.present ? rating.value : this.rating,
@@ -1126,6 +1198,7 @@ class Work extends DataClass implements Insertable<Work> {
       isbn: data.isbn.present ? data.isbn.value : this.isbn,
       sourceUrl: data.sourceUrl.present ? data.sourceUrl.value : this.sourceUrl,
       coverUrl: data.coverUrl.present ? data.coverUrl.value : this.coverUrl,
+      coverPath: data.coverPath.present ? data.coverPath.value : this.coverPath,
       fandomId: data.fandomId.present ? data.fandomId.value : this.fandomId,
       status: data.status.present ? data.status.value : this.status,
       isComplete: data.isComplete.present
@@ -1137,6 +1210,9 @@ class Work extends DataClass implements Insertable<Work> {
       currentChapter: data.currentChapter.present
           ? data.currentChapter.value
           : this.currentChapter,
+      readOffset: data.readOffset.present
+          ? data.readOffset.value
+          : this.readOffset,
       wordCount: data.wordCount.present ? data.wordCount.value : this.wordCount,
       pageCount: data.pageCount.present ? data.pageCount.value : this.pageCount,
       rating: data.rating.present ? data.rating.value : this.rating,
@@ -1158,11 +1234,13 @@ class Work extends DataClass implements Insertable<Work> {
           ..write('isbn: $isbn, ')
           ..write('sourceUrl: $sourceUrl, ')
           ..write('coverUrl: $coverUrl, ')
+          ..write('coverPath: $coverPath, ')
           ..write('fandomId: $fandomId, ')
           ..write('status: $status, ')
           ..write('isComplete: $isComplete, ')
           ..write('chapterCount: $chapterCount, ')
           ..write('currentChapter: $currentChapter, ')
+          ..write('readOffset: $readOffset, ')
           ..write('wordCount: $wordCount, ')
           ..write('pageCount: $pageCount, ')
           ..write('rating: $rating, ')
@@ -1174,7 +1252,7 @@ class Work extends DataClass implements Insertable<Work> {
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     id,
     type,
     format,
@@ -1184,18 +1262,20 @@ class Work extends DataClass implements Insertable<Work> {
     isbn,
     sourceUrl,
     coverUrl,
+    coverPath,
     fandomId,
     status,
     isComplete,
     chapterCount,
     currentChapter,
+    readOffset,
     wordCount,
     pageCount,
     rating,
     notes,
     addedAt,
     updatedAt,
-  );
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1209,11 +1289,13 @@ class Work extends DataClass implements Insertable<Work> {
           other.isbn == this.isbn &&
           other.sourceUrl == this.sourceUrl &&
           other.coverUrl == this.coverUrl &&
+          other.coverPath == this.coverPath &&
           other.fandomId == this.fandomId &&
           other.status == this.status &&
           other.isComplete == this.isComplete &&
           other.chapterCount == this.chapterCount &&
           other.currentChapter == this.currentChapter &&
+          other.readOffset == this.readOffset &&
           other.wordCount == this.wordCount &&
           other.pageCount == this.pageCount &&
           other.rating == this.rating &&
@@ -1232,11 +1314,13 @@ class WorksCompanion extends UpdateCompanion<Work> {
   final Value<String?> isbn;
   final Value<String?> sourceUrl;
   final Value<String?> coverUrl;
+  final Value<String?> coverPath;
   final Value<int?> fandomId;
   final Value<ReadingStatus> status;
   final Value<bool> isComplete;
   final Value<int?> chapterCount;
   final Value<int?> currentChapter;
+  final Value<double?> readOffset;
   final Value<int?> wordCount;
   final Value<int?> pageCount;
   final Value<int?> rating;
@@ -1253,11 +1337,13 @@ class WorksCompanion extends UpdateCompanion<Work> {
     this.isbn = const Value.absent(),
     this.sourceUrl = const Value.absent(),
     this.coverUrl = const Value.absent(),
+    this.coverPath = const Value.absent(),
     this.fandomId = const Value.absent(),
     this.status = const Value.absent(),
     this.isComplete = const Value.absent(),
     this.chapterCount = const Value.absent(),
     this.currentChapter = const Value.absent(),
+    this.readOffset = const Value.absent(),
     this.wordCount = const Value.absent(),
     this.pageCount = const Value.absent(),
     this.rating = const Value.absent(),
@@ -1275,11 +1361,13 @@ class WorksCompanion extends UpdateCompanion<Work> {
     this.isbn = const Value.absent(),
     this.sourceUrl = const Value.absent(),
     this.coverUrl = const Value.absent(),
+    this.coverPath = const Value.absent(),
     this.fandomId = const Value.absent(),
     this.status = const Value.absent(),
     this.isComplete = const Value.absent(),
     this.chapterCount = const Value.absent(),
     this.currentChapter = const Value.absent(),
+    this.readOffset = const Value.absent(),
     this.wordCount = const Value.absent(),
     this.pageCount = const Value.absent(),
     this.rating = const Value.absent(),
@@ -1299,11 +1387,13 @@ class WorksCompanion extends UpdateCompanion<Work> {
     Expression<String>? isbn,
     Expression<String>? sourceUrl,
     Expression<String>? coverUrl,
+    Expression<String>? coverPath,
     Expression<int>? fandomId,
     Expression<String>? status,
     Expression<bool>? isComplete,
     Expression<int>? chapterCount,
     Expression<int>? currentChapter,
+    Expression<double>? readOffset,
     Expression<int>? wordCount,
     Expression<int>? pageCount,
     Expression<int>? rating,
@@ -1321,11 +1411,13 @@ class WorksCompanion extends UpdateCompanion<Work> {
       if (isbn != null) 'isbn': isbn,
       if (sourceUrl != null) 'source_url': sourceUrl,
       if (coverUrl != null) 'cover_url': coverUrl,
+      if (coverPath != null) 'cover_path': coverPath,
       if (fandomId != null) 'fandom_id': fandomId,
       if (status != null) 'status': status,
       if (isComplete != null) 'is_complete': isComplete,
       if (chapterCount != null) 'chapter_count': chapterCount,
       if (currentChapter != null) 'current_chapter': currentChapter,
+      if (readOffset != null) 'read_offset': readOffset,
       if (wordCount != null) 'word_count': wordCount,
       if (pageCount != null) 'page_count': pageCount,
       if (rating != null) 'rating': rating,
@@ -1345,11 +1437,13 @@ class WorksCompanion extends UpdateCompanion<Work> {
     Value<String?>? isbn,
     Value<String?>? sourceUrl,
     Value<String?>? coverUrl,
+    Value<String?>? coverPath,
     Value<int?>? fandomId,
     Value<ReadingStatus>? status,
     Value<bool>? isComplete,
     Value<int?>? chapterCount,
     Value<int?>? currentChapter,
+    Value<double?>? readOffset,
     Value<int?>? wordCount,
     Value<int?>? pageCount,
     Value<int?>? rating,
@@ -1367,11 +1461,13 @@ class WorksCompanion extends UpdateCompanion<Work> {
       isbn: isbn ?? this.isbn,
       sourceUrl: sourceUrl ?? this.sourceUrl,
       coverUrl: coverUrl ?? this.coverUrl,
+      coverPath: coverPath ?? this.coverPath,
       fandomId: fandomId ?? this.fandomId,
       status: status ?? this.status,
       isComplete: isComplete ?? this.isComplete,
       chapterCount: chapterCount ?? this.chapterCount,
       currentChapter: currentChapter ?? this.currentChapter,
+      readOffset: readOffset ?? this.readOffset,
       wordCount: wordCount ?? this.wordCount,
       pageCount: pageCount ?? this.pageCount,
       rating: rating ?? this.rating,
@@ -1415,6 +1511,9 @@ class WorksCompanion extends UpdateCompanion<Work> {
     if (coverUrl.present) {
       map['cover_url'] = Variable<String>(coverUrl.value);
     }
+    if (coverPath.present) {
+      map['cover_path'] = Variable<String>(coverPath.value);
+    }
     if (fandomId.present) {
       map['fandom_id'] = Variable<int>(fandomId.value);
     }
@@ -1431,6 +1530,9 @@ class WorksCompanion extends UpdateCompanion<Work> {
     }
     if (currentChapter.present) {
       map['current_chapter'] = Variable<int>(currentChapter.value);
+    }
+    if (readOffset.present) {
+      map['read_offset'] = Variable<double>(readOffset.value);
     }
     if (wordCount.present) {
       map['word_count'] = Variable<int>(wordCount.value);
@@ -1465,11 +1567,13 @@ class WorksCompanion extends UpdateCompanion<Work> {
           ..write('isbn: $isbn, ')
           ..write('sourceUrl: $sourceUrl, ')
           ..write('coverUrl: $coverUrl, ')
+          ..write('coverPath: $coverPath, ')
           ..write('fandomId: $fandomId, ')
           ..write('status: $status, ')
           ..write('isComplete: $isComplete, ')
           ..write('chapterCount: $chapterCount, ')
           ..write('currentChapter: $currentChapter, ')
+          ..write('readOffset: $readOffset, ')
           ..write('wordCount: $wordCount, ')
           ..write('pageCount: $pageCount, ')
           ..write('rating: $rating, ')
@@ -1784,6 +1888,21 @@ class $ChaptersTable extends Chapters with TableInfo<$ChaptersTable, Chapter> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _isLockedMeta = const VerificationMeta(
+    'isLocked',
+  );
+  @override
+  late final GeneratedColumn<bool> isLocked = GeneratedColumn<bool>(
+    'is_locked',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_locked" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1794,6 +1913,7 @@ class $ChaptersTable extends Chapters with TableInfo<$ChaptersTable, Chapter> {
     content,
     wordCount,
     downloadedAt,
+    isLocked,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1859,6 +1979,12 @@ class $ChaptersTable extends Chapters with TableInfo<$ChaptersTable, Chapter> {
         ),
       );
     }
+    if (data.containsKey('is_locked')) {
+      context.handle(
+        _isLockedMeta,
+        isLocked.isAcceptableOrUnknown(data['is_locked']!, _isLockedMeta),
+      );
+    }
     return context;
   }
 
@@ -1904,6 +2030,10 @@ class $ChaptersTable extends Chapters with TableInfo<$ChaptersTable, Chapter> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}downloaded_at'],
       ),
+      isLocked: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_locked'],
+      )!,
     );
   }
 
@@ -1922,6 +2052,9 @@ class Chapter extends DataClass implements Insertable<Chapter> {
   final String? content;
   final int? wordCount;
   final DateTime? downloadedAt;
+
+  /// Paid or otherwise unavailable on the site.
+  final bool isLocked;
   const Chapter({
     required this.id,
     required this.workId,
@@ -1931,6 +2064,7 @@ class Chapter extends DataClass implements Insertable<Chapter> {
     this.content,
     this.wordCount,
     this.downloadedAt,
+    required this.isLocked,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1953,6 +2087,7 @@ class Chapter extends DataClass implements Insertable<Chapter> {
     if (!nullToAbsent || downloadedAt != null) {
       map['downloaded_at'] = Variable<DateTime>(downloadedAt);
     }
+    map['is_locked'] = Variable<bool>(isLocked);
     return map;
   }
 
@@ -1974,6 +2109,7 @@ class Chapter extends DataClass implements Insertable<Chapter> {
       downloadedAt: downloadedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(downloadedAt),
+      isLocked: Value(isLocked),
     );
   }
 
@@ -1991,6 +2127,7 @@ class Chapter extends DataClass implements Insertable<Chapter> {
       content: serializer.fromJson<String?>(json['content']),
       wordCount: serializer.fromJson<int?>(json['wordCount']),
       downloadedAt: serializer.fromJson<DateTime?>(json['downloadedAt']),
+      isLocked: serializer.fromJson<bool>(json['isLocked']),
     );
   }
   @override
@@ -2005,6 +2142,7 @@ class Chapter extends DataClass implements Insertable<Chapter> {
       'content': serializer.toJson<String?>(content),
       'wordCount': serializer.toJson<int?>(wordCount),
       'downloadedAt': serializer.toJson<DateTime?>(downloadedAt),
+      'isLocked': serializer.toJson<bool>(isLocked),
     };
   }
 
@@ -2017,6 +2155,7 @@ class Chapter extends DataClass implements Insertable<Chapter> {
     Value<String?> content = const Value.absent(),
     Value<int?> wordCount = const Value.absent(),
     Value<DateTime?> downloadedAt = const Value.absent(),
+    bool? isLocked,
   }) => Chapter(
     id: id ?? this.id,
     workId: workId ?? this.workId,
@@ -2026,6 +2165,7 @@ class Chapter extends DataClass implements Insertable<Chapter> {
     content: content.present ? content.value : this.content,
     wordCount: wordCount.present ? wordCount.value : this.wordCount,
     downloadedAt: downloadedAt.present ? downloadedAt.value : this.downloadedAt,
+    isLocked: isLocked ?? this.isLocked,
   );
   Chapter copyWithCompanion(ChaptersCompanion data) {
     return Chapter(
@@ -2039,6 +2179,7 @@ class Chapter extends DataClass implements Insertable<Chapter> {
       downloadedAt: data.downloadedAt.present
           ? data.downloadedAt.value
           : this.downloadedAt,
+      isLocked: data.isLocked.present ? data.isLocked.value : this.isLocked,
     );
   }
 
@@ -2052,7 +2193,8 @@ class Chapter extends DataClass implements Insertable<Chapter> {
           ..write('url: $url, ')
           ..write('content: $content, ')
           ..write('wordCount: $wordCount, ')
-          ..write('downloadedAt: $downloadedAt')
+          ..write('downloadedAt: $downloadedAt, ')
+          ..write('isLocked: $isLocked')
           ..write(')'))
         .toString();
   }
@@ -2067,6 +2209,7 @@ class Chapter extends DataClass implements Insertable<Chapter> {
     content,
     wordCount,
     downloadedAt,
+    isLocked,
   );
   @override
   bool operator ==(Object other) =>
@@ -2079,7 +2222,8 @@ class Chapter extends DataClass implements Insertable<Chapter> {
           other.url == this.url &&
           other.content == this.content &&
           other.wordCount == this.wordCount &&
-          other.downloadedAt == this.downloadedAt);
+          other.downloadedAt == this.downloadedAt &&
+          other.isLocked == this.isLocked);
 }
 
 class ChaptersCompanion extends UpdateCompanion<Chapter> {
@@ -2091,6 +2235,7 @@ class ChaptersCompanion extends UpdateCompanion<Chapter> {
   final Value<String?> content;
   final Value<int?> wordCount;
   final Value<DateTime?> downloadedAt;
+  final Value<bool> isLocked;
   const ChaptersCompanion({
     this.id = const Value.absent(),
     this.workId = const Value.absent(),
@@ -2100,6 +2245,7 @@ class ChaptersCompanion extends UpdateCompanion<Chapter> {
     this.content = const Value.absent(),
     this.wordCount = const Value.absent(),
     this.downloadedAt = const Value.absent(),
+    this.isLocked = const Value.absent(),
   });
   ChaptersCompanion.insert({
     this.id = const Value.absent(),
@@ -2110,6 +2256,7 @@ class ChaptersCompanion extends UpdateCompanion<Chapter> {
     this.content = const Value.absent(),
     this.wordCount = const Value.absent(),
     this.downloadedAt = const Value.absent(),
+    this.isLocked = const Value.absent(),
   }) : workId = Value(workId),
        number = Value(number);
   static Insertable<Chapter> custom({
@@ -2121,6 +2268,7 @@ class ChaptersCompanion extends UpdateCompanion<Chapter> {
     Expression<String>? content,
     Expression<int>? wordCount,
     Expression<DateTime>? downloadedAt,
+    Expression<bool>? isLocked,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -2131,6 +2279,7 @@ class ChaptersCompanion extends UpdateCompanion<Chapter> {
       if (content != null) 'content': content,
       if (wordCount != null) 'word_count': wordCount,
       if (downloadedAt != null) 'downloaded_at': downloadedAt,
+      if (isLocked != null) 'is_locked': isLocked,
     });
   }
 
@@ -2143,6 +2292,7 @@ class ChaptersCompanion extends UpdateCompanion<Chapter> {
     Value<String?>? content,
     Value<int?>? wordCount,
     Value<DateTime?>? downloadedAt,
+    Value<bool>? isLocked,
   }) {
     return ChaptersCompanion(
       id: id ?? this.id,
@@ -2153,6 +2303,7 @@ class ChaptersCompanion extends UpdateCompanion<Chapter> {
       content: content ?? this.content,
       wordCount: wordCount ?? this.wordCount,
       downloadedAt: downloadedAt ?? this.downloadedAt,
+      isLocked: isLocked ?? this.isLocked,
     );
   }
 
@@ -2183,6 +2334,9 @@ class ChaptersCompanion extends UpdateCompanion<Chapter> {
     if (downloadedAt.present) {
       map['downloaded_at'] = Variable<DateTime>(downloadedAt.value);
     }
+    if (isLocked.present) {
+      map['is_locked'] = Variable<bool>(isLocked.value);
+    }
     return map;
   }
 
@@ -2196,7 +2350,509 @@ class ChaptersCompanion extends UpdateCompanion<Chapter> {
           ..write('url: $url, ')
           ..write('content: $content, ')
           ..write('wordCount: $wordCount, ')
-          ..write('downloadedAt: $downloadedAt')
+          ..write('downloadedAt: $downloadedAt, ')
+          ..write('isLocked: $isLocked')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $DownloadsTable extends Downloads
+    with TableInfo<$DownloadsTable, Download> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DownloadsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _workIdMeta = const VerificationMeta('workId');
+  @override
+  late final GeneratedColumn<int> workId = GeneratedColumn<int>(
+    'work_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES works (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _fromChapterMeta = const VerificationMeta(
+    'fromChapter',
+  );
+  @override
+  late final GeneratedColumn<int> fromChapter = GeneratedColumn<int>(
+    'from_chapter',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _toChapterMeta = const VerificationMeta(
+    'toChapter',
+  );
+  @override
+  late final GeneratedColumn<int> toChapter = GeneratedColumn<int>(
+    'to_chapter',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _formatMeta = const VerificationMeta('format');
+  @override
+  late final GeneratedColumn<String> format = GeneratedColumn<String>(
+    'format',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('txt'),
+  );
+  static const VerificationMeta _filePathMeta = const VerificationMeta(
+    'filePath',
+  );
+  @override
+  late final GeneratedColumn<String> filePath = GeneratedColumn<String>(
+    'file_path',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    workId,
+    fromChapter,
+    toChapter,
+    format,
+    filePath,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'downloads';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Download> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('work_id')) {
+      context.handle(
+        _workIdMeta,
+        workId.isAcceptableOrUnknown(data['work_id']!, _workIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_workIdMeta);
+    }
+    if (data.containsKey('from_chapter')) {
+      context.handle(
+        _fromChapterMeta,
+        fromChapter.isAcceptableOrUnknown(
+          data['from_chapter']!,
+          _fromChapterMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_fromChapterMeta);
+    }
+    if (data.containsKey('to_chapter')) {
+      context.handle(
+        _toChapterMeta,
+        toChapter.isAcceptableOrUnknown(data['to_chapter']!, _toChapterMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_toChapterMeta);
+    }
+    if (data.containsKey('format')) {
+      context.handle(
+        _formatMeta,
+        format.isAcceptableOrUnknown(data['format']!, _formatMeta),
+      );
+    }
+    if (data.containsKey('file_path')) {
+      context.handle(
+        _filePathMeta,
+        filePath.isAcceptableOrUnknown(data['file_path']!, _filePathMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Download map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Download(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      workId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}work_id'],
+      )!,
+      fromChapter: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}from_chapter'],
+      )!,
+      toChapter: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}to_chapter'],
+      )!,
+      format: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}format'],
+      )!,
+      filePath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}file_path'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $DownloadsTable createAlias(String alias) {
+    return $DownloadsTable(attachedDatabase, alias);
+  }
+}
+
+class Download extends DataClass implements Insertable<Download> {
+  final int id;
+  final int workId;
+  final int fromChapter;
+  final int toChapter;
+  final String format;
+  final String? filePath;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const Download({
+    required this.id,
+    required this.workId,
+    required this.fromChapter,
+    required this.toChapter,
+    required this.format,
+    this.filePath,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['work_id'] = Variable<int>(workId);
+    map['from_chapter'] = Variable<int>(fromChapter);
+    map['to_chapter'] = Variable<int>(toChapter);
+    map['format'] = Variable<String>(format);
+    if (!nullToAbsent || filePath != null) {
+      map['file_path'] = Variable<String>(filePath);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  DownloadsCompanion toCompanion(bool nullToAbsent) {
+    return DownloadsCompanion(
+      id: Value(id),
+      workId: Value(workId),
+      fromChapter: Value(fromChapter),
+      toChapter: Value(toChapter),
+      format: Value(format),
+      filePath: filePath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(filePath),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory Download.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Download(
+      id: serializer.fromJson<int>(json['id']),
+      workId: serializer.fromJson<int>(json['workId']),
+      fromChapter: serializer.fromJson<int>(json['fromChapter']),
+      toChapter: serializer.fromJson<int>(json['toChapter']),
+      format: serializer.fromJson<String>(json['format']),
+      filePath: serializer.fromJson<String?>(json['filePath']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'workId': serializer.toJson<int>(workId),
+      'fromChapter': serializer.toJson<int>(fromChapter),
+      'toChapter': serializer.toJson<int>(toChapter),
+      'format': serializer.toJson<String>(format),
+      'filePath': serializer.toJson<String?>(filePath),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  Download copyWith({
+    int? id,
+    int? workId,
+    int? fromChapter,
+    int? toChapter,
+    String? format,
+    Value<String?> filePath = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => Download(
+    id: id ?? this.id,
+    workId: workId ?? this.workId,
+    fromChapter: fromChapter ?? this.fromChapter,
+    toChapter: toChapter ?? this.toChapter,
+    format: format ?? this.format,
+    filePath: filePath.present ? filePath.value : this.filePath,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  Download copyWithCompanion(DownloadsCompanion data) {
+    return Download(
+      id: data.id.present ? data.id.value : this.id,
+      workId: data.workId.present ? data.workId.value : this.workId,
+      fromChapter: data.fromChapter.present
+          ? data.fromChapter.value
+          : this.fromChapter,
+      toChapter: data.toChapter.present ? data.toChapter.value : this.toChapter,
+      format: data.format.present ? data.format.value : this.format,
+      filePath: data.filePath.present ? data.filePath.value : this.filePath,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Download(')
+          ..write('id: $id, ')
+          ..write('workId: $workId, ')
+          ..write('fromChapter: $fromChapter, ')
+          ..write('toChapter: $toChapter, ')
+          ..write('format: $format, ')
+          ..write('filePath: $filePath, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    workId,
+    fromChapter,
+    toChapter,
+    format,
+    filePath,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Download &&
+          other.id == this.id &&
+          other.workId == this.workId &&
+          other.fromChapter == this.fromChapter &&
+          other.toChapter == this.toChapter &&
+          other.format == this.format &&
+          other.filePath == this.filePath &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class DownloadsCompanion extends UpdateCompanion<Download> {
+  final Value<int> id;
+  final Value<int> workId;
+  final Value<int> fromChapter;
+  final Value<int> toChapter;
+  final Value<String> format;
+  final Value<String?> filePath;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const DownloadsCompanion({
+    this.id = const Value.absent(),
+    this.workId = const Value.absent(),
+    this.fromChapter = const Value.absent(),
+    this.toChapter = const Value.absent(),
+    this.format = const Value.absent(),
+    this.filePath = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  DownloadsCompanion.insert({
+    this.id = const Value.absent(),
+    required int workId,
+    required int fromChapter,
+    required int toChapter,
+    this.format = const Value.absent(),
+    this.filePath = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  }) : workId = Value(workId),
+       fromChapter = Value(fromChapter),
+       toChapter = Value(toChapter);
+  static Insertable<Download> custom({
+    Expression<int>? id,
+    Expression<int>? workId,
+    Expression<int>? fromChapter,
+    Expression<int>? toChapter,
+    Expression<String>? format,
+    Expression<String>? filePath,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (workId != null) 'work_id': workId,
+      if (fromChapter != null) 'from_chapter': fromChapter,
+      if (toChapter != null) 'to_chapter': toChapter,
+      if (format != null) 'format': format,
+      if (filePath != null) 'file_path': filePath,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  DownloadsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? workId,
+    Value<int>? fromChapter,
+    Value<int>? toChapter,
+    Value<String>? format,
+    Value<String?>? filePath,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+  }) {
+    return DownloadsCompanion(
+      id: id ?? this.id,
+      workId: workId ?? this.workId,
+      fromChapter: fromChapter ?? this.fromChapter,
+      toChapter: toChapter ?? this.toChapter,
+      format: format ?? this.format,
+      filePath: filePath ?? this.filePath,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (workId.present) {
+      map['work_id'] = Variable<int>(workId.value);
+    }
+    if (fromChapter.present) {
+      map['from_chapter'] = Variable<int>(fromChapter.value);
+    }
+    if (toChapter.present) {
+      map['to_chapter'] = Variable<int>(toChapter.value);
+    }
+    if (format.present) {
+      map['format'] = Variable<String>(format.value);
+    }
+    if (filePath.present) {
+      map['file_path'] = Variable<String>(filePath.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DownloadsCompanion(')
+          ..write('id: $id, ')
+          ..write('workId: $workId, ')
+          ..write('fromChapter: $fromChapter, ')
+          ..write('toChapter: $toChapter, ')
+          ..write('format: $format, ')
+          ..write('filePath: $filePath, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
           ..write(')'))
         .toString();
   }
@@ -2210,6 +2866,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $WorksTable works = $WorksTable(this);
   late final $WorkTagsTable workTags = $WorkTagsTable(this);
   late final $ChaptersTable chapters = $ChaptersTable(this);
+  late final $DownloadsTable downloads = $DownloadsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2220,6 +2877,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     works,
     workTags,
     chapters,
+    downloads,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -2250,6 +2908,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('chapters', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'works',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('downloads', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -2706,11 +3371,13 @@ typedef $$WorksTableCreateCompanionBuilder = WorksCompanion Function({
   Value<String?> isbn,
   Value<String?> sourceUrl,
   Value<String?> coverUrl,
+  Value<String?> coverPath,
   Value<int?> fandomId,
   Value<ReadingStatus> status,
   Value<bool> isComplete,
   Value<int?> chapterCount,
   Value<int?> currentChapter,
+  Value<double?> readOffset,
   Value<int?> wordCount,
   Value<int?> pageCount,
   Value<int?> rating,
@@ -2728,11 +3395,13 @@ typedef $$WorksTableUpdateCompanionBuilder = WorksCompanion Function({
   Value<String?> isbn,
   Value<String?> sourceUrl,
   Value<String?> coverUrl,
+  Value<String?> coverPath,
   Value<int?> fandomId,
   Value<ReadingStatus> status,
   Value<bool> isComplete,
   Value<int?> chapterCount,
   Value<int?> currentChapter,
+  Value<double?> readOffset,
   Value<int?> wordCount,
   Value<int?> pageCount,
   Value<int?> rating,
@@ -2799,6 +3468,24 @@ final class $$WorksTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$DownloadsTable, List<Download>>
+  _downloadsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.downloads,
+    aliasName: 'works__id__downloads__work_id',
+  );
+
+  $$DownloadsTableProcessedTableManager get downloadsRefs {
+    final manager = $$DownloadsTableTableManager(
+      $_db,
+      $_db.downloads,
+    ).filter((f) => f.workId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_downloadsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$WorksTableFilterComposer extends Composer<_$AppDatabase, $WorksTable> {
@@ -2856,6 +3543,11 @@ class $$WorksTableFilterComposer extends Composer<_$AppDatabase, $WorksTable> {
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get coverPath => $composableBuilder(
+    column: $table.coverPath,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnWithTypeConverterFilters<ReadingStatus, ReadingStatus, String>
   get status => $composableBuilder(
     column: $table.status,
@@ -2874,6 +3566,11 @@ class $$WorksTableFilterComposer extends Composer<_$AppDatabase, $WorksTable> {
 
   ColumnFilters<int> get currentChapter => $composableBuilder(
     column: $table.currentChapter,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get readOffset => $composableBuilder(
+    column: $table.readOffset,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2979,6 +3676,31 @@ class $$WorksTableFilterComposer extends Composer<_$AppDatabase, $WorksTable> {
     );
     return f(composer);
   }
+
+  Expression<bool> downloadsRefs(
+    Expression<bool> Function($$DownloadsTableFilterComposer f) f,
+  ) {
+    final $$DownloadsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.downloads,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DownloadsTableFilterComposer(
+            $db: $db,
+            $table: $db.downloads,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$WorksTableOrderingComposer
@@ -3035,6 +3757,11 @@ class $$WorksTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get coverPath => $composableBuilder(
+    column: $table.coverPath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get status => $composableBuilder(
     column: $table.status,
     builder: (column) => ColumnOrderings(column),
@@ -3052,6 +3779,11 @@ class $$WorksTableOrderingComposer
 
   ColumnOrderings<int> get currentChapter => $composableBuilder(
     column: $table.currentChapter,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get readOffset => $composableBuilder(
+    column: $table.readOffset,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -3145,6 +3877,9 @@ class $$WorksTableAnnotationComposer
   GeneratedColumn<String> get coverUrl =>
       $composableBuilder(column: $table.coverUrl, builder: (column) => column);
 
+  GeneratedColumn<String> get coverPath =>
+      $composableBuilder(column: $table.coverPath, builder: (column) => column);
+
   GeneratedColumnWithTypeConverter<ReadingStatus, String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
 
@@ -3160,6 +3895,11 @@ class $$WorksTableAnnotationComposer
 
   GeneratedColumn<int> get currentChapter => $composableBuilder(
     column: $table.currentChapter,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get readOffset => $composableBuilder(
+    column: $table.readOffset,
     builder: (column) => column,
   );
 
@@ -3253,6 +3993,31 @@ class $$WorksTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> downloadsRefs<T extends Object>(
+    Expression<T> Function($$DownloadsTableAnnotationComposer a) f,
+  ) {
+    final $$DownloadsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.downloads,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DownloadsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.downloads,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$WorksTableTableManager
@@ -3272,6 +4037,7 @@ class $$WorksTableTableManager
             bool fandomId,
             bool workTagsRefs,
             bool chaptersRefs,
+            bool downloadsRefs,
           })
         > {
   $$WorksTableTableManager(_$AppDatabase db, $WorksTable table)
@@ -3296,11 +4062,13 @@ class $$WorksTableTableManager
                 Value<String?> isbn = const Value.absent(),
                 Value<String?> sourceUrl = const Value.absent(),
                 Value<String?> coverUrl = const Value.absent(),
+                Value<String?> coverPath = const Value.absent(),
                 Value<int?> fandomId = const Value.absent(),
                 Value<ReadingStatus> status = const Value.absent(),
                 Value<bool> isComplete = const Value.absent(),
                 Value<int?> chapterCount = const Value.absent(),
                 Value<int?> currentChapter = const Value.absent(),
+                Value<double?> readOffset = const Value.absent(),
                 Value<int?> wordCount = const Value.absent(),
                 Value<int?> pageCount = const Value.absent(),
                 Value<int?> rating = const Value.absent(),
@@ -3317,11 +4085,13 @@ class $$WorksTableTableManager
                 isbn: isbn,
                 sourceUrl: sourceUrl,
                 coverUrl: coverUrl,
+                coverPath: coverPath,
                 fandomId: fandomId,
                 status: status,
                 isComplete: isComplete,
                 chapterCount: chapterCount,
                 currentChapter: currentChapter,
+                readOffset: readOffset,
                 wordCount: wordCount,
                 pageCount: pageCount,
                 rating: rating,
@@ -3340,11 +4110,13 @@ class $$WorksTableTableManager
                 Value<String?> isbn = const Value.absent(),
                 Value<String?> sourceUrl = const Value.absent(),
                 Value<String?> coverUrl = const Value.absent(),
+                Value<String?> coverPath = const Value.absent(),
                 Value<int?> fandomId = const Value.absent(),
                 Value<ReadingStatus> status = const Value.absent(),
                 Value<bool> isComplete = const Value.absent(),
                 Value<int?> chapterCount = const Value.absent(),
                 Value<int?> currentChapter = const Value.absent(),
+                Value<double?> readOffset = const Value.absent(),
                 Value<int?> wordCount = const Value.absent(),
                 Value<int?> pageCount = const Value.absent(),
                 Value<int?> rating = const Value.absent(),
@@ -3361,11 +4133,13 @@ class $$WorksTableTableManager
                 isbn: isbn,
                 sourceUrl: sourceUrl,
                 coverUrl: coverUrl,
+                coverPath: coverPath,
                 fandomId: fandomId,
                 status: status,
                 isComplete: isComplete,
                 chapterCount: chapterCount,
                 currentChapter: currentChapter,
+                readOffset: readOffset,
                 wordCount: wordCount,
                 pageCount: pageCount,
                 rating: rating,
@@ -3382,12 +4156,18 @@ class $$WorksTableTableManager
               )
               .toList(),
           prefetchHooksCallback:
-              ({fandomId = false, workTagsRefs = false, chaptersRefs = false}) {
+              ({
+                fandomId = false,
+                workTagsRefs = false,
+                chaptersRefs = false,
+                downloadsRefs = false,
+              }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
                     if (workTagsRefs) db.workTags,
                     if (chaptersRefs) db.chapters,
+                    if (downloadsRefs) db.downloads,
                   ],
                   addJoins:
                       <
@@ -3455,6 +4235,23 @@ class $$WorksTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (downloadsRefs)
+                        await $_getPrefetchedData<Work, $WorksTable, Download>(
+                          currentTable: table,
+                          referencedTable: $$WorksTableReferences
+                              ._downloadsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WorksTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).downloadsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.workId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -3479,6 +4276,7 @@ typedef $$WorksTableProcessedTableManager =
         bool fandomId,
         bool workTagsRefs,
         bool chaptersRefs,
+        bool downloadsRefs,
       })
     >;
 typedef $$WorkTagsTableCreateCompanionBuilder = WorkTagsCompanion Function({
@@ -3827,6 +4625,7 @@ typedef $$ChaptersTableCreateCompanionBuilder = ChaptersCompanion Function({
   Value<String?> content,
   Value<int?> wordCount,
   Value<DateTime?> downloadedAt,
+  Value<bool> isLocked,
 });
 typedef $$ChaptersTableUpdateCompanionBuilder = ChaptersCompanion Function({
   Value<int> id,
@@ -3837,6 +4636,7 @@ typedef $$ChaptersTableUpdateCompanionBuilder = ChaptersCompanion Function({
   Value<String?> content,
   Value<int?> wordCount,
   Value<DateTime?> downloadedAt,
+  Value<bool> isLocked,
 });
 
 final class $$ChaptersTableReferences
@@ -3902,6 +4702,11 @@ class $$ChaptersTableFilterComposer
 
   ColumnFilters<DateTime> get downloadedAt => $composableBuilder(
     column: $table.downloadedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isLocked => $composableBuilder(
+    column: $table.isLocked,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3973,6 +4778,11 @@ class $$ChaptersTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isLocked => $composableBuilder(
+    column: $table.isLocked,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$WorksTableOrderingComposer get workId {
     final $$WorksTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -4028,6 +4838,9 @@ class $$ChaptersTableAnnotationComposer
     column: $table.downloadedAt,
     builder: (column) => column,
   );
+
+  GeneratedColumn<bool> get isLocked =>
+      $composableBuilder(column: $table.isLocked, builder: (column) => column);
 
   $$WorksTableAnnotationComposer get workId {
     final $$WorksTableAnnotationComposer composer = $composerBuilder(
@@ -4089,6 +4902,7 @@ class $$ChaptersTableTableManager
                 Value<String?> content = const Value.absent(),
                 Value<int?> wordCount = const Value.absent(),
                 Value<DateTime?> downloadedAt = const Value.absent(),
+                Value<bool> isLocked = const Value.absent(),
               }) => ChaptersCompanion(
                 id: id,
                 workId: workId,
@@ -4098,6 +4912,7 @@ class $$ChaptersTableTableManager
                 content: content,
                 wordCount: wordCount,
                 downloadedAt: downloadedAt,
+                isLocked: isLocked,
               ),
           createCompanionCallback:
               ({
@@ -4109,6 +4924,7 @@ class $$ChaptersTableTableManager
                 Value<String?> content = const Value.absent(),
                 Value<int?> wordCount = const Value.absent(),
                 Value<DateTime?> downloadedAt = const Value.absent(),
+                Value<bool> isLocked = const Value.absent(),
               }) => ChaptersCompanion.insert(
                 id: id,
                 workId: workId,
@@ -4118,6 +4934,7 @@ class $$ChaptersTableTableManager
                 content: content,
                 wordCount: wordCount,
                 downloadedAt: downloadedAt,
+                isLocked: isLocked,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -4185,6 +5002,372 @@ typedef $$ChaptersTableProcessedTableManager =
       Chapter,
       PrefetchHooks Function({bool workId})
     >;
+typedef $$DownloadsTableCreateCompanionBuilder = DownloadsCompanion Function({
+  Value<int> id,
+  required int workId,
+  required int fromChapter,
+  required int toChapter,
+  Value<String> format,
+  Value<String?> filePath,
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+});
+typedef $$DownloadsTableUpdateCompanionBuilder = DownloadsCompanion Function({
+  Value<int> id,
+  Value<int> workId,
+  Value<int> fromChapter,
+  Value<int> toChapter,
+  Value<String> format,
+  Value<String?> filePath,
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+});
+
+final class $$DownloadsTableReferences
+    extends BaseReferences<_$AppDatabase, $DownloadsTable, Download> {
+  $$DownloadsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $WorksTable _workIdTable(_$AppDatabase db) =>
+      db.works.createAlias('downloads__work_id__works__id');
+
+  $$WorksTableProcessedTableManager get workId {
+    final $_column = $_itemColumn<int>('work_id')!;
+
+    final manager = $$WorksTableTableManager(
+      $_db,
+      $_db.works,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_workIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$DownloadsTableFilterComposer
+    extends Composer<_$AppDatabase, $DownloadsTable> {
+  $$DownloadsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get fromChapter => $composableBuilder(
+    column: $table.fromChapter,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get toChapter => $composableBuilder(
+    column: $table.toChapter,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get format => $composableBuilder(
+    column: $table.format,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get filePath => $composableBuilder(
+    column: $table.filePath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$WorksTableFilterComposer get workId {
+    final $$WorksTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workId,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableFilterComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$DownloadsTableOrderingComposer
+    extends Composer<_$AppDatabase, $DownloadsTable> {
+  $$DownloadsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get fromChapter => $composableBuilder(
+    column: $table.fromChapter,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get toChapter => $composableBuilder(
+    column: $table.toChapter,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get format => $composableBuilder(
+    column: $table.format,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get filePath => $composableBuilder(
+    column: $table.filePath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$WorksTableOrderingComposer get workId {
+    final $$WorksTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workId,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableOrderingComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$DownloadsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $DownloadsTable> {
+  $$DownloadsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get fromChapter => $composableBuilder(
+    column: $table.fromChapter,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get toChapter =>
+      $composableBuilder(column: $table.toChapter, builder: (column) => column);
+
+  GeneratedColumn<String> get format =>
+      $composableBuilder(column: $table.format, builder: (column) => column);
+
+  GeneratedColumn<String> get filePath =>
+      $composableBuilder(column: $table.filePath, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$WorksTableAnnotationComposer get workId {
+    final $$WorksTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workId,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableAnnotationComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$DownloadsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $DownloadsTable,
+          Download,
+          $$DownloadsTableFilterComposer,
+          $$DownloadsTableOrderingComposer,
+          $$DownloadsTableAnnotationComposer,
+          $$DownloadsTableCreateCompanionBuilder,
+          $$DownloadsTableUpdateCompanionBuilder,
+          (Download, $$DownloadsTableReferences),
+          Download,
+          PrefetchHooks Function({bool workId})
+        > {
+  $$DownloadsTableTableManager(_$AppDatabase db, $DownloadsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DownloadsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DownloadsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DownloadsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> workId = const Value.absent(),
+                Value<int> fromChapter = const Value.absent(),
+                Value<int> toChapter = const Value.absent(),
+                Value<String> format = const Value.absent(),
+                Value<String?> filePath = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => DownloadsCompanion(
+                id: id,
+                workId: workId,
+                fromChapter: fromChapter,
+                toChapter: toChapter,
+                format: format,
+                filePath: filePath,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int workId,
+                required int fromChapter,
+                required int toChapter,
+                Value<String> format = const Value.absent(),
+                Value<String?> filePath = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => DownloadsCompanion.insert(
+                id: id,
+                workId: workId,
+                fromChapter: fromChapter,
+                toChapter: toChapter,
+                format: format,
+                filePath: filePath,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$DownloadsTable, Download>(table),
+                  $$DownloadsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({workId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (workId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.workId,
+                        referencedTable: $$DownloadsTableReferences
+                            ._workIdTable(db),
+                        referencedColumn: $$DownloadsTableReferences
+                            ._workIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$DownloadsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $DownloadsTable,
+      Download,
+      $$DownloadsTableFilterComposer,
+      $$DownloadsTableOrderingComposer,
+      $$DownloadsTableAnnotationComposer,
+      $$DownloadsTableCreateCompanionBuilder,
+      $$DownloadsTableUpdateCompanionBuilder,
+      (Download, $$DownloadsTableReferences),
+      Download,
+      PrefetchHooks Function({bool workId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4198,4 +5381,6 @@ class $AppDatabaseManager {
       $$WorkTagsTableTableManager(_db, _db.workTags);
   $$ChaptersTableTableManager get chapters =>
       $$ChaptersTableTableManager(_db, _db.chapters);
+  $$DownloadsTableTableManager get downloads =>
+      $$DownloadsTableTableManager(_db, _db.downloads);
 }

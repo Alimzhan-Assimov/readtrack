@@ -371,4 +371,347 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fieldNotes => 'Personal notes';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get moreOptions => 'More options';
+
+  @override
+  String get addFromLink => 'From a link';
+
+  @override
+  String get addFromLinkHint =>
+      'Fanfic, web novel or book page – details are filled in for you';
+
+  @override
+  String get addManually => 'Enter manually';
+
+  @override
+  String get addManuallyHint => 'For example a book on your shelf';
+
+  @override
+  String get importTitle => 'Add from link';
+
+  @override
+  String get importIntro =>
+      'Paste the link to a story. ReadTrack loads its title, author, chapters and more, and you can check everything before saving.';
+
+  @override
+  String get importLinkLabel => 'Link to the story';
+
+  @override
+  String get importPaste => 'Paste';
+
+  @override
+  String importDetected(String site) {
+    return 'Recognized: $site';
+  }
+
+  @override
+  String get importFetch => 'Load details';
+
+  @override
+  String get importLoading => 'Loading…';
+
+  @override
+  String get importInvalidLink => 'That doesn\'t look like a link.';
+
+  @override
+  String get importUnsupported =>
+      'This site isn\'t supported yet. You can still add the entry manually.';
+
+  @override
+  String get importAlreadyInLibrary => 'This story is already in your library.';
+
+  @override
+  String get importSupported => 'Supported sites';
+
+  @override
+  String get importBrowserNote =>
+      'FanFiction.Net, Scribble Hub, WebNovel and sometimes AO3 and Royal Road are protected against bots. For them a small browser window opens while ReadTrack loads pages. If it shows a verification, solve it once.';
+
+  @override
+  String importedFrom(String site) {
+    return 'Imported from $site';
+  }
+
+  @override
+  String importedSummary(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString chapters found',
+      one: '1 chapter found',
+    );
+    return '$_temp0 – check the details and save.';
+  }
+
+  @override
+  String get sectionRead => 'Read';
+
+  @override
+  String get readOnlineInApp => 'Read online';
+
+  @override
+  String continueOnline(int chapter) {
+    return 'Continue online · chapter $chapter';
+  }
+
+  @override
+  String get loadChapterList => 'Load chapter list';
+
+  @override
+  String get checkForNewChapters => 'Check for new chapters';
+
+  @override
+  String newChaptersFound(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString new chapters',
+      one: '1 new chapter',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get noNewChapters => 'No new chapters';
+
+  @override
+  String get downloadsHeading => 'Downloads';
+
+  @override
+  String get noDownloadsYet =>
+      'Nothing downloaded yet. Downloads can be read offline.';
+
+  @override
+  String downloadRange(int from, int to) {
+    return 'Chapters $from–$to';
+  }
+
+  @override
+  String downloadSubtitle(String format, DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return '$format · updated $dateString';
+  }
+
+  @override
+  String get readDownload => 'Read';
+
+  @override
+  String get openFile => 'Open file';
+
+  @override
+  String openFileFormat(String format) {
+    return 'Open $format file';
+  }
+
+  @override
+  String get deleteDownload => 'Delete download';
+
+  @override
+  String get downloadButton => 'Download…';
+
+  @override
+  String get downloadPreparing => 'Preparing download…';
+
+  @override
+  String downloadProgress(int current, int total) {
+    final intl.NumberFormat currentNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String currentString = currentNumberFormat.format(current);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return 'Downloading chapter $currentString of $totalString…';
+  }
+
+  @override
+  String downloadDone(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Downloaded $countString chapters',
+      one: 'Downloaded 1 chapter',
+      zero: 'Download updated',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String downloadDoneWithErrors(int done, int failed) {
+    final intl.NumberFormat doneNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String doneString = doneNumberFormat.format(done);
+    final intl.NumberFormat failedNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String failedString = failedNumberFormat.format(failed);
+
+    return 'Downloaded $doneString, $failedString failed';
+  }
+
+  @override
+  String downloadCancelled(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Download cancelled after $countString chapters';
+  }
+
+  @override
+  String get downloadTitle => 'Download chapters';
+
+  @override
+  String downloadChecking(String site) {
+    return 'Checking $site for new chapters…';
+  }
+
+  @override
+  String downloadCheckFailed(String error) {
+    return 'Couldn\'t check for new chapters: $error';
+  }
+
+  @override
+  String downloadAvailable(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString chapters available',
+      one: '1 chapter available',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String downloadNewChapters(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString of them are new',
+      one: '1 of them is new',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String downloadLockedNote(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$countString chapters are locked on the site and will be skipped.',
+      one: '1 chapter is locked on the site and will be skipped.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get downloadNoChapters => 'No chapters found on the site.';
+
+  @override
+  String get downloadUpToDate =>
+      'All chapters are downloaded already. You can still create another file.';
+
+  @override
+  String downloadAppend(int from, int to, int newTo) {
+    return 'Add to “Chapters $from–$to” → chapters $from–$newTo';
+  }
+
+  @override
+  String get downloadNewFile => 'Create a new file';
+
+  @override
+  String get downloadFrom => 'From chapter';
+
+  @override
+  String get downloadTo => 'To chapter';
+
+  @override
+  String downloadMax(int count) {
+    return 'Up to $count';
+  }
+
+  @override
+  String get downloadStart => 'Download';
+
+  @override
+  String get readerChapters => 'Chapters';
+
+  @override
+  String get readerTextSize => 'Text size';
+
+  @override
+  String get readerSmaller => 'Smaller text';
+
+  @override
+  String get readerLarger => 'Larger text';
+
+  @override
+  String get readerOpenInBrowser => 'Open in browser';
+
+  @override
+  String readerPosition(int current, int total) {
+    return '$current / $total';
+  }
+
+  @override
+  String get readerLoading => 'Loading chapter…';
+
+  @override
+  String get readerBrowserHint =>
+      'A browser window opens briefly to load this site.';
+
+  @override
+  String get readerRetry => 'Try again';
+
+  @override
+  String get readerNoChapters =>
+      'No chapters yet. Load the chapter list first.';
+
+  @override
+  String get readerNoSource =>
+      'This entry\'s site isn\'t supported for reading in the app.';
+
+  @override
+  String get readerLockedChapter => 'This chapter is locked on the site.';
+
+  @override
+  String get readerNotDownloaded => 'This chapter isn\'t downloaded.';
+
+  @override
+  String get readerLatestChapter => 'You\'ve reached the latest chapter.';
+
+  @override
+  String get readerEndOfDownload => 'End of this download.';
 }

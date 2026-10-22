@@ -1,41 +1,50 @@
 {
   "@@locale": "en",
   "appTitle": "ReadTrack",
-
   "typeBook": "Book",
   "typeFanfiction": "Fanfiction",
   "typeWebnovel": "Web novel",
   "typeManga": "Manga",
   "typeComic": "Comic",
-
   "formatPhysical": "Physical",
   "formatDigital": "Digital",
   "formatOnline": "Online",
-
   "statusPlanned": "Want to read",
   "statusReading": "Reading",
   "statusFinished": "Finished",
   "statusPaused": "On hold",
   "statusDropped": "Dropped",
-
   "sortUpdated": "Recently updated",
   "sortAdded": "Recently added",
   "sortTitle": "Title A–Z",
   "sortRating": "Highest rated",
-
   "chapterCount": "{count, plural, =1{1 chapter} other{{count} chapters}}",
   "@chapterCount": {
-    "placeholders": { "count": { "type": "int", "format": "decimalPattern" } }
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
   },
   "wordCount": "{count, plural, =1{1 word} other{{count} words}}",
   "@wordCount": {
-    "placeholders": { "count": { "type": "int", "format": "decimalPattern" } }
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
   },
   "pageCount": "{count, plural, =1{1 page} other{{count} pages}}",
   "@pageCount": {
-    "placeholders": { "count": { "type": "int", "format": "decimalPattern" } }
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
   },
-
   "libraryTitle": "My Library",
   "searchHint": "Search title, author or category",
   "clearSearch": "Clear search",
@@ -48,7 +57,12 @@
   "pickerEmpty": "Nothing here yet",
   "entryCount": "{count, plural, =1{1 entry} other{{count} entries}}",
   "@entryCount": {
-    "placeholders": { "count": { "type": "int", "format": "decimalPattern" } }
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
   },
   "addButton": "Add",
   "addTooltip": "New entry (Ctrl+N)",
@@ -59,21 +73,32 @@
   "noSelection": "Select an entry on the left",
   "errorMessage": "Error: {error}",
   "@errorMessage": {
-    "placeholders": { "error": { "type": "Object" } }
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
   },
-
   "editTooltip": "Edit",
   "deleteTooltip": "Delete",
   "notFound": "Entry not found",
   "linkOpenFailed": "Couldn't open the link",
   "deletedMessage": "Deleted “{title}”",
   "@deletedMessage": {
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "undo": "Undo",
   "byAuthor": "by {author}",
   "@byAuthor": {
-    "placeholders": { "author": { "type": "String" } }
+    "placeholders": {
+      "author": {
+        "type": "String"
+      }
+    }
   },
   "changeStatus": "Change reading status",
   "chaptersComplete": "Chapters · complete",
@@ -81,18 +106,33 @@
   "sectionProgress": "Reading progress",
   "chapterProgress": "Chapter {current} of {total}",
   "@chapterProgress": {
-    "placeholders": { "current": { "type": "int" }, "total": { "type": "int" } }
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
   },
   "chapterCurrent": "Chapter {current}",
   "@chapterCurrent": {
-    "placeholders": { "current": { "type": "int" } }
+    "placeholders": {
+      "current": {
+        "type": "int"
+      }
+    }
   },
   "previousChapter": "Previous chapter",
   "nextChapter": "Next chapter",
   "sectionLink": "Link",
   "readOn": "Read on {site}",
   "@readOn": {
-    "placeholders": { "site": { "type": "String" } }
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
   },
   "readOnline": "Read online",
   "sectionTags": "Tags",
@@ -102,11 +142,16 @@
   "addedUpdated": "Added {added} · updated {updated}",
   "@addedUpdated": {
     "placeholders": {
-      "added": { "type": "DateTime", "format": "yMMMd" },
-      "updated": { "type": "DateTime", "format": "yMMMd" }
+      "added": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      },
+      "updated": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      }
     }
   },
-
   "newEntry": "New entry",
   "editEntry": "Edit entry",
   "save": "Save",
@@ -138,9 +183,256 @@
   "sectionRating": "Rating",
   "starTooltip": "{count, plural, =1{1 star} other{{count} stars}}",
   "@starTooltip": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "sectionDescription": "Description",
   "fieldSummary": "Summary",
-  "fieldNotes": "Personal notes"
+  "fieldNotes": "Personal notes",
+  "cancel": "Cancel",
+  "moreOptions": "More options",
+  "addFromLink": "From a link",
+  "addFromLinkHint": "Fanfic, web novel or book page – details are filled in for you",
+  "addManually": "Enter manually",
+  "addManuallyHint": "For example a book on your shelf",
+  "importTitle": "Add from link",
+  "importIntro": "Paste the link to a story. ReadTrack loads its title, author, chapters and more, and you can check everything before saving.",
+  "importLinkLabel": "Link to the story",
+  "importPaste": "Paste",
+  "importDetected": "Recognized: {site}",
+  "@importDetected": {
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "importFetch": "Load details",
+  "importLoading": "Loading…",
+  "importInvalidLink": "That doesn't look like a link.",
+  "importUnsupported": "This site isn't supported yet. You can still add the entry manually.",
+  "importAlreadyInLibrary": "This story is already in your library.",
+  "importSupported": "Supported sites",
+  "importBrowserNote": "FanFiction.Net, Scribble Hub, WebNovel and sometimes AO3 and Royal Road are protected against bots. For them a small browser window opens while ReadTrack loads pages. If it shows a verification, solve it once.",
+  "importedFrom": "Imported from {site}",
+  "@importedFrom": {
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "importedSummary": "{count, plural, =1{1 chapter found} other{{count} chapters found}} – check the details and save.",
+  "@importedSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "sectionRead": "Read",
+  "readOnlineInApp": "Read online",
+  "continueOnline": "Continue online · chapter {chapter}",
+  "@continueOnline": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "loadChapterList": "Load chapter list",
+  "checkForNewChapters": "Check for new chapters",
+  "newChaptersFound": "{count, plural, =1{1 new chapter} other{{count} new chapters}}",
+  "@newChaptersFound": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "noNewChapters": "No new chapters",
+  "downloadsHeading": "Downloads",
+  "noDownloadsYet": "Nothing downloaded yet. Downloads can be read offline.",
+  "downloadRange": "Chapters {from}–{to}",
+  "@downloadRange": {
+    "placeholders": {
+      "from": {
+        "type": "int"
+      },
+      "to": {
+        "type": "int"
+      }
+    }
+  },
+  "downloadSubtitle": "{format} · updated {date}",
+  "@downloadSubtitle": {
+    "placeholders": {
+      "format": {
+        "type": "String"
+      },
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      }
+    }
+  },
+  "readDownload": "Read",
+  "openFile": "Open file",
+  "openFileFormat": "Open {format} file",
+  "@openFileFormat": {
+    "placeholders": {
+      "format": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteDownload": "Delete download",
+  "downloadButton": "Download…",
+  "downloadPreparing": "Preparing download…",
+  "downloadProgress": "Downloading chapter {current} of {total}…",
+  "@downloadProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "downloadDone": "{count, plural, =0{Download updated} =1{Downloaded 1 chapter} other{Downloaded {count} chapters}}",
+  "@downloadDone": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "downloadDoneWithErrors": "Downloaded {done}, {failed} failed",
+  "@downloadDoneWithErrors": {
+    "placeholders": {
+      "done": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "failed": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "downloadCancelled": "Download cancelled after {count} chapters",
+  "@downloadCancelled": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "downloadTitle": "Download chapters",
+  "downloadChecking": "Checking {site} for new chapters…",
+  "@downloadChecking": {
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadCheckFailed": "Couldn't check for new chapters: {error}",
+  "@downloadCheckFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadAvailable": "{count, plural, =1{1 chapter available} other{{count} chapters available}}",
+  "@downloadAvailable": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "downloadNewChapters": "{count, plural, =1{1 of them is new} other{{count} of them are new}}",
+  "@downloadNewChapters": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "downloadLockedNote": "{count, plural, =1{1 chapter is locked on the site and will be skipped.} other{{count} chapters are locked on the site and will be skipped.}}",
+  "@downloadLockedNote": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "downloadNoChapters": "No chapters found on the site.",
+  "downloadUpToDate": "All chapters are downloaded already. You can still create another file.",
+  "downloadAppend": "Add to “Chapters {from}–{to}” → chapters {from}–{newTo}",
+  "@downloadAppend": {
+    "placeholders": {
+      "from": {
+        "type": "int"
+      },
+      "to": {
+        "type": "int"
+      },
+      "newTo": {
+        "type": "int"
+      }
+    }
+  },
+  "downloadNewFile": "Create a new file",
+  "downloadFrom": "From chapter",
+  "downloadTo": "To chapter",
+  "downloadMax": "Up to {count}",
+  "@downloadMax": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "downloadStart": "Download",
+  "readerChapters": "Chapters",
+  "readerTextSize": "Text size",
+  "readerSmaller": "Smaller text",
+  "readerLarger": "Larger text",
+  "readerOpenInBrowser": "Open in browser",
+  "readerPosition": "{current} / {total}",
+  "@readerPosition": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "readerLoading": "Loading chapter…",
+  "readerBrowserHint": "A browser window opens briefly to load this site.",
+  "readerRetry": "Try again",
+  "readerNoChapters": "No chapters yet. Load the chapter list first.",
+  "readerNoSource": "This entry's site isn't supported for reading in the app.",
+  "readerLockedChapter": "This chapter is locked on the site.",
+  "readerNotDownloaded": "This chapter isn't downloaded.",
+  "readerLatestChapter": "You've reached the latest chapter.",
+  "readerEndOfDownload": "End of this download."
 }

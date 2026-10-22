@@ -669,6 +669,426 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Personal notes'**
   String get fieldNotes;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @moreOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'More options'**
+  String get moreOptions;
+
+  /// No description provided for @addFromLink.
+  ///
+  /// In en, this message translates to:
+  /// **'From a link'**
+  String get addFromLink;
+
+  /// No description provided for @addFromLinkHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Fanfic, web novel or book page – details are filled in for you'**
+  String get addFromLinkHint;
+
+  /// No description provided for @addManually.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter manually'**
+  String get addManually;
+
+  /// No description provided for @addManuallyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For example a book on your shelf'**
+  String get addManuallyHint;
+
+  /// No description provided for @importTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add from link'**
+  String get importTitle;
+
+  /// No description provided for @importIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste the link to a story. ReadTrack loads its title, author, chapters and more, and you can check everything before saving.'**
+  String get importIntro;
+
+  /// No description provided for @importLinkLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Link to the story'**
+  String get importLinkLabel;
+
+  /// No description provided for @importPaste.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste'**
+  String get importPaste;
+
+  /// No description provided for @importDetected.
+  ///
+  /// In en, this message translates to:
+  /// **'Recognized: {site}'**
+  String importDetected(String site);
+
+  /// No description provided for @importFetch.
+  ///
+  /// In en, this message translates to:
+  /// **'Load details'**
+  String get importFetch;
+
+  /// No description provided for @importLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading…'**
+  String get importLoading;
+
+  /// No description provided for @importInvalidLink.
+  ///
+  /// In en, this message translates to:
+  /// **'That doesn\'t look like a link.'**
+  String get importInvalidLink;
+
+  /// No description provided for @importUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'This site isn\'t supported yet. You can still add the entry manually.'**
+  String get importUnsupported;
+
+  /// No description provided for @importAlreadyInLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'This story is already in your library.'**
+  String get importAlreadyInLibrary;
+
+  /// No description provided for @importSupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Supported sites'**
+  String get importSupported;
+
+  /// No description provided for @importBrowserNote.
+  ///
+  /// In en, this message translates to:
+  /// **'FanFiction.Net, Scribble Hub, WebNovel and sometimes AO3 and Royal Road are protected against bots. For them a small browser window opens while ReadTrack loads pages. If it shows a verification, solve it once.'**
+  String get importBrowserNote;
+
+  /// No description provided for @importedFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported from {site}'**
+  String importedFrom(String site);
+
+  /// No description provided for @importedSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 chapter found} other{{count} chapters found}} – check the details and save.'**
+  String importedSummary(int count);
+
+  /// No description provided for @sectionRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get sectionRead;
+
+  /// No description provided for @readOnlineInApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Read online'**
+  String get readOnlineInApp;
+
+  /// No description provided for @continueOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue online · chapter {chapter}'**
+  String continueOnline(int chapter);
+
+  /// No description provided for @loadChapterList.
+  ///
+  /// In en, this message translates to:
+  /// **'Load chapter list'**
+  String get loadChapterList;
+
+  /// No description provided for @checkForNewChapters.
+  ///
+  /// In en, this message translates to:
+  /// **'Check for new chapters'**
+  String get checkForNewChapters;
+
+  /// No description provided for @newChaptersFound.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 new chapter} other{{count} new chapters}}'**
+  String newChaptersFound(int count);
+
+  /// No description provided for @noNewChapters.
+  ///
+  /// In en, this message translates to:
+  /// **'No new chapters'**
+  String get noNewChapters;
+
+  /// No description provided for @downloadsHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads'**
+  String get downloadsHeading;
+
+  /// No description provided for @noDownloadsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing downloaded yet. Downloads can be read offline.'**
+  String get noDownloadsYet;
+
+  /// No description provided for @downloadRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapters {from}–{to}'**
+  String downloadRange(int from, int to);
+
+  /// No description provided for @downloadSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{format} · updated {date}'**
+  String downloadSubtitle(String format, DateTime date);
+
+  /// No description provided for @readDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get readDownload;
+
+  /// No description provided for @openFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Open file'**
+  String get openFile;
+
+  /// No description provided for @openFileFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Open {format} file'**
+  String openFileFormat(String format);
+
+  /// No description provided for @deleteDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete download'**
+  String get deleteDownload;
+
+  /// No description provided for @downloadButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Download…'**
+  String get downloadButton;
+
+  /// No description provided for @downloadPreparing.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing download…'**
+  String get downloadPreparing;
+
+  /// No description provided for @downloadProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading chapter {current} of {total}…'**
+  String downloadProgress(int current, int total);
+
+  /// No description provided for @downloadDone.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Download updated} =1{Downloaded 1 chapter} other{Downloaded {count} chapters}}'**
+  String downloadDone(int count);
+
+  /// No description provided for @downloadDoneWithErrors.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloaded {done}, {failed} failed'**
+  String downloadDoneWithErrors(int done, int failed);
+
+  /// No description provided for @downloadCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Download cancelled after {count} chapters'**
+  String downloadCancelled(int count);
+
+  /// No description provided for @downloadTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Download chapters'**
+  String get downloadTitle;
+
+  /// No description provided for @downloadChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking {site} for new chapters…'**
+  String downloadChecking(String site);
+
+  /// No description provided for @downloadCheckFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t check for new chapters: {error}'**
+  String downloadCheckFailed(String error);
+
+  /// No description provided for @downloadAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 chapter available} other{{count} chapters available}}'**
+  String downloadAvailable(int count);
+
+  /// No description provided for @downloadNewChapters.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 of them is new} other{{count} of them are new}}'**
+  String downloadNewChapters(int count);
+
+  /// No description provided for @downloadLockedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 chapter is locked on the site and will be skipped.} other{{count} chapters are locked on the site and will be skipped.}}'**
+  String downloadLockedNote(int count);
+
+  /// No description provided for @downloadNoChapters.
+  ///
+  /// In en, this message translates to:
+  /// **'No chapters found on the site.'**
+  String get downloadNoChapters;
+
+  /// No description provided for @downloadUpToDate.
+  ///
+  /// In en, this message translates to:
+  /// **'All chapters are downloaded already. You can still create another file.'**
+  String get downloadUpToDate;
+
+  /// No description provided for @downloadAppend.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to “Chapters {from}–{to}” → chapters {from}–{newTo}'**
+  String downloadAppend(int from, int to, int newTo);
+
+  /// No description provided for @downloadNewFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a new file'**
+  String get downloadNewFile;
+
+  /// No description provided for @downloadFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From chapter'**
+  String get downloadFrom;
+
+  /// No description provided for @downloadTo.
+  ///
+  /// In en, this message translates to:
+  /// **'To chapter'**
+  String get downloadTo;
+
+  /// No description provided for @downloadMax.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to {count}'**
+  String downloadMax(int count);
+
+  /// No description provided for @downloadStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get downloadStart;
+
+  /// No description provided for @readerChapters.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapters'**
+  String get readerChapters;
+
+  /// No description provided for @readerTextSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Text size'**
+  String get readerTextSize;
+
+  /// No description provided for @readerSmaller.
+  ///
+  /// In en, this message translates to:
+  /// **'Smaller text'**
+  String get readerSmaller;
+
+  /// No description provided for @readerLarger.
+  ///
+  /// In en, this message translates to:
+  /// **'Larger text'**
+  String get readerLarger;
+
+  /// No description provided for @readerOpenInBrowser.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in browser'**
+  String get readerOpenInBrowser;
+
+  /// No description provided for @readerPosition.
+  ///
+  /// In en, this message translates to:
+  /// **'{current} / {total}'**
+  String readerPosition(int current, int total);
+
+  /// No description provided for @readerLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading chapter…'**
+  String get readerLoading;
+
+  /// No description provided for @readerBrowserHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A browser window opens briefly to load this site.'**
+  String get readerBrowserHint;
+
+  /// No description provided for @readerRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get readerRetry;
+
+  /// No description provided for @readerNoChapters.
+  ///
+  /// In en, this message translates to:
+  /// **'No chapters yet. Load the chapter list first.'**
+  String get readerNoChapters;
+
+  /// No description provided for @readerNoSource.
+  ///
+  /// In en, this message translates to:
+  /// **'This entry\'s site isn\'t supported for reading in the app.'**
+  String get readerNoSource;
+
+  /// No description provided for @readerLockedChapter.
+  ///
+  /// In en, this message translates to:
+  /// **'This chapter is locked on the site.'**
+  String get readerLockedChapter;
+
+  /// No description provided for @readerNotDownloaded.
+  ///
+  /// In en, this message translates to:
+  /// **'This chapter isn\'t downloaded.'**
+  String get readerNotDownloaded;
+
+  /// No description provided for @readerLatestChapter.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve reached the latest chapter.'**
+  String get readerLatestChapter;
+
+  /// No description provided for @readerEndOfDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'End of this download.'**
+  String get readerEndOfDownload;
 }
 
 class _AppLocalizationsDelegate

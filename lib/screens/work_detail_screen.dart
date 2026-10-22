@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -5,10 +7,13 @@ import 'package:url_launcher/url_launcher.dart';
 import '../data/database.dart';
 import '../data/database_scope.dart';
 import '../l10n/l10n.dart';
+import '../library/library_scope.dart';
+import '../sources/sources.dart';
 import '../ui/format.dart';
 import '../ui/labels.dart';
 import '../ui/layout.dart';
 import '../widgets/work_cover.dart';
+import 'read_section.dart';
 import 'work_edit_screen.dart';
 
 class WorkDetailScreen extends StatefulWidget {
@@ -73,6 +78,7 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
     final db = _db;
     final l10n = context.l10n;
     final messenger = ScaffoldMessenger.of(context);
+    final storage = LibraryScope.of(context).storage;
     final deleted = await db.deleteWork(w.id);
     if (deleted == null || !mounted) return;
     if (widget.onDeleted case final onDeleted?) {
@@ -80,7 +86,7 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
     } else {
       Navigator.of(context).pop();
     }
-    messenger.showSnackBar(
+    final snackBar = messenger.showSnackBar(
       SnackBar(
         content: Text(l10n.deletedMessage(w.title)),
         persist: false,
@@ -89,6 +95,15 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
           onPressed: () => db.restoreWork(deleted),
         ),
       ),
+    );
+    // Downloaded files are removed only once "Undo" is no longer possible.
+    unawaited(
+      snackBar.closed.then((reason) async {
+        if (reason == SnackBarClosedReason.action) return;
+        await storage.deleteBookFiles(w.id, [
+          for (final d in deleted.downloads) ?d.filePath,
+        ]);
+      }),
     );
   }
 
@@ -194,6 +209,11 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
             ),
             if (w.chapterCount != null || w.currentChapter != null)
               _buildProgress(l10n, w),
+            if (url != null && sourceFor(Uri.parse(url)) != null)
+              _Section(
+                title: l10n.sectionRead,
+                child: ReadSection(work: w),
+              ),
             if (url != null)
               _Section(
                 title: l10n.sectionLink,

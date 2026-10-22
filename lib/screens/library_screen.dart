@@ -9,6 +9,7 @@ import '../l10n/l10n.dart';
 import '../ui/labels.dart';
 import '../ui/layout.dart';
 import '../widgets/work_tile.dart';
+import 'import_screen.dart';
 import 'work_detail_screen.dart';
 import 'work_edit_screen.dart';
 
@@ -97,9 +98,40 @@ class _LibraryScreenState extends State<LibraryScreen> {
     }
   }
 
+  /// Asks whether to add from a link or by hand, then opens the new entry.
   Future<void> _create({required bool wide}) async {
-    final id = await Navigator.of(context)
-        .push<int>(MaterialPageRoute(builder: (_) => const WorkEditScreen()));
+    final l10n = context.l10n;
+    final fromLink = await showModalBottomSheet<bool>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.link),
+              title: Text(l10n.addFromLink),
+              subtitle: Text(l10n.addFromLinkHint),
+              onTap: () => Navigator.pop(context, true),
+            ),
+            ListTile(
+              leading: const Icon(Icons.edit_note),
+              title: Text(l10n.addManually),
+              subtitle: Text(l10n.addManuallyHint),
+              onTap: () => Navigator.pop(context, false),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+    if (fromLink == null || !mounted) return;
+    final id = await Navigator.of(context).push<int>(
+      MaterialPageRoute(
+        builder: (_) =>
+            fromLink ? const ImportScreen() : const WorkEditScreen(),
+      ),
+    );
     if (id != null && mounted) _open(id, wide: wide);
   }
 

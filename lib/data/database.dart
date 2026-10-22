@@ -33,6 +33,9 @@ class Works extends Table {
   TextColumn get isbn => text().nullable()();
   TextColumn get sourceUrl => text().nullable()();
   TextColumn get coverUrl => text().nullable()();
+
+  /// Downloaded cover, so it shows offline.
+  TextColumn get coverPath => text().nullable()();
   IntColumn get fandomId => integer().nullable().references(
     Fandoms,
     #id,
@@ -46,6 +49,9 @@ class Works extends Table {
   BoolColumn get isComplete => boolean().withDefault(const Constant(false))();
   IntColumn get chapterCount => integer().nullable()();
   IntColumn get currentChapter => integer().nullable()();
+
+  /// Scroll position within [currentChapter], from 0 (top) to 1 (end).
+  RealColumn get readOffset => real().nullable()();
   IntColumn get wordCount => integer().nullable()();
   IntColumn get pageCount => integer().nullable()();
 
@@ -78,11 +84,31 @@ class Chapters extends Table {
   IntColumn get wordCount => integer().nullable()();
   DateTimeColumn get downloadedAt => dateTime().nullable()();
 
+  /// Paid or otherwise unavailable on the site.
+  BoolColumn get isLocked => boolean().withDefault(const Constant(false))();
+
   @override
   List<Set<Column>> get uniqueKeys => [
     {workId, number},
   ];
 }
+
+/// A downloaded range of chapters, exported as a file (e.g. "Chapters 1–30").
+/// The chapter text itself lives in [Chapters], shared between downloads.
+class Downloads extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get workId =>
+      integer().references(Works, #id, onDelete: KeyAction.cascade)();
+  IntColumn get fromChapter => integer()();
+  IntColumn get toChapter => integer()();
+  TextColumn get format => text().withDefault(const Constant('txt'))();
+  TextColumn get filePath => text().nullable()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+}
+
+/// A chapter as listed on the site, for [AppDatabase.saveChapterList].
+typedef ChapterListing = ({int number, String title, String url, bool locked});
 
 class WorkWithDetails {
   WorkWithDetails(this.work, this.fandom, this.tags);
@@ -93,22 +119,31 @@ class WorkWithDetails {
 }
 
 class DeletedWork {
-  DeletedWork(this.work, this.tagIds, this.chapters);
+  DeletedWork(this.work, this.tagIds, this.chapters, this.downloads);
 
   final Work work;
   final List<int> tagIds;
   final List<Chapter> chapters;
+  final List<Download> downloads;
 }
 
-@DriftDatabase(tables: [Fandoms, Tags, Works, WorkTags, Chapters])
+@DriftDatabase(tables: [Fandoms, Tags, Works, WorkTags, Chapters, Downloads])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        await m.addColumn(works, works.coverPath);
+        await m.addColumn(works, works.readOffset);
+        await m.addColumn(chapters, chapters.isLocked);
+        await m.createTable(downloads);
+      }
+    },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
     },
@@ -306,8 +341,11 @@ class AppDatabase extends _$AppDatabase {
       final savedChapters = await (select(
         chapters,
       )..where((c) => c.workId.equals(id))).get();
+      final savedDownloads = await (select(
+        downloads,
+      )..where((d) => d.workId.equals(id))).get();
       await (delete(works)..where((w) => w.id.equals(id))).go();
-      return DeletedWork(work, tagIds, savedChapters);
+      return DeletedWork(work, tagIds, savedChapters, savedDownloads);
     });
   }
 
@@ -320,9 +358,123 @@ class AppDatabase extends _$AppDatabase {
             WorkTagsCompanion.insert(workId: deleted.work.id, tagId: tagId),
         ]);
         b.insertAll(chapters, deleted.chapters);
+        b.insertAll(downloads, deleted.downloads);
       });
     });
   }
+
+  Stream<List<Chapter>> watchChapters(int workId) =>
+      (select(chapters)
+            ..where((c) => c.workId.equals(workId))
+            ..orderBy([(c) => OrderingTerm.asc(c.number)]))
+          .watch();
+
+  Future<List<Chapter>> chaptersOf(int workId) =>
+      (select(chapters)
+            ..where((c) => c.workId.equals(workId))
+            ..orderBy([(c) => OrderingTerm.asc(c.number)]))
+          .get();
+
+  /// Stores the site's chapter list. Titles, links and lock state are
+  /// updated; text that was already downloaded is kept.
+  Future<void> saveChapterList(int workId, List<ChapterListing> listing) {
+    return batch((b) {
+      for (final c in listing) {
+        b.insert(
+          chapters,
+          ChaptersCompanion.insert(
+            workId: workId,
+            number: c.number,
+            title: Value(c.title),
+            url: Value(c.url),
+            isLocked: Value(c.locked),
+          ),
+          onConflict: DoUpdate(
+            (old) => ChaptersCompanion(
+              title: Value(c.title),
+              url: Value(c.url),
+              isLocked: Value(c.locked),
+            ),
+            target: [chapters.workId, chapters.number],
+          ),
+        );
+      }
+    });
+  }
+
+  Future<void> saveChapterText(
+    int workId,
+    int number, {
+    required String html,
+    required int wordCount,
+  }) =>
+      (update(
+        chapters,
+      )..where((c) => c.workId.equals(workId) & c.number.equals(number))).write(
+        ChaptersCompanion(
+          content: Value(html),
+          wordCount: Value(wordCount),
+          downloadedAt: Value(DateTime.now()),
+        ),
+      );
+
+  /// Forgets the downloaded text of chapters no download covers anymore.
+  Future<void> purgeUncoveredText(int workId) async {
+    final ranges = await downloadsOf(workId);
+    await (update(chapters)..where((c) {
+          var uncovered = c.workId.equals(workId) & c.content.isNotNull();
+          for (final r in ranges) {
+            uncovered &= c.number.isBetweenValues(
+              r.fromChapter,
+              r.toChapter,
+              not: true,
+            );
+          }
+          return uncovered;
+        }))
+        .write(
+          const ChaptersCompanion(
+            content: Value(null),
+            downloadedAt: Value(null),
+          ),
+        );
+  }
+
+  /// How many chapters of the work are known (listed on the site).
+  Stream<int> watchChapterCount(int workId) {
+    final count = chapters.id.count();
+    return (selectOnly(chapters)
+          ..addColumns([count])
+          ..where(chapters.workId.equals(workId)))
+        .map((row) => row.read(count) ?? 0)
+        .watchSingle();
+  }
+
+  Future<Work?> workBySourceUrl(String url) =>
+      (select(works)..where((w) => w.sourceUrl.equals(url))).getSingleOrNull();
+
+  Stream<List<Download>> watchDownloads(int workId) =>
+      (select(downloads)
+            ..where((d) => d.workId.equals(workId))
+            ..orderBy([(d) => OrderingTerm.asc(d.fromChapter)]))
+          .watch();
+
+  Future<List<Download>> downloadsOf(int workId) =>
+      (select(downloads)
+            ..where((d) => d.workId.equals(workId))
+            ..orderBy([(d) => OrderingTerm.asc(d.fromChapter)]))
+          .get();
+
+  Future<int> addDownload(DownloadsCompanion data) =>
+      into(downloads).insert(data);
+
+  Future<void> updateDownload(int id, DownloadsCompanion changes) =>
+      (update(downloads)..where((d) => d.id.equals(id))).write(
+        changes.copyWith(updatedAt: Value(DateTime.now())),
+      );
+
+  Future<void> deleteDownload(int id) =>
+      (delete(downloads)..where((d) => d.id.equals(id))).go();
 
   Future<int?> _fandomIdFor(String? name) async {
     final n = name?.trim() ?? '';
