@@ -1,12 +1,19 @@
 import 'ao3.dart';
 import 'author_today.dart';
 import 'fanfiction_net.dart';
+import 'fanfics_me.dart';
 import 'ficbook.dart';
 import 'honeyfeed.dart';
 import 'inkitt.dart';
+import 'litmarket.dart';
+import 'litnet.dart';
 import 'novel_updates.dart';
+import 'prodaman.dart';
+import 'proza.dart';
 import 'quotev.dart';
 import 'royal_road.dart';
+import 'rulate.dart';
+import 'samlib.dart';
 import 'scribble_hub.dart';
 import 'source.dart';
 import 'tapas.dart';
@@ -14,6 +21,7 @@ import 'wattpad.dart';
 import 'webnovel.dart';
 import 'wuxiaworld.dart';
 import 'xenforo.dart';
+import 'zelluloza.dart';
 
 export 'fetcher.dart' show PageFetcher, SourceException;
 export 'source.dart';
@@ -37,6 +45,14 @@ const kSources = <StorySource>[
   HoneyfeedSource(),
   WuxiaworldSource(),
   NovelUpdatesSource(),
+  FanficsMeSource(),
+  LitnetSource(),
+  LitMarketSource(),
+  SamlibSource(),
+  ProzaSource(),
+  RulateSource(),
+  ProdamanSource(),
+  ZellulozaSource(),
 ];
 
 /// The source that can read [url], or null if the site isn't supported.

@@ -190,9 +190,14 @@ class BrowserFetcher implements PageFetcher {
     return body as String? ?? '';
   }
 
+  /// Extra [headers] are not needed here: requests run inside the page,
+  /// which already carries the site's cookies and tokens.
   @override
-  Future<String> postForm(Uri uri, Map<String, String> fields) =>
-      _fetch(uri, method: 'POST', fields: fields);
+  Future<String> postForm(
+    Uri uri,
+    Map<String, String> fields, {
+    Map<String, String> headers = const {},
+  }) => _fetch(uri, method: 'POST', fields: fields);
 
   @override
   Future<Uint8List> getBytes(Uri uri) async =>

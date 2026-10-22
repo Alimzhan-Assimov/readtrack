@@ -36,7 +36,11 @@ class FakeFetcher implements PageFetcher {
   );
 
   @override
-  Future<String> postForm(Uri uri, Map<String, String> fields) async {
+  Future<String> postForm(
+    Uri uri,
+    Map<String, String> fields, {
+    Map<String, String> headers = const {},
+  }) async {
     posts[uri.toString()] = fields;
     return _page(uri);
   }
