@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../data/database.dart';
 import '../data/database_scope.dart';
+import '../l10n/l10n.dart';
 import '../ui/format.dart';
 import '../ui/labels.dart';
 import '../ui/layout.dart';
@@ -20,10 +21,10 @@ class WorkDetailScreen extends StatefulWidget {
 
   final int workId;
 
-  /// Als rechte Spalte neben der Liste statt als eigene Seite.
+  /// Shown as the right-hand pane next to the list instead of as a page.
   final bool embedded;
 
-  /// Wird nach dem Löschen aufgerufen. Ohne Callback wird die Seite geschlossen.
+  /// Called after deleting. Without a callback the page is closed.
   final VoidCallback? onDeleted;
 
   @override
@@ -50,9 +51,8 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
       );
     } catch (_) {}
     if (!opened && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Link konnte nicht geöffnet werden')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(context.l10n.linkOpenFailed)));
     }
   }
 
@@ -68,9 +68,10 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
     );
   }
 
-  /// Löscht sofort und bietet „Rückgängig“ an, statt vorher nachzufragen.
+  /// Deletes right away and offers "Undo" instead of asking first.
   Future<void> _delete(Work w) async {
     final db = _db;
+    final l10n = context.l10n;
     final messenger = ScaffoldMessenger.of(context);
     final deleted = await db.deleteWork(w.id);
     if (deleted == null || !mounted) return;
@@ -81,10 +82,10 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
     }
     messenger.showSnackBar(
       SnackBar(
-        content: Text('„${w.title}“ gelöscht'),
+        content: Text(l10n.deletedMessage(w.title)),
         persist: false,
         action: SnackBarAction(
-          label: 'Rückgängig',
+          label: l10n.undo,
           onPressed: () => db.restoreWork(deleted),
         ),
       ),
@@ -103,7 +104,7 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
             body: Center(
               child: snapshot.connectionState == ConnectionState.waiting
                   ? const CircularProgressIndicator()
-                  : const Text('Eintrag nicht gefunden'),
+                  : Text(context.l10n.notFound),
             ),
           );
         }
@@ -114,6 +115,7 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
 
   Widget _buildDetails(BuildContext context, WorkWithDetails item) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     final w = item.work;
     final url = w.sourceUrl;
     final site = siteName(url);
@@ -124,14 +126,14 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.edit_outlined),
-            tooltip: 'Bearbeiten',
+            tooltip: l10n.editTooltip,
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => WorkEditScreen(existing: item)),
             ),
           ),
           IconButton(
             icon: const Icon(Icons.delete_outline),
-            tooltip: 'Löschen',
+            tooltip: l10n.deleteTooltip,
             onPressed: () => _delete(w),
           ),
         ],
@@ -149,7 +151,7 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
                   heroTag: widget.embedded ? null : 'cover-${w.id}',
                 ),
                 const SizedBox(width: 16),
-                Expanded(child: _buildHeader(theme, item)),
+                Expanded(child: _buildHeader(theme, l10n, item)),
               ],
             ),
             const SizedBox(height: 16),
@@ -159,11 +161,11 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
               children: [
                 Chip(
                   avatar: Icon(w.type.icon, size: 18),
-                  label: Text(w.type.label),
+                  label: Text(w.type.label(l10n)),
                 ),
                 Chip(
                   avatar: Icon(w.format.icon, size: 18),
-                  label: Text(w.format.label),
+                  label: Text(w.format.label(l10n)),
                 ),
                 _StatusMenu(
                   status: w.status,
@@ -177,31 +179,31 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
               spacing: 8,
               runSpacing: 8,
               children: [
-                if (w.chapterCount != null)
+                if (w.chapterCount case final n?)
                   _StatBox(
-                    value: formatNumber(w.chapterCount!),
+                    value: l10n.formatNumber(n),
                     label: w.isComplete
-                        ? 'Kapitel · abgeschlossen'
-                        : 'Kapitel · laufend',
+                        ? l10n.chaptersComplete
+                        : l10n.chaptersOngoing,
                   ),
-                if (w.wordCount != null)
-                  _StatBox(value: formatNumber(w.wordCount!), label: 'Wörter'),
-                if (w.pageCount != null)
-                  _StatBox(value: formatNumber(w.pageCount!), label: 'Seiten'),
+                if (w.wordCount case final n?)
+                  _StatBox(value: l10n.formatNumber(n), label: l10n.fieldWords),
+                if (w.pageCount case final n?)
+                  _StatBox(value: l10n.formatNumber(n), label: l10n.fieldPages),
               ],
             ),
             if (w.chapterCount != null || w.currentChapter != null)
-              _buildProgress(w),
+              _buildProgress(l10n, w),
             if (url != null)
               _Section(
-                title: 'Link',
+                title: l10n.sectionLink,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     FilledButton.icon(
                       icon: const Icon(Icons.open_in_new),
                       label: Text(
-                        site != null ? 'Auf $site lesen' : 'Online lesen',
+                        site != null ? l10n.readOn(site) : l10n.readOnline,
                       ),
                       onPressed: () => _openUrl(url),
                     ),
@@ -212,7 +214,7 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
               ),
             if (item.tags.isNotEmpty)
               _Section(
-                title: 'Tags',
+                title: l10n.sectionTags,
                 child: Wrap(
                   spacing: 8,
                   runSpacing: 4,
@@ -221,16 +223,15 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
                   ],
                 ),
               ),
-            if (w.isbn != null)
-              _Section(title: 'ISBN', child: SelectableText(w.isbn!)),
-            if (w.summary != null)
-              _Section(title: 'Zusammenfassung', child: Text(w.summary!)),
-            if (w.notes != null)
-              _Section(title: 'Notizen', child: Text(w.notes!)),
+            if (w.isbn case final isbn?)
+              _Section(title: l10n.sectionIsbn, child: SelectableText(isbn)),
+            if (w.summary case final summary?)
+              _Section(title: l10n.sectionSummary, child: Text(summary)),
+            if (w.notes case final notes?)
+              _Section(title: l10n.sectionNotes, child: Text(notes)),
             const SizedBox(height: 24),
             Text(
-              'Hinzugefügt am ${formatDate(w.addedAt)} · '
-              'zuletzt geändert am ${formatDate(w.updatedAt)}',
+              l10n.addedUpdated(w.addedAt, w.updatedAt),
               style: theme.textTheme.bodySmall,
             ),
           ],
@@ -239,7 +240,11 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
     );
   }
 
-  Widget _buildHeader(ThemeData theme, WorkWithDetails item) {
+  Widget _buildHeader(
+    ThemeData theme,
+    AppLocalizations l10n,
+    WorkWithDetails item,
+  ) {
     final w = item.work;
     final fandom = item.fandom;
     final rating = w.rating;
@@ -247,9 +252,9 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(w.title, style: theme.textTheme.headlineSmall),
-        if (w.author != null)
+        if (w.author case final author?)
           Text(
-            'von ${w.author}',
+            l10n.byAuthor(author),
             style: theme.textTheme.titleMedium?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
@@ -283,11 +288,11 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
     );
   }
 
-  Widget _buildProgress(Work w) {
+  Widget _buildProgress(AppLocalizations l10n, Work w) {
     final current = w.currentChapter ?? 0;
     final total = w.chapterCount;
     return _Section(
-      title: 'Lesefortschritt',
+      title: l10n.sectionProgress,
       child: Column(
         children: [
           Row(
@@ -295,13 +300,13 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
               Expanded(
                 child: Text(
                   total != null
-                      ? 'Kapitel $current von $total'
-                      : 'Kapitel $current',
+                      ? l10n.chapterProgress(current, total)
+                      : l10n.chapterCurrent(current),
                 ),
               ),
               IconButton.outlined(
                 icon: const Icon(Icons.remove),
-                tooltip: 'Ein Kapitel zurück',
+                tooltip: l10n.previousChapter,
                 onPressed: current > 0
                     ? () => _setProgress(w, current - 1)
                     : null,
@@ -309,7 +314,7 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
               const SizedBox(width: 8),
               IconButton.filled(
                 icon: const Icon(Icons.add),
-                tooltip: 'Ein Kapitel weiter',
+                tooltip: l10n.nextChapter,
                 onPressed: total == null || current < total
                     ? () => _setProgress(w, current + 1)
                     : null,
@@ -339,6 +344,7 @@ class _StatusMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
     return MenuAnchor(
       menuChildren: [
         for (final s in ReadingStatus.values)
@@ -346,17 +352,17 @@ class _StatusMenu extends StatelessWidget {
             leadingIcon: Icon(s.icon),
             trailingIcon: s == status ? const Icon(Icons.check) : null,
             onPressed: () => onChanged(s),
-            child: Text(s.label),
+            child: Text(s.label(l10n)),
           ),
       ],
       builder: (context, controller, _) => ActionChip(
-        tooltip: 'Lesestatus ändern',
+        tooltip: l10n.changeStatus,
         backgroundColor: scheme.primaryContainer,
         avatar: Icon(status.icon, size: 18),
         label: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(status.label),
+            Text(status.label(l10n)),
             const Icon(Icons.arrow_drop_down, size: 18),
           ],
         ),

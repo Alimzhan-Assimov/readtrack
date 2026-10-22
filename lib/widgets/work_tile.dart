@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../data/database.dart';
+import '../l10n/l10n.dart';
 import '../ui/format.dart';
 import '../ui/labels.dart';
 import 'work_cover.dart';
@@ -17,7 +18,7 @@ class WorkTile extends StatelessWidget {
   final WorkWithDetails item;
   final VoidCallback onTap;
 
-  /// Hervorgehoben, wenn der Eintrag gerade in der Detailspalte offen ist.
+  /// Highlighted while the entry is open in the detail pane.
   final bool selected;
   final Object? heroTag;
 
@@ -29,7 +30,7 @@ class WorkTile extends StatelessWidget {
     final scheme = theme.colorScheme;
     final w = item.work;
     final subtitle = [?w.author, ?item.fandom?.name].join(' · ');
-    final stats = workStats(w);
+    final stats = workStats(w, context.l10n);
     final total = w.chapterCount ?? 0;
     final current = w.currentChapter ?? 0;
 
@@ -137,8 +138,8 @@ class _SmallTag extends StatelessWidget {
   }
 }
 
-/// Beschrifteter Lesestatus. Ein reines Symbol wäre z. B. bei „Abgebrochen“
-/// (⊗) leicht mit einem Löschen-Button zu verwechseln.
+/// Labeled reading status. An icon alone is easy to mistake for a button,
+/// e.g. "Dropped" (⊗) looks like delete.
 class _StatusBadge extends StatelessWidget {
   const _StatusBadge(this.status);
 
@@ -171,7 +172,7 @@ class _StatusBadge extends StatelessWidget {
           Icon(status.icon, size: 14, color: foreground),
           const SizedBox(width: 4),
           Text(
-            status.label,
+            status.label(context.l10n),
             style: theme.textTheme.labelSmall?.copyWith(color: foreground),
           ),
         ],

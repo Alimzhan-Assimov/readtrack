@@ -1,0 +1,144 @@
+{
+  "@@locale": "en",
+  "appTitle": "ReadTrack",
+
+  "typeBook": "Book",
+  "typeFanfiction": "Fanfiction",
+  "typeWebnovel": "Web novel",
+  "typeManga": "Manga",
+  "typeComic": "Comic",
+
+  "formatPhysical": "Physical",
+  "formatDigital": "Digital",
+  "formatOnline": "Online",
+
+  "statusPlanned": "Want to read",
+  "statusReading": "Reading",
+  "statusFinished": "Finished",
+  "statusPaused": "On hold",
+  "statusDropped": "Dropped",
+
+  "sortUpdated": "Recently updated",
+  "sortAdded": "Recently added",
+  "sortTitle": "Title A–Z",
+  "sortRating": "Highest rated",
+
+  "chapterCount": "{count, plural, =1{1 chapter} other{{count} chapters}}",
+  "@chapterCount": {
+    "placeholders": { "count": { "type": "int", "format": "decimalPattern" } }
+  },
+  "wordCount": "{count, plural, =1{1 word} other{{count} words}}",
+  "@wordCount": {
+    "placeholders": { "count": { "type": "int", "format": "decimalPattern" } }
+  },
+  "pageCount": "{count, plural, =1{1 page} other{{count} pages}}",
+  "@pageCount": {
+    "placeholders": { "count": { "type": "int", "format": "decimalPattern" } }
+  },
+
+  "libraryTitle": "My Library",
+  "searchHint": "Search title, author or category",
+  "clearSearch": "Clear search",
+  "sortTooltip": "Sort",
+  "filterCategory": "Category",
+  "filterTag": "Tag",
+  "filterAll": "All",
+  "pickerEmpty": "Nothing here yet",
+  "entryCount": "{count, plural, =1{1 entry} other{{count} entries}}",
+  "@entryCount": {
+    "placeholders": { "count": { "type": "int", "format": "decimalPattern" } }
+  },
+  "addButton": "Add",
+  "addTooltip": "New entry (Ctrl+N)",
+  "emptyLibraryTitle": "Your library is empty",
+  "emptyLibraryBody": "Add your first book or fanfic with “Add”.",
+  "noResultsTitle": "Nothing found",
+  "noResultsBody": "Try different filters or search terms.",
+  "noSelection": "Select an entry on the left",
+  "errorMessage": "Error: {error}",
+  "@errorMessage": {
+    "placeholders": { "error": { "type": "Object" } }
+  },
+
+  "editTooltip": "Edit",
+  "deleteTooltip": "Delete",
+  "notFound": "Entry not found",
+  "linkOpenFailed": "Couldn't open the link",
+  "deletedMessage": "Deleted “{title}”",
+  "@deletedMessage": {
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "undo": "Undo",
+  "byAuthor": "by {author}",
+  "@byAuthor": {
+    "placeholders": { "author": { "type": "String" } }
+  },
+  "changeStatus": "Change reading status",
+  "chaptersComplete": "Chapters · complete",
+  "chaptersOngoing": "Chapters · ongoing",
+  "sectionProgress": "Reading progress",
+  "chapterProgress": "Chapter {current} of {total}",
+  "@chapterProgress": {
+    "placeholders": { "current": { "type": "int" }, "total": { "type": "int" } }
+  },
+  "chapterCurrent": "Chapter {current}",
+  "@chapterCurrent": {
+    "placeholders": { "current": { "type": "int" } }
+  },
+  "previousChapter": "Previous chapter",
+  "nextChapter": "Next chapter",
+  "sectionLink": "Link",
+  "readOn": "Read on {site}",
+  "@readOn": {
+    "placeholders": { "site": { "type": "String" } }
+  },
+  "readOnline": "Read online",
+  "sectionTags": "Tags",
+  "sectionIsbn": "ISBN",
+  "sectionSummary": "Summary",
+  "sectionNotes": "Notes",
+  "addedUpdated": "Added {added} · updated {updated}",
+  "@addedUpdated": {
+    "placeholders": {
+      "added": { "type": "DateTime", "format": "yMMMd" },
+      "updated": { "type": "DateTime", "format": "yMMMd" }
+    }
+  },
+
+  "newEntry": "New entry",
+  "editEntry": "Edit entry",
+  "save": "Save",
+  "discardTitle": "Discard changes?",
+  "discardBody": "Your changes haven't been saved.",
+  "keepEditing": "Keep editing",
+  "discard": "Discard",
+  "numbersOnly": "Numbers only",
+  "fieldType": "Type",
+  "fieldTitle": "Title *",
+  "titleRequired": "Please enter a title",
+  "fieldAuthor": "Author",
+  "fieldCategory": "Category / fandom",
+  "fieldCategoryHint": "e.g. Naruto, Harry Potter",
+  "fieldLink": "Link",
+  "fieldLinkHint": "https://www.fanfiction.net/s/…",
+  "invalidLink": "Invalid link",
+  "fieldStatus": "Reading status",
+  "sectionLength": "Length",
+  "fieldChapters": "Chapters",
+  "fieldCurrentChapter": "Read up to chapter",
+  "fieldWords": "Words",
+  "fieldPages": "Pages",
+  "completeTitle": "Completed by the author",
+  "completeSubtitle": "Off = the story is still being updated",
+  "fieldIsbn": "ISBN",
+  "addTag": "Add tag",
+  "addTagHint": "e.g. Action, Harem, Kingdom Building",
+  "sectionRating": "Rating",
+  "starTooltip": "{count, plural, =1{1 star} other{{count} stars}}",
+  "@starTooltip": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "sectionDescription": "Description",
+  "fieldSummary": "Summary",
+  "fieldNotes": "Personal notes"
+}

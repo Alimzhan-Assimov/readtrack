@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lesetracker/data/database.dart';
+import 'package:readtrack/data/database.dart';
 
 void main() {
   late AppDatabase db;
@@ -15,14 +15,14 @@ void main() {
     title: title,
   );
 
-  test('Kategorie und Tags werden ohne Rücksicht auf Groß-/Kleinschreibung zusammengeführt', () async {
+  test('categories and tags are merged case-insensitively', () async {
     final id = await db.saveWork(
-      fic('Erste'),
+      fic('First'),
       fandomName: 'Naruto',
       tagNames: ['Harem', 'Action'],
     );
     await db.saveWork(
-      fic('Zweite'),
+      fic('Second'),
       fandomName: 'naruto',
       tagNames: ['action'],
     );
@@ -40,31 +40,28 @@ void main() {
     expect(await db.watchWorks(type: WorkType.book).first, isEmpty);
   });
 
-  test(
-    'Bearbeiten ersetzt Tags, Löschen lässt sich rückgängig machen',
-    () async {
-      final id = await db.saveWork(fic('Fic'), tagNames: ['Fluff', 'Drama']);
-      await db.saveWork(
-        fic('Fic umbenannt').copyWith(id: Value(id)),
-        tagNames: ['Fluff'],
-      );
+  test('editing replaces tags, deleting can be undone', () async {
+    final id = await db.saveWork(fic('Fic'), tagNames: ['Fluff', 'Drama']);
+    await db.saveWork(
+      fic('Renamed fic').copyWith(id: Value(id)),
+      tagNames: ['Fluff'],
+    );
 
-      final work = await db.watchWork(id).first;
-      expect(work?.work.title, 'Fic umbenannt');
-      expect(work?.tags.map((t) => t.name), ['Fluff']);
+    final work = await db.watchWork(id).first;
+    expect(work?.work.title, 'Renamed fic');
+    expect(work?.tags.map((t) => t.name), ['Fluff']);
 
-      final deleted = await db.deleteWork(id);
-      expect(await db.watchWork(id).first, isNull);
-      expect(await db.usedTags(), isEmpty);
+    final deleted = await db.deleteWork(id);
+    expect(await db.watchWork(id).first, isNull);
+    expect(await db.usedTags(), isEmpty);
 
-      await db.restoreWork(deleted!);
-      final restored = await db.watchWork(id).first;
-      expect(restored?.work.title, 'Fic umbenannt');
-      expect(restored?.tags.map((t) => t.name), ['Fluff']);
-    },
-  );
+    await db.restoreWork(deleted!);
+    final restored = await db.watchWork(id).first;
+    expect(restored?.work.title, 'Renamed fic');
+    expect(restored?.tags.map((t) => t.name), ['Fluff']);
+  });
 
-  test('Sortierung nach Titel ignoriert Groß-/Kleinschreibung', () async {
+  test('sorting by title ignores case', () async {
     for (final title in ['beta', 'Gamma', 'Alpha']) {
       await db.saveWork(fic(title));
     }

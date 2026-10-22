@@ -2,8 +2,8 @@ import 'package:drift/drift.dart' show Value, driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lesetracker/data/database.dart';
-import 'package:lesetracker/main.dart';
+import 'package:readtrack/data/database.dart';
+import 'package:readtrack/main.dart';
 
 void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
@@ -30,94 +30,90 @@ void main() {
     tester.view.physicalSize = Size(width, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(LesetrackerApp(db: db));
+    await tester.pumpWidget(ReadTrackApp(db: db));
     await tester.pumpAndSettle();
   }
 
-  /// Baut den Widget-Baum ab, damit drift seine Stream-Timer beenden kann.
+  /// Tears down the widget tree so drift can finish its stream timers.
   Future<void> unmount(WidgetTester tester) async {
     await tester.pumpWidget(const SizedBox());
     await tester.pump(Duration.zero);
   }
 
-  testWidgets('schmales Fenster öffnet Details als eigene Seite', (
-    tester,
-  ) async {
+  testWidgets('narrow window opens details as a separate page', (tester) async {
     await pumpApp(tester, width: 400);
     await tester.tap(find.text('The New Dawn'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Auf fanfiction.net lesen'), findsOneWidget);
+    expect(find.text('Read on fanfiction.net'), findsOneWidget);
     expect(find.byType(BackButton), findsOneWidget);
     await unmount(tester);
   });
 
-  testWidgets('breites Fenster zeigt Details neben der Liste', (tester) async {
+  testWidgets('wide window shows details next to the list', (tester) async {
     await pumpApp(tester, width: 1200);
-    expect(find.text('Wähle links einen Eintrag aus'), findsOneWidget);
+    expect(find.text('Select an entry on the left'), findsOneWidget);
 
     await tester.tap(find.text('The New Dawn'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Auf fanfiction.net lesen'), findsOneWidget);
-    // Einmal in der Liste, einmal in der Detailspalte.
+    expect(find.text('Read on fanfiction.net'), findsOneWidget);
+    // Once in the list, once in the detail pane.
     expect(find.text('The New Dawn'), findsNWidgets(2));
     await unmount(tester);
   });
 
-  testWidgets('Löschen lässt sich per Snackbar rückgängig machen', (
-    tester,
-  ) async {
+  testWidgets('deleting can be undone from the snackbar', (tester) async {
     await pumpApp(tester, width: 1200);
     await tester.tap(find.text('The New Dawn'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip('Löschen'));
+    await tester.tap(find.byTooltip('Delete'));
     await tester.pumpAndSettle();
     expect(find.text('The New Dawn'), findsNothing);
 
-    await tester.tap(find.text('Rückgängig'));
+    await tester.tap(find.text('Undo'));
     await tester.pumpAndSettle();
     expect(find.text('The New Dawn'), findsOneWidget);
     await unmount(tester);
   });
 
-  testWidgets('neuer Eintrag wird gespeichert und angezeigt', (tester) async {
+  testWidgets('new entry is saved and shown', (tester) async {
     await pumpApp(tester, width: 400);
-    await tester.tap(find.text('Hinzufügen'));
+    await tester.tap(find.text('Add'));
     await tester.pumpAndSettle();
 
     await tester.enterText(
-      find.widgetWithText(TextFormField, 'Titel *'),
+      find.widgetWithText(TextFormField, 'Title *'),
       'Kingdom of Leaves',
     );
-    await tester.tap(find.text('Speichern'));
+    await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
 
     expect(find.text('Kingdom of Leaves'), findsOneWidget);
-    expect(find.byTooltip('Bearbeiten'), findsOneWidget);
+    expect(find.byTooltip('Edit'), findsOneWidget);
     await unmount(tester);
   });
 
-  testWidgets('Verlassen mit ungespeicherten Änderungen fragt nach', (
+  testWidgets('leaving with unsaved changes asks for confirmation', (
     tester,
   ) async {
     await pumpApp(tester, width: 400);
-    await tester.tap(find.text('Hinzufügen'));
+    await tester.tap(find.text('Add'));
     await tester.pumpAndSettle();
 
     await tester.enterText(
-      find.widgetWithText(TextFormField, 'Titel *'),
-      'Halb fertig',
+      find.widgetWithText(TextFormField, 'Title *'),
+      'Half done',
     );
     await tester.pump();
     await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
-    expect(find.text('Änderungen verwerfen?'), findsOneWidget);
+    expect(find.text('Discard changes?'), findsOneWidget);
 
-    await tester.tap(find.text('Verwerfen'));
+    await tester.tap(find.text('Discard'));
     await tester.pumpAndSettle();
-    expect(find.text('Meine Bibliothek'), findsOneWidget);
+    expect(find.text('My Library'), findsOneWidget);
     await unmount(tester);
   });
 }

@@ -862,14 +862,14 @@ class Work extends DataClass implements Insertable<Work> {
   final int? fandomId;
   final ReadingStatus status;
 
-  /// Ob der Autor die Geschichte abgeschlossen hat.
+  /// Whether the author has finished the story.
   final bool isComplete;
   final int? chapterCount;
   final int? currentChapter;
   final int? wordCount;
   final int? pageCount;
 
-  /// 1 bis 5 Sterne.
+  /// 1 to 5 stars.
   final int? rating;
   final String? notes;
   final DateTime addedAt;

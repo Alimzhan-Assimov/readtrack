@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/l10n.dart';
 import 'suggest_field.dart';
 
-/// Eingabe für Tags: Enter, Komma oder ein Vorschlag fügt einen Tag hinzu.
+/// Tag input: Enter, a comma or picking a suggestion adds a tag.
 class TagInput extends StatelessWidget {
   const TagInput({
     super.key,
@@ -17,7 +18,7 @@ class TagInput extends StatelessWidget {
   final List<String> suggestions;
   final ValueChanged<List<String>> onChanged;
 
-  /// Fügt die (kommagetrennten) Tags aus [raw] zu [tags] hinzu, ohne Duplikate.
+  /// Adds the (comma-separated) tags in [raw] to [tags], skipping duplicates.
   static List<String> merge(List<String> tags, String raw) {
     final result = [...tags];
     for (final part in raw.split(',')) {
@@ -36,6 +37,7 @@ class TagInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final available = suggestions
         .where((s) => !tags.any((t) => t.toLowerCase() == s.toLowerCase()))
         .toList();
@@ -46,11 +48,11 @@ class TagInput extends StatelessWidget {
           controller: controller,
           suggestions: available,
           decoration: InputDecoration(
-            labelText: 'Tag hinzufügen',
-            hintText: 'z. B. Action, Harem, Kingdom Building',
+            labelText: l10n.addTag,
+            hintText: l10n.addTagHint,
             suffixIcon: IconButton(
               icon: const Icon(Icons.add),
-              tooltip: 'Tag hinzufügen',
+              tooltip: l10n.addTag,
               onPressed: () => _add(controller.text),
             ),
           ),

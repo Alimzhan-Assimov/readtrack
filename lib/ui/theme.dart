@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
 
-/// Markenfarbe, wenn das System keine eigene Akzentfarbe liefert
-/// (Material You gibt es nur auf Android 12+).
+/// Brand color used when the system provides no accent color
+/// (Material You exists only on Android 12+).
 const kSeedColor = Color(0xFF6B4E9B);
 
 ThemeData buildTheme(Color seed, Brightness brightness) {

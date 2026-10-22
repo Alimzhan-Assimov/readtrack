@@ -5,13 +5,14 @@ import 'package:flutter/services.dart';
 import '../data/database.dart';
 import '../data/database_scope.dart';
 import '../data/default_tags.dart';
+import '../l10n/l10n.dart';
 import '../ui/labels.dart';
 import '../ui/layout.dart';
 import '../widgets/suggest_field.dart';
 import '../widgets/tag_input.dart';
 
-/// Formular zum Anlegen ([existing] == null) oder Bearbeiten eines Werks.
-/// Schließt sich nach dem Speichern mit der ID des Werks als Ergebnis.
+/// Form for creating ([existing] == null) or editing a work.
+/// Pops with the work's id as the result after saving.
 class WorkEditScreen extends StatefulWidget {
   const WorkEditScreen({super.key, this.existing});
 
@@ -47,7 +48,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
   bool _suggestionsRequested = false;
   bool _saving = false;
 
-  /// Ob seit dem Öffnen etwas geändert wurde (für die Nachfrage beim Verlassen).
+  /// Whether anything changed since opening (to confirm before leaving).
   bool _dirty = false;
 
   AppDatabase get _db => DatabaseScope.of(context);
@@ -119,7 +120,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     });
   }
 
-  /// Ändert den Zustand und merkt sich, dass es ungespeicherte Änderungen gibt.
+  /// Changes state and records that there are unsaved changes.
   void _change(VoidCallback fn) => setState(() {
     fn();
     _dirty = true;
@@ -130,7 +131,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     return t.isEmpty ? null : t;
   }
 
-  /// Erlaubt Eingaben wie „45.300“ oder „45 300“.
+  /// Accepts input like "45,300", "45.300" or "45 300".
   static int? _parseInt(String raw) =>
       int.tryParse(raw.replaceAll(RegExp(r'[.,\s]'), ''));
 
@@ -143,7 +144,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
   Future<void> _save() async {
     if (_saving || !_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
-    // Einen getippten, aber noch nicht bestätigten Tag mitnehmen.
+    // Include a tag that was typed but not confirmed yet.
     final tags = TagInput.merge(_tags, _tagInput.text);
     final w = widget.existing?.work;
     final data = WorksCompanion(
@@ -169,24 +170,25 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
       fandomName: _fandom.text,
       tagNames: tags,
     );
-    // Navigator.pop umgeht PopScope, daher keine Nachfrage nach dem Speichern.
+    // Navigator.pop bypasses PopScope, so there is no prompt after saving.
     if (mounted) Navigator.of(context).pop(id);
   }
 
   Future<void> _confirmDiscard() async {
+    final l10n = context.l10n;
     final discard = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Änderungen verwerfen?'),
-        content: const Text('Deine Eingaben wurden noch nicht gespeichert.'),
+        title: Text(l10n.discardTitle),
+        content: Text(l10n.discardBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Weiter bearbeiten'),
+            child: Text(l10n.keepEditing),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Verwerfen'),
+            child: Text(l10n.discard),
           ),
         ],
       ),
@@ -197,18 +199,22 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
   InputDecoration _decoration(String label, {String? hint}) =>
       InputDecoration(labelText: label, hintText: hint);
 
-  Widget _numberField(TextEditingController controller, String label) =>
-      TextFormField(
-        controller: controller,
-        decoration: _decoration(label),
-        keyboardType: TextInputType.number,
-        validator: (v) => v == null || v.trim().isEmpty || _parseInt(v) != null
-            ? null
-            : 'Nur Zahlen',
-      );
+  Widget _numberField(
+    AppLocalizations l10n,
+    TextEditingController controller,
+    String label,
+  ) => TextFormField(
+    controller: controller,
+    decoration: _decoration(label),
+    keyboardType: TextInputType.number,
+    validator: (v) => v == null || v.trim().isEmpty || _parseInt(v) != null
+        ? null
+        : l10n.numbersOnly,
+  );
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return PopScope(
       canPop: !_dirty,
       onPopInvokedWithResult: (didPop, _) {
@@ -221,14 +227,14 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
         child: Scaffold(
           appBar: AppBar(
             title: Text(
-              widget.existing == null ? 'Neuer Eintrag' : 'Bearbeiten',
+              widget.existing == null ? l10n.newEntry : l10n.editEntry,
             ),
             actions: [
               Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: FilledButton(
                   onPressed: _saving ? null : _save,
-                  child: const Text('Speichern'),
+                  child: Text(l10n.save),
                 ),
               ),
             ],
@@ -245,7 +251,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
                   top: 8,
                   bottom: 32,
                 ),
-                children: _buildFields(),
+                children: _buildFields(l10n),
               ),
             ),
           ),
@@ -254,7 +260,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     );
   }
 
-  List<Widget> _buildFields() {
+  List<Widget> _buildFields(AppLocalizations l10n) {
     const gap = SizedBox(height: 16);
     final hasIsbn = const {
       WorkType.book,
@@ -265,7 +271,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     return [
       DropdownButtonFormField<WorkType>(
         initialValue: _type,
-        decoration: _decoration('Art'),
+        decoration: _decoration(l10n.fieldType),
         items: [
           for (final t in WorkType.values)
             DropdownMenuItem(
@@ -274,7 +280,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
                 children: [
                   Icon(t.icon, size: 20),
                   const SizedBox(width: 12),
-                  Text(t.label),
+                  Text(t.label(l10n)),
                 ],
               ),
             ),
@@ -291,7 +297,11 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
       SegmentedButton<WorkFormat>(
         segments: [
           for (final f in WorkFormat.values)
-            ButtonSegment(value: f, icon: Icon(f.icon), label: Text(f.label)),
+            ButtonSegment(
+              value: f,
+              icon: Icon(f.icon),
+              label: Text(f.label(l10n)),
+            ),
         ],
         selected: {_format},
         onSelectionChanged: (s) => _change(() => _format = s.first),
@@ -299,16 +309,16 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
       gap,
       TextFormField(
         controller: _title,
-        decoration: _decoration('Titel *'),
+        decoration: _decoration(l10n.fieldTitle),
         textCapitalization: TextCapitalization.sentences,
         autofocus: widget.existing == null,
         validator: (v) =>
-            v == null || v.trim().isEmpty ? 'Bitte einen Titel eingeben' : null,
+            v == null || v.trim().isEmpty ? l10n.titleRequired : null,
       ),
       gap,
       TextFormField(
         controller: _author,
-        decoration: _decoration('Autor'),
+        decoration: _decoration(l10n.fieldAuthor),
         textCapitalization: TextCapitalization.words,
       ),
       gap,
@@ -316,26 +326,26 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
         controller: _fandom,
         suggestions: _fandomSuggestions,
         decoration: _decoration(
-          'Kategorie / Fandom',
-          hint: 'z. B. Naruto, Harry Potter',
+          l10n.fieldCategory,
+          hint: l10n.fieldCategoryHint,
         ),
       ),
       gap,
       TextFormField(
         controller: _url,
-        decoration: _decoration('Link', hint: 'https://www.fanfiction.net/s/…'),
+        decoration: _decoration(l10n.fieldLink, hint: l10n.fieldLinkHint),
         keyboardType: TextInputType.url,
         validator: (v) {
           final url = _normalizeUrl(v ?? '');
           if (url == null) return null;
           final uri = Uri.tryParse(url);
-          return uri == null || uri.host.isEmpty ? 'Ungültiger Link' : null;
+          return uri == null || uri.host.isEmpty ? l10n.invalidLink : null;
         },
       ),
       gap,
       DropdownButtonFormField<ReadingStatus>(
         initialValue: _status,
-        decoration: _decoration('Lesestatus'),
+        decoration: _decoration(l10n.fieldStatus),
         items: [
           for (final s in ReadingStatus.values)
             DropdownMenuItem(
@@ -344,33 +354,39 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
                 children: [
                   Icon(s.icon, size: 20),
                   const SizedBox(width: 12),
-                  Text(s.label),
+                  Text(s.label(l10n)),
                 ],
               ),
             ),
         ],
         onChanged: (s) => _change(() => _status = s ?? _status),
       ),
-      const _Heading('Umfang'),
+      _Heading(l10n.sectionLength),
       Row(
         children: [
-          Expanded(child: _numberField(_chapters, 'Kapitel')),
+          Expanded(child: _numberField(l10n, _chapters, l10n.fieldChapters)),
           const SizedBox(width: 12),
-          Expanded(child: _numberField(_currentChapter, 'Gelesen bis Kapitel')),
+          Expanded(
+            child: _numberField(
+              l10n,
+              _currentChapter,
+              l10n.fieldCurrentChapter,
+            ),
+          ),
         ],
       ),
       gap,
       Row(
         children: [
-          Expanded(child: _numberField(_words, 'Wörter')),
+          Expanded(child: _numberField(l10n, _words, l10n.fieldWords)),
           const SizedBox(width: 12),
-          Expanded(child: _numberField(_pages, 'Seiten')),
+          Expanded(child: _numberField(l10n, _pages, l10n.fieldPages)),
         ],
       ),
       SwitchListTile(
         contentPadding: EdgeInsets.zero,
-        title: const Text('Vom Autor abgeschlossen'),
-        subtitle: const Text('Aus = die Geschichte wird noch fortgesetzt'),
+        title: Text(l10n.completeTitle),
+        subtitle: Text(l10n.completeSubtitle),
         value: _isComplete,
         onChanged: (v) => _change(() => _isComplete = v),
       ),
@@ -378,18 +394,18 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
         const SizedBox(height: 8),
         TextFormField(
           controller: _isbn,
-          decoration: _decoration('ISBN'),
+          decoration: _decoration(l10n.fieldIsbn),
           keyboardType: TextInputType.number,
         ),
       ],
-      const _Heading('Tags'),
+      _Heading(l10n.sectionTags),
       TagInput(
         controller: _tagInput,
         tags: _tags,
         suggestions: _tagSuggestions,
         onChanged: (tags) => _change(() => _tags = tags),
       ),
-      const _Heading('Bewertung'),
+      _Heading(l10n.sectionRating),
       Row(
         children: [
           for (var i = 1; i <= 5; i++)
@@ -399,23 +415,23 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
                     ? Icons.star
                     : Icons.star_border,
               ),
-              tooltip: i == 1 ? '1 Stern' : '$i Sterne',
-              // Nochmal auf denselben Stern tippen entfernt die Bewertung.
+              tooltip: l10n.starTooltip(i),
+              // Tapping the same star again clears the rating.
               onPressed: () => _change(() => _rating = _rating == i ? null : i),
             ),
         ],
       ),
-      const _Heading('Beschreibung'),
+      _Heading(l10n.sectionDescription),
       TextFormField(
         controller: _summary,
-        decoration: _decoration('Zusammenfassung'),
+        decoration: _decoration(l10n.fieldSummary),
         minLines: 3,
         maxLines: null,
       ),
       gap,
       TextFormField(
         controller: _notes,
-        decoration: _decoration('Eigene Notizen'),
+        decoration: _decoration(l10n.fieldNotes),
         minLines: 2,
         maxLines: null,
       ),

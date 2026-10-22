@@ -1,4 +1,4 @@
-package de.alimi.lesetracker
+package de.alimi.readtrack
 
 import io.flutter.embedding.android.FlutterActivity
 

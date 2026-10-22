@@ -1,13 +1,13 @@
-## Was ändert sich?
+## What changes?
 
-<!-- Kurz beschreiben, was dieser PR macht und warum. -->
+<!-- Briefly describe what this PR does and why. -->
 
-## Wie getestet?
+## How was it tested?
 
-- [ ] `flutter analyze` ohne Meldungen
-- [ ] `flutter test` grün
-- [ ] In der App ausprobiert (`flutter run --profile`)
+- [ ] `flutter analyze` reports no issues
+- [ ] `flutter test` passes
+- [ ] Tried in the app (`flutter run --profile`)
 
 ## Screenshots
 
-<!-- Bei UI-Änderungen: vorher/nachher. -->
+<!-- For UI changes: before/after. -->

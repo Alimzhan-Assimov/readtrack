@@ -1,43 +1,20 @@
-/// In welcher Form ein Werk vorliegt.
-enum WorkFormat {
-  physical('Physisch'),
-  digital('Digital'),
-  online('Online');
+// Display names live in lib/ui/labels.dart so they can be localized.
 
-  const WorkFormat(this.label);
-  final String label;
-}
+/// The form a work is available in.
+enum WorkFormat { physical, digital, online }
 
-/// Art des Werks. Bestimmt, welches Format beim Anlegen vorausgewählt ist.
+/// What kind of work it is. Determines the preselected format.
 enum WorkType {
-  book('Buch', WorkFormat.physical),
-  fanfiction('Fanfiction', WorkFormat.online),
-  webnovel('Webnovel', WorkFormat.online),
-  manga('Manga', WorkFormat.physical),
-  comic('Comic', WorkFormat.physical);
+  book(WorkFormat.physical),
+  fanfiction(WorkFormat.online),
+  webnovel(WorkFormat.online),
+  manga(WorkFormat.physical),
+  comic(WorkFormat.physical);
 
-  const WorkType(this.label, this.defaultFormat);
-  final String label;
+  const WorkType(this.defaultFormat);
   final WorkFormat defaultFormat;
 }
 
-enum ReadingStatus {
-  planned('Will ich lesen'),
-  reading('Lese ich gerade'),
-  finished('Gelesen'),
-  paused('Pausiert'),
-  dropped('Abgebrochen');
+enum ReadingStatus { planned, reading, finished, paused, dropped }
 
-  const ReadingStatus(this.label);
-  final String label;
-}
-
-enum WorkSort {
-  updated('Zuletzt geändert'),
-  added('Zuletzt hinzugefügt'),
-  title('Titel A–Z'),
-  rating('Beste Bewertung');
-
-  const WorkSort(this.label);
-  final String label;
-}
+enum WorkSort { updated, added, title, rating }

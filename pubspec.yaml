@@ -1,5 +1,5 @@
-name: lesetracker
-description: "A new Flutter project."
+name: readtrack
+description: "ReadTrack – track and read books, fanfiction, web novels and manga."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -40,6 +40,9 @@ dependencies:
   path: ^1.9.1
   url_launcher: ^6.3.3
   dynamic_color: ^2.1.0
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.3
 
 dev_dependencies:
   flutter_test:
@@ -64,6 +67,7 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  generate: true
 
   # To add assets to your application, add an assets section, like this:
   # assets:

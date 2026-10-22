@@ -3,16 +3,17 @@ import 'package:flutter/material.dart';
 
 import 'data/database.dart';
 import 'data/database_scope.dart';
+import 'l10n/l10n.dart';
 import 'screens/library_screen.dart';
 import 'ui/theme.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(LesetrackerApp(db: AppDatabase()));
+  runApp(ReadTrackApp(db: AppDatabase()));
 }
 
-class LesetrackerApp extends StatelessWidget {
-  const LesetrackerApp({super.key, required this.db});
+class ReadTrackApp extends StatelessWidget {
+  const ReadTrackApp({super.key, required this.db});
 
   final AppDatabase db;
 
@@ -20,13 +21,15 @@ class LesetrackerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return DatabaseScope(
       db: db,
-      // Nutzt auf Android 12+ die Akzentfarbe des Systems (Material You).
-      // Das Schema wird trotzdem per fromSeed erzeugt, weil die Schemata von
-      // dynamic_color nicht alle aktuellen Material-3-Farbrollen enthalten.
+      // Uses the system accent color on Android 12+ (Material You). The
+      // scheme is still built with fromSeed because dynamic_color's schemes
+      // lack some of the current Material 3 color roles.
       child: DynamicColorBuilder(
         builder: (light, dark) => MaterialApp(
-          title: 'Lesetracker',
+          onGenerateTitle: (context) => context.l10n.appTitle,
           debugShowCheckedModeBanner: false,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           theme: buildTheme(light?.primary ?? kSeedColor, Brightness.light),
           darkTheme: buildTheme(dark?.primary ?? kSeedColor, Brightness.dark),
           home: const LibraryScreen(),

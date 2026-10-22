@@ -1,39 +1,49 @@
-# Lesetracker
+# ReadTrack
 
-Eine App, um alle gelesenen Bücher, Fanfictions, Webnovels und Manga an einem
-Ort zu verwalten – physisch im Regal oder online.
+An app to keep all the books, fanfiction, web novels and manga you read in one
+place, whether they sit on your shelf or live online.
 
-## Starten
+## Running
 
 ```bash
 flutter pub get
-flutter run -d linux --profile   # flüssig, zum Ausprobieren
-flutter run -d linux             # Debug-Modus mit Hot Reload (ruckelt, das ist normal)
+flutter run -d linux --profile   # smooth, for trying things out
+flutter run -d linux             # debug mode with hot reload (janky, that's normal)
 ```
 
-Der **Debug-Modus ist in Flutter grundsätzlich ruckelig** (JIT-Kompilierung,
-zusätzliche Prüfungen). Wie sich die App wirklich anfühlt, zeigen nur
-`--profile` oder `--release`.
+Flutter's **debug mode is always janky** (JIT compilation, extra checks). Only
+`--profile` or `--release` show how the app really feels.
 
-Nach Änderungen an den Datenbanktabellen (`lib/data/database.dart`) den
-generierten Code neu erzeugen:
+## Installing on Linux
+
+```bash
+./scripts/install_linux.sh              # build in release mode and add to the app launcher
+./scripts/install_linux.sh --uninstall  # remove again (library data is kept)
+```
+
+Run the script again after pulling new changes to update the installed app.
+
+## Development
+
+After changing database tables (`lib/data/database.dart`), regenerate code:
 
 ```bash
 dart run build_runner build
 ```
 
-## Tests und Analyse
+UI texts live in `lib/l10n/app_en.arb`. The Dart code in `lib/l10n/` is
+generated from it by `flutter pub get` (or `flutter gen-l10n`).
 
 ```bash
 flutter analyze
 flutter test
 ```
 
-## Git-Workflow
+## Git workflow
 
-- `main` – stabiler Stand, nur über Pull Requests aus `develop`.
-- `develop` – Integrationszweig, Ziel aller Feature-PRs.
-- `feature/<name>`, `fix/<name>`, `chore/<name>` – werden von `develop`
-  abgezweigt und per Pull Request zurück nach `develop` gemerged.
+- `main` – stable, only updated through pull requests from `develop`.
+- `develop` – integration branch, target of all feature PRs.
+- `feature/<name>`, `fix/<name>`, `chore/<name>` – branched off `develop` and
+  merged back through a pull request.
 
-Ein Release ist ein Pull Request `develop` → `main`.
+A release is a pull request `develop` → `main`.

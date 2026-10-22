@@ -5,15 +5,16 @@ import 'package:flutter/services.dart';
 
 import '../data/database.dart';
 import '../data/database_scope.dart';
+import '../l10n/l10n.dart';
 import '../ui/labels.dart';
 import '../ui/layout.dart';
 import '../widgets/work_tile.dart';
 import 'work_detail_screen.dart';
 import 'work_edit_screen.dart';
 
-/// Startseite. In schmalen Fenstern (Handy) eine Liste, aus der die Details
-/// als eigene Seite geöffnet werden; ab [Breakpoints.expanded] stehen Liste
-/// und Details nebeneinander (Material-3-Muster „List-Detail“).
+/// Home screen. In narrow windows (phones) it is a list that opens details as
+/// separate pages; from [Breakpoints.expanded] on, list and details sit side
+/// by side (the Material 3 "list-detail" layout).
 class LibraryScreen extends StatefulWidget {
   const LibraryScreen({super.key});
 
@@ -71,9 +72,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
     _updateQuery();
   });
 
-  /// Fragt erst nach einer kurzen Tipp-Pause die Datenbank ab.
+  /// Only queries the database once typing pauses briefly.
   void _onSearchChanged(String _) {
-    setState(() {}); // Löschen-Button ein-/ausblenden
+    setState(() {}); // show/hide the clear button
     _searchDebounce?.cancel();
     _searchDebounce = Timer(
       const Duration(milliseconds: 250),
@@ -108,8 +109,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final list = _buildListPane(context, wide: wide);
     final selectedId = _selectedId;
 
-    // Im breiten Layout umschließt ein äußeres Scaffold beide Spalten, damit
-    // Snackbars nur einmal über die ganze Breite erscheinen.
+    // In the wide layout an outer Scaffold wraps both panes so snackbars
+    // appear once across the full width.
     final body = !wide
         ? list
         : Scaffold(
@@ -144,6 +145,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
   Widget _buildListPane(BuildContext context, {required bool wide}) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     return Scaffold(
       body: StreamBuilder<List<WorkWithDetails>>(
         stream: _works,
@@ -152,13 +154,13 @@ class _LibraryScreenState extends State<LibraryScreen> {
           return CustomScrollView(
             slivers: [
               SliverAppBar(
-                title: const Text('Meine Bibliothek'),
+                title: Text(l10n.libraryTitle),
                 floating: true,
                 snap: true,
                 actions: [
                   PopupMenuButton<WorkSort>(
                     icon: const Icon(Icons.sort),
-                    tooltip: 'Sortieren',
+                    tooltip: l10n.sortTooltip,
                     initialValue: _sort,
                     onSelected: (s) => _setFilter(() => _sort = s),
                     itemBuilder: (context) => [
@@ -166,7 +168,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                         CheckedPopupMenuItem(
                           value: s,
                           checked: s == _sort,
-                          child: Text(s.label),
+                          child: Text(s.label(l10n)),
                         ),
                     ],
                   ),
@@ -178,7 +180,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   child: SearchBar(
                     controller: _search,
                     focusNode: _searchFocus,
-                    hintText: 'Titel, Autor oder Kategorie suchen',
+                    hintText: l10n.searchHint,
                     leading: const Icon(Icons.search),
                     elevation: const WidgetStatePropertyAll(0),
                     onChanged: _onSearchChanged,
@@ -186,18 +188,20 @@ class _LibraryScreenState extends State<LibraryScreen> {
                       if (_search.text.isNotEmpty)
                         IconButton(
                           icon: const Icon(Icons.clear),
-                          tooltip: 'Suche leeren',
+                          tooltip: l10n.clearSearch,
                           onPressed: _clearSearch,
                         ),
                     ],
                   ),
                 ),
               ),
-              SliverToBoxAdapter(child: _buildFilters()),
+              SliverToBoxAdapter(child: _buildFilters(l10n)),
               if (snapshot.hasError)
                 SliverFillRemaining(
                   hasScrollBody: false,
-                  child: Center(child: Text('Fehler: ${snapshot.error}')),
+                  child: Center(
+                    child: Text(l10n.errorMessage(snapshot.error!)),
+                  ),
                 )
               else if (items == null)
                 const SliverFillRemaining(
@@ -214,9 +218,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
                     child: Text(
-                      items.length == 1
-                          ? '1 Eintrag'
-                          : '${items.length} Einträge',
+                      l10n.entryCount(items.length),
                       style: theme.textTheme.labelMedium?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
@@ -232,7 +234,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                       return WorkTile(
                         item: items[i],
                         selected: wide && id == _selectedId,
-                        // Hero-Animation nur beim Seitenwechsel (schmales Layout).
+                        // Hero animation only on page transitions (narrow layout).
                         heroTag: wide ? null : 'cover-$id',
                         onTap: () => _open(id, wide: wide),
                       );
@@ -246,14 +248,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _create(wide: wide),
-        tooltip: 'Neuer Eintrag (Strg+N)',
+        tooltip: l10n.addTooltip,
         icon: const Icon(Icons.add),
-        label: const Text('Hinzufügen'),
+        label: Text(l10n.addButton),
       ),
     );
   }
 
-  Widget _buildFilters() {
+  Widget _buildFilters(AppLocalizations l10n) {
     return SizedBox(
       height: 48,
       child: ListView(
@@ -262,7 +264,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
         children: [
           _PickerChip<Fandom>(
             icon: Icons.category_outlined,
-            emptyLabel: 'Kategorie',
+            emptyLabel: l10n.filterCategory,
             selected: _fandom,
             loadOptions: _db.usedFandoms,
             nameOf: (f) => f.name,
@@ -271,7 +273,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
           const SizedBox(width: 8),
           _PickerChip<Tag>(
             icon: Icons.sell_outlined,
-            emptyLabel: 'Tag',
+            emptyLabel: l10n.filterTag,
             selected: _tag,
             loadOptions: _db.usedTags,
             nameOf: (t) => t.name,
@@ -279,7 +281,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
           ),
           const VerticalDivider(indent: 12, endIndent: 12, width: 24),
           ChoiceChip(
-            label: const Text('Alle'),
+            label: Text(l10n.filterAll),
             selected: _type == null,
             onSelected: (_) => _setFilter(() => _type = null),
           ),
@@ -288,7 +290,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
             ChoiceChip(
               avatar: Icon(t.icon, size: 18),
               showCheckmark: false,
-              label: Text(t.label),
+              label: Text(t.label(l10n)),
               selected: _type == t,
               onSelected: (sel) => _setFilter(() => _type = sel ? t : null),
             ),
@@ -299,7 +301,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
   }
 }
 
-/// Filter-Chip, der beim Antippen eine Auswahlliste öffnet.
+/// Filter chip that opens a list of options when tapped.
 class _PickerChip<T> extends StatelessWidget {
   const _PickerChip({
     required this.icon,
@@ -318,9 +320,10 @@ class _PickerChip<T> extends StatelessWidget {
   final ValueChanged<T?> onSelected;
 
   Future<void> _pick(BuildContext context) async {
+    final l10n = context.l10n;
     final options = await loadOptions();
     if (!context.mounted) return;
-    // Record statt T?, damit „Alle“ (null) von „abgebrochen“ unterscheidbar ist.
+    // A record instead of T? so "All" (null) is distinguishable from dismissing.
     final result = await showModalBottomSheet<(T?,)>(
       context: context,
       showDragHandle: true,
@@ -329,12 +332,12 @@ class _PickerChip<T> extends StatelessWidget {
         children: [
           ListTile(
             leading: const Icon(Icons.clear_all),
-            title: const Text('Alle'),
+            title: Text(l10n.filterAll),
             selected: selected == null,
             onTap: () => Navigator.pop<(T?,)>(context, (null,)),
           ),
           if (options.isEmpty)
-            const ListTile(enabled: false, title: Text('Noch keine Einträge')),
+            ListTile(enabled: false, title: Text(l10n.pickerEmpty)),
           for (final option in options)
             ListTile(
               title: Text(nameOf(option)),
@@ -374,6 +377,7 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -387,12 +391,12 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              filtered ? 'Nichts gefunden' : 'Deine Bibliothek ist noch leer',
+              filtered ? l10n.noResultsTitle : l10n.emptyLibraryTitle,
               style: theme.textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
             Text(
-              filtered ? 'Probier andere Filter oder Suchbegriffe.' : 'Füge dein erstes Buch oder deine erste Fanfic über „Hinzufügen“ hinzu.',
+              filtered ? l10n.noResultsBody : l10n.emptyLibraryBody,
               textAlign: TextAlign.center,
             ),
           ],
@@ -419,7 +423,7 @@ class _NoSelection extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Wähle links einen Eintrag aus',
+            context.l10n.noSelection,
             style: theme.textTheme.titleMedium?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),

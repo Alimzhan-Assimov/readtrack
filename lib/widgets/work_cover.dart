@@ -3,9 +3,8 @@ import 'package:flutter/material.dart';
 import '../data/database.dart';
 import '../ui/labels.dart';
 
-/// Cover eines Werks im Seitenverhältnis 2:3. Ohne Cover-Bild wird ein
-/// Platzhalter in einer aus dem Titel abgeleiteten Farbe gezeigt, damit
-/// sich Einträge in der Liste auf einen Blick unterscheiden.
+/// A work's cover at a 2:3 aspect ratio. Without a cover image it shows a
+/// placeholder colored from the title, so list entries are easy to tell apart.
 class WorkCover extends StatelessWidget {
   const WorkCover({
     super.key,
@@ -17,8 +16,7 @@ class WorkCover extends StatelessWidget {
   final Work work;
   final double width;
 
-  /// Gesetzt, wenn das Cover beim Seitenwechsel animiert werden soll.
-  /// Muss pro Route eindeutig sein.
+  /// Set to animate the cover between pages. Must be unique per route.
   final Object? heroTag;
 
   @override
@@ -53,7 +51,7 @@ class _Placeholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
-    // Eigener Hash statt String.hashCode, damit die Farbe stabil bleibt.
+    // Own hash instead of String.hashCode so the color stays stable.
     final hash = work.title.codeUnits.fold(
       0,
       (h, c) => (h * 31 + c) & 0x7fffffff,

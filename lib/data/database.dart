@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import 'enums.dart';
@@ -8,7 +11,7 @@ export 'enums.dart';
 
 part 'database.g.dart';
 
-/// Eine Kategorie wie „Naruto“ oder „Harry Potter“.
+/// A category such as "Naruto" or "Harry Potter".
 class Fandoms extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text().unique()();
@@ -19,7 +22,7 @@ class Tags extends Table {
   TextColumn get name => text().unique()();
 }
 
-/// Ein Buch, eine Fanfic, ein Manga usw.
+/// A book, fanfic, manga, etc.
 class Works extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get type => textEnum<WorkType>()();
@@ -39,14 +42,14 @@ class Works extends Table {
     Constant(ReadingStatus.planned.name),
   )();
 
-  /// Ob der Autor die Geschichte abgeschlossen hat.
+  /// Whether the author has finished the story.
   BoolColumn get isComplete => boolean().withDefault(const Constant(false))();
   IntColumn get chapterCount => integer().nullable()();
   IntColumn get currentChapter => integer().nullable()();
   IntColumn get wordCount => integer().nullable()();
   IntColumn get pageCount => integer().nullable()();
 
-  /// 1 bis 5 Sterne.
+  /// 1 to 5 stars.
   IntColumn get rating => integer().nullable()();
   TextColumn get notes => text().nullable()();
   DateTimeColumn get addedAt => dateTime().withDefault(currentDateAndTime)();
@@ -63,7 +66,7 @@ class WorkTags extends Table {
   Set<Column> get primaryKey => {workId, tagId};
 }
 
-/// Einzelne Kapitel, deren Text für das Offline-Lesen gespeichert wird.
+/// Individual chapters whose text is stored for offline reading.
 class Chapters extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get workId =>
@@ -112,11 +115,31 @@ class AppDatabase extends _$AppDatabase {
   );
 
   static QueryExecutor _openConnection() => driftDatabase(
-    name: 'lesetracker',
-    native: const DriftNativeOptions(
-      databaseDirectory: getApplicationSupportDirectory,
-    ),
+    name: 'readtrack',
+    native: const DriftNativeOptions(databaseDirectory: _databaseDirectory),
   );
+
+  static Future<Directory> _databaseDirectory() async {
+    final dir = await getApplicationSupportDirectory();
+    await _copyLegacyDatabase(dir);
+    return dir;
+  }
+
+  /// The app used to be called "Lesetracker" (app id de.alimi.lesetracker).
+  /// Copies that database once so existing entries survive the rename; the
+  /// old file stays in place as a backup.
+  static Future<void> _copyLegacyDatabase(Directory dir) async {
+    final target = File(p.join(dir.path, 'readtrack.sqlite'));
+    if (await target.exists()) return;
+    final legacyDir = dir.path.replaceFirst(
+      RegExp(r'de\.alimi\.readtrack$'),
+      'de.alimi.lesetracker',
+    );
+    final legacy = File(p.join(legacyDir, 'lesetracker.sqlite'));
+    if (legacyDir == dir.path || !await legacy.exists()) return;
+    await dir.create(recursive: true);
+    await legacy.copy(target.path);
+  }
 
   Stream<List<WorkWithDetails>> watchWorks({
     String search = '',
@@ -199,7 +222,7 @@ class AppDatabase extends _$AppDatabase {
     ];
   }
 
-  /// Kategorien, denen mindestens ein Werk zugeordnet ist.
+  /// Categories that at least one work belongs to.
   Future<List<Fandom>> usedFandoms() =>
       (select(fandoms)
             ..where(
@@ -210,7 +233,7 @@ class AppDatabase extends _$AppDatabase {
             ..orderBy([(f) => OrderingTerm.asc(f.name)]))
           .get();
 
-  /// Tags, die mindestens einem Werk zugeordnet sind.
+  /// Tags that are assigned to at least one work.
   Future<List<Tag>> usedTags() =>
       (select(tags)
             ..where(
@@ -229,9 +252,9 @@ class AppDatabase extends _$AppDatabase {
     tags,
   )..orderBy([(t) => OrderingTerm.asc(t.name)])).map((t) => t.name).get();
 
-  /// Legt ein Werk an oder aktualisiert es (wenn `data.id` gesetzt ist).
-  /// Kategorie und Tags werden bei Bedarf neu angelegt; Groß-/Kleinschreibung
-  /// wird dabei ignoriert, damit „naruto“ und „Naruto“ dieselbe Kategorie sind.
+  /// Inserts a work, or updates it if `data.id` is set. Category and tags are
+  /// created as needed, ignoring case so "naruto" and "Naruto" end up as the
+  /// same category.
   Future<int> saveWork(
     WorksCompanion data, {
     String? fandomName,
@@ -267,8 +290,7 @@ class AppDatabase extends _$AppDatabase {
         changes.copyWith(updatedAt: Value(DateTime.now())),
       );
 
-  /// Löscht ein Werk und gibt alles zurück, was [restoreWork] zum
-  /// Rückgängigmachen braucht.
+  /// Deletes a work and returns everything [restoreWork] needs to undo it.
   Future<DeletedWork?> deleteWork(int id) {
     return transaction(() async {
       final work = await (select(
