@@ -1,6 +1,7 @@
 import 'ao3.dart';
 import 'author_today.dart';
 import 'fanfiction_net.dart';
+import 'ficbook.dart';
 import 'royal_road.dart';
 import 'scribble_hub.dart';
 import 'source.dart';
@@ -16,6 +17,7 @@ const kSources = <StorySource>[
   RoyalRoadSource(),
   ScribbleHubSource(),
   AuthorTodaySource(),
+  FicbookSource(),
 ];
 
 /// The source that can read [url], or null if the site isn't supported.

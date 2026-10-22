@@ -26,6 +26,7 @@ place, whether they sit on your shelf or live online.
 | Royal Road | HTTP, browser as fallback |
 | Scribble Hub | Browser window (Cloudflare) |
 | Author.Today | HTTP; only chapters that are free to read |
+| Ficbook | HTTP, browser as fallback |
 
 Sites protected against bots are loaded through a small browser window
 (WebKitGTK on Linux), so pages arrive exactly as in a normal browser. Paywalls
