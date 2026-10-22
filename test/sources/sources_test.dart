@@ -4,6 +4,7 @@ import 'package:readtrack/data/enums.dart';
 import 'package:readtrack/sources/ao3.dart';
 import 'package:readtrack/sources/author_today.dart';
 import 'package:readtrack/sources/fanfiction_net.dart';
+import 'package:readtrack/sources/ficbook.dart';
 import 'package:readtrack/sources/royal_road.dart';
 import 'package:readtrack/sources/scribble_hub.dart';
 import 'package:readtrack/sources/sources.dart';
@@ -245,4 +246,49 @@ void main() {
       expect(chapter.html, html);
     },
   );
+
+  test('Ficbook: details blocks, parts and line-based paragraphs', () async {
+    final story = Uri.parse('https://ficbook.net/readfic/0193-abc');
+    final fetcher = FakeFetcher({
+      '$story': '''
+        <h1 class="heading" itemprop="name">Иллюзия любви.</h1>
+        <div class="ds-label ds-label-status-finished"> Завершён </div>
+        <a href="/authors/1" itemprop="author">Fak_k</a>
+        <div class="mb-10"><strong>Фэндом:</strong><div><a href="/fanfiction/anime_and_manga/naruto"> Naruto </a></div></div>
+        <div class="mb-10"><strong>Размер:</strong><div> написано 1 124 страницы, 553 964 слова, 2 части </div></div>
+        <div class="mb-10"><strong>Метки:</strong><div class="tags"><a class="tag">AU</a><a class="tag">Ангст</a></div></div>
+        <div itemprop="description">Первая строка.
+Вторая строка.</div>
+        <ul class="list-of-fanfic-parts">
+          <li class="part"><a href="/readfic/0193-abc/11#part_content" class="part-link"><div class="part-title"><h3>Первый день.</h3></div></a></li>
+          <li class="part"><a href="/readfic/0193-abc/12#part_content" class="part-link"><div class="part-title"><h3>Второй день.</h3></div></a></li>
+        </ul>''',
+      'https://ficbook.net/readfic/0193-abc/11': '''
+        <article id="part_content"><h2>Первый день.</h2>
+        <div id="content">- Что за черт?!
+<i>Тихо</i> сказал он.
+
+Конец.</div></article>''',
+    });
+    const source = FicbookSource();
+    final info = await source.fetchStory(story, fetcher);
+    expect(info.author, 'Fak_k');
+    expect(info.fandom, 'Naruto');
+    expect(info.type, WorkType.fanfiction);
+    expect(info.tags, ['AU', 'Ангст']);
+    expect(
+      (info.pageCount, info.wordCount, info.isComplete),
+      (1124, 553964, true),
+    );
+    expect(info.summary, 'Первая строка.\n\nВторая строка.');
+    expect(info.chapters.map((c) => c.url.toString()), [
+      'https://ficbook.net/readfic/0193-abc/11',
+      'https://ficbook.net/readfic/0193-abc/12',
+    ]);
+    final chapter = await source.fetchChapter(info.chapters.first, fetcher);
+    expect(
+      chapter.html,
+      '<p>- Что за черт?!</p><p><em>Тихо</em> сказал он.</p><p>Конец.</p>',
+    );
+  });
 }
