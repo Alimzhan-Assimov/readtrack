@@ -256,6 +256,18 @@ abstract class AppLocalizations {
   /// **'Tag'**
   String get filterTag;
 
+  /// No description provided for @filterType.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get filterType;
+
+  /// No description provided for @clearFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear filters'**
+  String get clearFilters;
+
   /// No description provided for @filterAll.
   ///
   /// In en, this message translates to:
