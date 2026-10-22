@@ -107,7 +107,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _author.text = info.author ?? '';
     _fandom.text = info.fandom ?? '';
     _url.text = info.url.toString();
-    _chapters.text = '${info.chapters.length}';
+    _chapters.text = '${info.chapterCount}';
     _words.text = info.wordCount?.toString() ?? '';
     _pages.text = info.pageCount?.toString() ?? '';
     _summary.text = info.summary ?? '';
@@ -307,7 +307,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
             child: ListTile(
               leading: const Icon(Icons.cloud_done_outlined),
               title: Text(l10n.importedFrom(imported.siteName)),
-              subtitle: Text(l10n.importedSummary(imported.chapters.length)),
+              subtitle: Text(l10n.importedSummary(imported.chapterCount)),
             ),
           ),
         ),

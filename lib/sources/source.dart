@@ -41,6 +41,7 @@ class StoryInfo {
     this.wordCount,
     this.pageCount,
     this.isComplete,
+    this._chapterCount,
   });
 
   final Uri url;
@@ -56,6 +57,12 @@ class StoryInfo {
   final int? wordCount;
   final int? pageCount;
   final bool? isComplete;
+  final int? _chapterCount;
+
+  /// Number of chapters; sites that only list a count (and no chapters)
+  /// report it here.
+  int get chapterCount =>
+      chapters.isEmpty ? (_chapterCount ?? 0) : chapters.length;
 }
 
 class ChapterContent {
@@ -88,6 +95,9 @@ abstract class StorySource {
   List<String> get hosts;
 
   FetchMode get fetchMode;
+
+  /// False for catalog sites that only describe a story but don't host it.
+  bool get canRead => true;
 
   bool matches(Uri uri) => hosts.contains(_bareHost(uri));
 

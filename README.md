@@ -27,6 +27,15 @@ place, whether they sit on your shelf or live online.
 | Scribble Hub | Browser window (Cloudflare) |
 | Author.Today | HTTP; only chapters that are free to read |
 | Ficbook | HTTP, browser as fallback |
+| SpaceBattles, Sufficient Velocity, Questionable Questing | HTTP, browser as fallback; chapters are threadmarks |
+| Wattpad | public JSON API |
+| FictionPress | Browser window (Cloudflare) |
+| Quotev | Browser window |
+| Tapas | HTTP, browser as fallback; paid episodes are skipped |
+| Inkitt | HTTP, browser as fallback |
+| Honeyfeed | Browser window (Cloudflare) |
+| Wuxiaworld | HTTP, browser as fallback; paid chapters are skipped |
+| Novel Updates | Browser window; details only, chapters live on the translators' sites |
 
 Sites protected against bots are loaded through a small browser window
 (WebKitGTK on Linux), so pages arrive exactly as in a normal browser. Paywalls

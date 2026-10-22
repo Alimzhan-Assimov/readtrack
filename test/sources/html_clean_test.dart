@@ -25,6 +25,14 @@ void main() {
     );
   });
 
+  test('double line breaks start a new paragraph, single ones stay', () {
+    expect(
+      clean('One<br>still one<br><br>Two<br> <br><br>Three<br>'),
+      '<p>One<br>still one</p><p>Two</p><p>Three</p>',
+    );
+    expect(clean('<p>A<br><br>B</p><p>C</p>'), '<p>A<br><br>B</p><p>C</p>');
+  });
+
   test('handles paragraphs nested in list items and quotes', () {
     expect(
       clean(
