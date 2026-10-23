@@ -61,6 +61,7 @@ class RoyalRoadSource extends StorySource {
         for (final a in doc.querySelectorAll('a.fiction-tag')) squash(a.text),
       ],
       chapters: _chapters(html, storyUrl),
+      updatedOn: _lastChapterDate(html),
       // From the JSON-LD block: "numberOfPages":2932
       pageCount: parseCount(
         RegExp(r'"numberOfPages"\s*:\s*(\d+)').firstMatch(html)?.group(1),
@@ -79,13 +80,22 @@ class RoyalRoadSource extends StorySource {
   }
 
   /// The chapter list is embedded as `window.chapters = [...]`.
-  List<ChapterRef> _chapters(String html, Uri base) {
+  static List<Map<String, Object?>> _chapterJson(String html) {
     final json = RegExp(
       r'window\.chapters\s*=\s*(\[.*?\]);',
       dotAll: true,
     ).firstMatch(html)?.group(1);
     if (json == null) return const [];
-    final list = (jsonDecode(json) as List).cast<Map<String, Object?>>();
+    return (jsonDecode(json) as List).cast<Map<String, Object?>>();
+  }
+
+  DateTime? _lastChapterDate(String html) =>
+      [for (final c in _chapterJson(html)) ?DateTime.tryParse('${c['date']}')]
+          .fold<DateTime?>(null, (a, b) => a == null || b.isAfter(a) ? b : a);
+
+  List<ChapterRef> _chapters(String html, Uri base) {
+    final list = _chapterJson(html);
+    if (list.isEmpty) return const [];
     var number = 0;
     return [
       for (final c in list)

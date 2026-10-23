@@ -43,6 +43,7 @@ class StoryInfo {
     this.wordCount,
     this.pageCount,
     this.isComplete,
+    this.updatedOn,
     this._chapterCount,
   });
 
@@ -65,6 +66,9 @@ class StoryInfo {
   final int? wordCount;
   final int? pageCount;
   final bool? isComplete;
+
+  /// When the story was last updated, if the site says.
+  final DateTime? updatedOn;
   final int? _chapterCount;
 
   /// Number of chapters; sites that only list a count (and no chapters)

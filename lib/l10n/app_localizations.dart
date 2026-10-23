@@ -1581,6 +1581,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Close ReadTrack'**
   String get closeApp;
+
+  /// No description provided for @checkForUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Check for new chapters'**
+  String get checkForUpdates;
+
+  /// No description provided for @updatesFound.
+  ///
+  /// In en, this message translates to:
+  /// **'{chapters, plural, =1{1 new chapter} other{{chapters} new chapters}} in {works, plural, =1{1 story} other{{works} stories}}'**
+  String updatesFound(int chapters, int works);
+
+  /// No description provided for @noUpdatesFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No new chapters'**
+  String get noUpdatesFound;
+
+  /// No description provided for @updatesFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'No new chapters found; {count, plural, =1{1 story} other{{count} stories}} could not be checked'**
+  String updatesFailed(int count);
+
+  /// No description provided for @newChaptersBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'+{count} new'**
+  String newChaptersBadge(int count);
+
+  /// No description provided for @abandonedBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'No update for over a year'**
+  String get abandonedBadge;
+
+  /// No description provided for @abandonedShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Abandoned?'**
+  String get abandonedShort;
+
+  /// No description provided for @checkOnStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Check for new chapters on start'**
+  String get checkOnStart;
+
+  /// No description provided for @checkOnStartHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Ongoing stories that update often are checked more often, finished ones about once a month. Sites that need a browser window are only checked from the story page.'**
+  String get checkOnStartHint;
+
+  /// No description provided for @updatesHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Updates'**
+  String get updatesHeading;
 }
 
 class _AppLocalizationsDelegate

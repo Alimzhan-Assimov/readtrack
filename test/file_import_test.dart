@@ -48,6 +48,7 @@ void main() {
         isComplete: true,
         addedAt: DateTime(2026),
         updatedAt: DateTime(2026),
+        newChapters: 0,
       ),
       chapters: [
         chapter(

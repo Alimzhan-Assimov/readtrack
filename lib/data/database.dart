@@ -112,6 +112,16 @@ class Works extends Table {
   TextColumn get notes => text().nullable()();
   DateTimeColumn get addedAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+
+  /// When the site was last checked for new chapters.
+  DateTimeColumn get checkedAt => dateTime().nullable()();
+
+  /// When the latest chapter came out: the site's date if it shows one,
+  /// otherwise when ReadTrack first saw it.
+  DateTimeColumn get lastChapterAt => dateTime().nullable()();
+
+  /// Chapters found by update checks that the user hasn't looked at yet.
+  IntColumn get newChapters => integer().withDefault(const Constant(0))();
 }
 
 class WorkTags extends Table {
@@ -213,7 +223,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -240,6 +250,11 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 4) await moveRelationshipTagsToPairings();
       if (from < 5) await m.createTable(annotations);
+      if (from < 6) {
+        await m.addColumn(works, works.checkedAt);
+        await m.addColumn(works, works.lastChapterAt);
+        await m.addColumn(works, works.newChapters);
+      }
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
@@ -527,10 +542,14 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
-  Future<void> updateWork(int id, WorksCompanion changes) =>
-      (update(works)..where((w) => w.id.equals(id))).write(
-        changes.copyWith(updatedAt: Value(DateTime.now())),
-      );
+  /// With [touch], the work moves up in the "recently updated" order.
+  Future<void> updateWork(
+    int id,
+    WorksCompanion changes, {
+    bool touch = true,
+  }) => (update(works)..where((w) => w.id.equals(id))).write(
+    touch ? changes.copyWith(updatedAt: Value(DateTime.now())) : changes,
+  );
 
   /// Deletes a work and returns everything [restoreWork] needs to undo it.
   Future<DeletedWork?> deleteWork(int id) {
@@ -680,6 +699,20 @@ class AppDatabase extends _$AppDatabase {
         .map((row) => row.read(count) ?? 0)
         .watchSingle();
   }
+
+  Future<Work?> workById(int id) =>
+      (select(works)..where((w) => w.id.equals(id))).getSingleOrNull();
+
+  /// Online stories that update checks can look at.
+  Future<List<Work>> worksWithSource() =>
+      (select(works)..where((w) => w.sourceUrl.isNotNull())).get();
+
+  /// Clears the "new chapters" badge, e.g. when the story is opened.
+  Future<void> markChaptersSeen(int id) =>
+      (update(
+            works,
+          )..where((w) => w.id.equals(id) & w.newChapters.isBiggerThanValue(0)))
+          .write(const WorksCompanion(newChapters: Value(0)));
 
   Future<Work?> workBySourceUrl(String url) =>
       (select(works)..where((w) => w.sourceUrl.equals(url))).getSingleOrNull();

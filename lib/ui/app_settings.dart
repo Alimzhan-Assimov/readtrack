@@ -76,7 +76,20 @@ class AppSettings extends ChangeNotifier {
   bool _gridView = false;
   List<Shelf> _shelves = const [];
 
+  bool _checkOnStart = true;
+
   static const _gridViewKey = 'library.grid';
+  static const _checkOnStartKey = 'updates.onStart';
+
+  /// Whether online stories are checked for new chapters when the app starts.
+  bool get checkOnStart => _checkOnStart;
+
+  Future<void> setCheckOnStart(bool check) async {
+    _checkOnStart = check;
+    notifyListeners();
+    await _db.setSetting(_checkOnStartKey, '$check');
+  }
+
   static const _shelvesKey = 'library.shelves';
 
   /// Whether the library shows covers in a grid instead of a list.
@@ -137,6 +150,7 @@ class AppSettings extends ChangeNotifier {
   Future<void> load() async {
     _hideAdultTags = await _db.setting(_hideAdultTagsKey) == 'true';
     _gridView = await _db.setting(_gridViewKey) == 'true';
+    _checkOnStart = await _db.setting(_checkOnStartKey) != 'false';
     final shelves = await _db.setting(_shelvesKey);
     if (shelves != null) {
       try {

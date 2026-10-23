@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../data/database.dart';
+import '../l10n/l10n.dart';
+import '../library/update_checker.dart';
 import 'work_cover.dart';
 import 'work_tile.dart';
 
@@ -39,13 +41,23 @@ class WorkGridTile extends StatelessWidget {
               Expanded(
                 child: Center(
                   child: LayoutBuilder(
-                    builder: (context, constraints) => WorkCover(
-                      work: w,
-                      // Covers are 2:3; fit the space without overflowing.
-                      width: constraints.maxWidth
-                          .clamp(0, constraints.maxHeight / 1.5)
-                          .toDouble(),
-                      heroTag: heroTag,
+                    builder: (context, constraints) => Stack(
+                      children: [
+                        WorkCover(
+                          work: w,
+                          // Covers are 2:3; fit the space without overflowing.
+                          width: constraints.maxWidth
+                              .clamp(0, constraints.maxHeight / 1.5)
+                              .toDouble(),
+                          heroTag: heroTag,
+                        ),
+                        if (w.newChapters > 0)
+                          Positioned(
+                            top: 4,
+                            right: 4,
+                            child: NewChaptersBadge(w.newChapters),
+                          ),
+                      ],
                     ),
                   ),
                 ),
@@ -68,6 +80,18 @@ class WorkGridTile extends StatelessWidget {
               Row(
                 children: [
                   Flexible(child: StatusBadge(w.status)),
+                  if (looksAbandoned(w))
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4),
+                      child: Tooltip(
+                        message: context.l10n.abandonedBadge,
+                        child: Icon(
+                          Icons.hourglass_disabled,
+                          size: 16,
+                          color: theme.colorScheme.error,
+                        ),
+                      ),
+                    ),
                   const SizedBox(width: 4),
                   if (total > 0 && current > 0)
                     Text('$current/$total', style: theme.textTheme.labelSmall),

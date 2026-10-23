@@ -145,6 +145,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     value: settings.hideAdultTags,
                     onChanged: settings.setHideAdultTags,
                   ),
+                if (settings != null)
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    secondary: const Icon(Icons.update),
+                    title: Text(l10n.checkOnStart),
+                    subtitle: Text(l10n.checkOnStartHint),
+                    value: settings.checkOnStart,
+                    onChanged: settings.setCheckOnStart,
+                  ),
                 const SizedBox(height: 16),
                 Text(
                   l10n.backupHeading,
