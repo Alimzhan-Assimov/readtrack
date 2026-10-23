@@ -44,6 +44,27 @@ class WorkPairings extends Table {
   Set<Column> get primaryKey => {workId, pairingId};
 }
 
+enum AnnotationKind { bookmark, quote, note }
+
+/// A bookmark, a saved quote (shown highlighted) or a note in a work.
+class Annotations extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get workId =>
+      integer().references(Works, #id, onDelete: KeyAction.cascade)();
+  IntColumn get chapterNumber => integer()();
+  TextColumn get kind => textEnum<AnnotationKind>()();
+
+  /// The quoted text (quotes, and notes made on a selection).
+  TextColumn get quote => text().nullable()();
+
+  /// The user's own words (notes).
+  TextColumn get note => text().nullable()();
+
+  /// Scroll position in the chapter, from 0 to 1.
+  RealColumn get offset => real().withDefault(const Constant(0))();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+}
+
 /// App settings as key/value pairs.
 class Settings extends Table {
   TextColumn get key => text()();
@@ -163,11 +184,13 @@ class DeletedWork {
     this.chapters,
     this.downloads, {
     this.pairingIds = const [],
+    this.annotations = const [],
   });
 
   final Work work;
   final List<int> tagIds;
   final List<int> pairingIds;
+  final List<Annotation> annotations;
   final List<Chapter> chapters;
   final List<Download> downloads;
 }
@@ -183,13 +206,14 @@ class DeletedWork {
     Pairings,
     WorkPairings,
     Settings,
+    Annotations,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -215,6 +239,7 @@ class AppDatabase extends _$AppDatabase {
         }
       }
       if (from < 4) await moveRelationshipTagsToPairings();
+      if (from < 5) await m.createTable(annotations);
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
@@ -522,6 +547,9 @@ class AppDatabase extends _$AppDatabase {
       final savedDownloads = await (select(
         downloads,
       )..where((d) => d.workId.equals(id))).get();
+      final savedAnnotations = await (select(
+        annotations,
+      )..where((a) => a.workId.equals(id))).get();
       await (delete(works)..where((w) => w.id.equals(id))).go();
       return DeletedWork(
         work,
@@ -529,6 +557,7 @@ class AppDatabase extends _$AppDatabase {
         savedChapters,
         savedDownloads,
         pairingIds: pairingIds,
+        annotations: savedAnnotations,
       );
     });
   }
@@ -550,6 +579,7 @@ class AppDatabase extends _$AppDatabase {
         ]);
         b.insertAll(chapters, deleted.chapters);
         b.insertAll(downloads, deleted.downloads);
+        b.insertAll(annotations, deleted.annotations);
       });
     });
   }
@@ -783,6 +813,26 @@ class AppDatabase extends _$AppDatabase {
   Future<List<String>> pairingNames() => (select(
     pairings,
   )..orderBy([(p) => OrderingTerm.asc(p.name)])).map((p) => p.name).get();
+
+  Stream<List<Annotation>> watchAnnotations(int workId) =>
+      (select(annotations)
+            ..where((a) => a.workId.equals(workId))
+            ..orderBy([
+              (a) => OrderingTerm.asc(a.chapterNumber),
+              (a) => OrderingTerm.asc(a.offset),
+            ]))
+          .watch();
+
+  Future<int> addAnnotation(AnnotationsCompanion data) =>
+      into(annotations).insert(data);
+
+  Future<void> updateAnnotationNote(int id, String? note) =>
+      (update(annotations)..where((a) => a.id.equals(id))).write(
+        AnnotationsCompanion(note: Value(note)),
+      );
+
+  Future<void> deleteAnnotation(int id) =>
+      (delete(annotations)..where((a) => a.id.equals(id))).go();
 
   Future<String?> setting(String key) async => (await (select(
     settings,

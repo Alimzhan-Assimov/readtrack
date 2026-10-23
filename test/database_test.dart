@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:readtrack/data/database.dart';
+import 'package:readtrack/ui/app_settings.dart';
 
 void main() {
   late AppDatabase db;
@@ -124,5 +125,41 @@ void main() {
     await db.setSetting('x', 'true');
     await db.setSetting('x', 'false');
     expect(await db.setting('x'), 'false');
+  });
+
+  test('annotations come back when deleting is undone', () async {
+    final id = await db.saveWork(fic('Fic'));
+    await db.addAnnotation(
+      AnnotationsCompanion.insert(
+        workId: id,
+        chapterNumber: 2,
+        kind: AnnotationKind.quote,
+        quote: const Value('A line'),
+      ),
+    );
+    final deleted = await db.deleteWork(id);
+    expect(deleted!.annotations, hasLength(1));
+    await db.restoreWork(deleted);
+    expect((await db.watchAnnotations(id).first).single.quote, 'A line');
+  });
+
+  test('reader settings are stored and loaded', () async {
+    final settings = AppSettings(db);
+    await settings.setReader(
+      const ReaderPrefs(
+        fontSize: 22,
+        font: ReaderFont.mono,
+        lineHeight: 1.9,
+        theme: ReaderTheme.sepia,
+        justify: true,
+      ),
+    );
+    final again = AppSettings(db);
+    await again.load();
+    final r = again.reader;
+    expect(
+      (r.fontSize, r.font, r.lineHeight, r.theme, r.justify),
+      (22.0, ReaderFont.mono, 1.9, ReaderTheme.sepia, true),
+    );
   });
 }

@@ -826,4 +826,87 @@ class AppLocalizationsEn extends AppLocalizations {
   String importFailed(String error) {
     return 'Couldn\'t import the file: $error';
   }
+
+  @override
+  String get readerSettings => 'Reading settings';
+
+  @override
+  String get readerFont => 'Font';
+
+  @override
+  String get readerFontSystem => 'System';
+
+  @override
+  String get readerFontSerif => 'Serif';
+
+  @override
+  String get readerFontSans => 'Sans';
+
+  @override
+  String get readerFontMono => 'Mono';
+
+  @override
+  String get readerLineSpacing => 'Line spacing';
+
+  @override
+  String get readerTheme => 'Theme';
+
+  @override
+  String get readerThemeApp => 'App';
+
+  @override
+  String get readerThemeLight => 'Light';
+
+  @override
+  String get readerThemeSepia => 'Sepia';
+
+  @override
+  String get readerThemeDark => 'Dark';
+
+  @override
+  String get readerThemeBlack => 'Night';
+
+  @override
+  String get readerJustify => 'Justify text';
+
+  @override
+  String get addBookmark => 'Add bookmark';
+
+  @override
+  String get bookmarkAdded => 'Bookmark added';
+
+  @override
+  String bookmarkAt(int percent) {
+    return 'Bookmark at $percent %';
+  }
+
+  @override
+  String get saveQuote => 'Save quote';
+
+  @override
+  String get quoteSaved => 'Quote saved';
+
+  @override
+  String get addNote => 'Add note';
+
+  @override
+  String get editNote => 'Edit note';
+
+  @override
+  String get noteSaved => 'Note saved';
+
+  @override
+  String get noteHint => 'Your thoughts…';
+
+  @override
+  String get annotationsTitle => 'Bookmarks, quotes & notes';
+
+  @override
+  String get annotationsEmpty =>
+      'Nothing yet. Add a bookmark with the bookmark button, or select text to save a quote or note.';
+
+  @override
+  String showAllAnnotations(int count) {
+    return 'Show all ($count)';
+  }
 }
