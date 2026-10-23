@@ -20,6 +20,15 @@ const _adultWords = [
   'юри',
   'яой',
   'лемон',
+  'cock',
+  'cocks',
+  'cum',
+  'pussy',
+  'dick',
+  'tits',
+  'boobs',
+  'vagina',
+  'penis',
 ];
 
 /// Word beginnings that mark adult content ("sex" also matches "sexual").
@@ -29,6 +38,8 @@ const _adultStems = [
   'noncon', 'dub-con', 'dubcon', 'fetish', 'kink', 'orgasm', 'masturbat',
   'bondage', 'threesome', 'foursome', 'hentai', 'erotic', 'tentacle',
   'lactation', 'blowjob', 'handjob', 'creampie', 'oral sex',
+  'blow job', 'hand job', 'vaginal', 'genital', 'cunnilingus', 'fellatio',
+  'deepthroat', 'gangbang', 'bukkake', 'voyeur', 'exhibitionis',
   // Russian
   'секс', 'анальн', 'оральн', 'порн', 'изнасил', 'инцест', 'бдсм', 'эрот',
   'оргазм', 'хентай', 'кинк', 'фетиш', 'мастурб', 'групповой секс',

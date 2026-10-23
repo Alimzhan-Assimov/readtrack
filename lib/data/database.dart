@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'adult_tags.dart';
 import 'enums.dart';
 import 'fandom_names.dart';
+import 'pairing_tags.dart';
 
 export 'enums.dart';
 
@@ -187,7 +188,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -212,6 +213,7 @@ class AppDatabase extends _$AppDatabase {
           }
         }
       }
+      if (from < 4) await moveRelationshipTagsToPairings();
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
@@ -439,6 +441,18 @@ class AppDatabase extends _$AppDatabase {
     /// Tags the site marks as adult content (detected ones are added).
     Set<String> adultTags = const {},
   }) {
+    // A tag such as "Naruto/Hinata" is a pairing.
+    final pairingLike = [
+      for (final t in tagNames)
+        if (looksLikePairing(t)) t,
+    ];
+    if (pairingLike.isNotEmpty) {
+      tagNames = [
+        for (final t in tagNames)
+          if (!looksLikePairing(t)) t,
+      ];
+      pairingNames = [...pairingNames, ...pairingLike];
+    }
     return transaction(() async {
       final row = data.copyWith(
         fandomId: Value(await _fandomIdFor(fandomName)),
@@ -716,6 +730,31 @@ class AppDatabase extends _$AppDatabase {
     )..where((p) => p.name.lower().equals(n.toLowerCase()))).getSingleOrNull();
     return existing?.id ??
         await into(pairings).insert(PairingsCompanion.insert(name: n));
+  }
+
+  /// Turns tags that name a relationship ("Naruto/Hinata") into pairings,
+  /// keeping them on the same works. Earlier imports stored AO3
+  /// relationships as tags.
+  Future<void> moveRelationshipTagsToPairings() {
+    return transaction(() async {
+      for (final tag in await select(tags).get()) {
+        if (!looksLikePairing(tag.name)) continue;
+        final pairingId = await _pairingIdFor(tag.name);
+        final workIds =
+            await (selectOnly(workTags)
+                  ..addColumns([workTags.workId])
+                  ..where(workTags.tagId.equals(tag.id)))
+                .map((r) => r.read(workTags.workId)!)
+                .get();
+        for (final workId in workIds) {
+          await into(workPairings).insert(
+            WorkPairingsCompanion.insert(workId: workId, pairingId: pairingId!),
+            mode: InsertMode.insertOrIgnore,
+          );
+        }
+        await (delete(tags)..where((t) => t.id.equals(tag.id))).go();
+      }
+    });
   }
 
   Future<void> setTagAdult(int tagId, bool adult) =>
