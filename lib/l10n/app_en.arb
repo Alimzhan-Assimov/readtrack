@@ -506,5 +506,45 @@
         "type": "String"
       }
     }
+  },
+  "readerSettings": "Reading settings",
+  "readerFont": "Font",
+  "readerFontSystem": "System",
+  "readerFontSerif": "Serif",
+  "readerFontSans": "Sans",
+  "readerFontMono": "Mono",
+  "readerLineSpacing": "Line spacing",
+  "readerTheme": "Theme",
+  "readerThemeApp": "App",
+  "readerThemeLight": "Light",
+  "readerThemeSepia": "Sepia",
+  "readerThemeDark": "Dark",
+  "readerThemeBlack": "Night",
+  "readerJustify": "Justify text",
+  "addBookmark": "Add bookmark",
+  "bookmarkAdded": "Bookmark added",
+  "bookmarkAt": "Bookmark at {percent} %",
+  "@bookmarkAt": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "saveQuote": "Save quote",
+  "quoteSaved": "Quote saved",
+  "addNote": "Add note",
+  "editNote": "Edit note",
+  "noteSaved": "Note saved",
+  "noteHint": "Your thoughts…",
+  "annotationsTitle": "Bookmarks, quotes & notes",
+  "annotationsEmpty": "Nothing yet. Add a bookmark with the bookmark button, or select text to save a quote or note.",
+  "showAllAnnotations": "Show all ({count})",
+  "@showAllAnnotations": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

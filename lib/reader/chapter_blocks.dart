@@ -13,7 +13,17 @@ List<Widget> buildChapterBlocks(
   required TextStyle style,
   required ImageResolver resolveImage,
   required ColorScheme colors,
+
+  /// Saved quotes to highlight where they appear in the text.
+  List<String> highlights = const [],
+  TextAlign textAlign = TextAlign.start,
 }) {
+  final marks = _Marks([
+    // A quote across paragraphs is highlighted line by line.
+    for (final quote in highlights)
+      for (final line in quote.split('\n'))
+        if (line.trim().length >= 3) line.trim(),
+  ], colors.tertiaryContainer);
   final root = html_parser.parseFragment(html);
   final blocks = <Widget>[];
   final paragraphGap = (style.fontSize ?? 16) * 0.9;
@@ -21,7 +31,10 @@ List<Widget> buildChapterBlocks(
   Widget paragraph(dom.Element element, TextStyle textStyle) => Padding(
     padding: EdgeInsets.only(bottom: paragraphGap),
     child: Text.rich(
-      TextSpan(children: _inline(element.nodes, textStyle, resolveImage)),
+      textAlign: textAlign,
+      TextSpan(
+        children: _inline(element.nodes, textStyle, resolveImage, marks),
+      ),
     ),
   );
 
@@ -31,7 +44,9 @@ List<Widget> buildChapterBlocks(
         blocks.add(
           Padding(
             padding: EdgeInsets.only(bottom: paragraphGap),
-            child: Text(node.text.trim(), style: style),
+            child: Text.rich(
+              TextSpan(children: marks.spans(node.text.trim(), style)),
+            ),
           ),
         );
       }
@@ -67,6 +82,7 @@ List<Widget> buildChapterBlocks(
                     fontWeight: FontWeight.w600,
                   ),
                   resolveImage,
+                  marks,
                 ),
               ),
             ),
@@ -113,7 +129,12 @@ List<Widget> buildChapterBlocks(
                     Expanded(
                       child: Text.rich(
                         TextSpan(
-                          children: _inline(item.nodes, style, resolveImage),
+                          children: _inline(
+                            item.nodes,
+                            style,
+                            resolveImage,
+                            marks,
+                          ),
                         ),
                       ),
                     ),
@@ -140,11 +161,12 @@ List<InlineSpan> _inline(
   List<dom.Node> nodes,
   TextStyle style,
   ImageResolver resolveImage,
+  _Marks marks,
 ) {
   final spans = <InlineSpan>[];
   for (final node in nodes) {
     if (node is dom.Text) {
-      spans.add(TextSpan(text: node.text, style: style));
+      spans.addAll(marks.spans(node.text, style));
     } else if (node is dom.Element) {
       final tag = node.localName;
       if (tag == 'br') {
@@ -166,7 +188,7 @@ List<InlineSpan> _inline(
         'sub' => style.copyWith(fontSize: (style.fontSize ?? 16) * 0.75),
         _ => style,
       };
-      spans.addAll(_inline(node.nodes, childStyle, resolveImage));
+      spans.addAll(_inline(node.nodes, childStyle, resolveImage, marks));
     }
   }
   return spans;
@@ -188,4 +210,45 @@ Widget? _image(dom.Element element, ImageResolver resolveImage) {
       ),
     ),
   );
+}
+
+/// Quotes to highlight and their color.
+class _Marks {
+  _Marks(this.phrases, this.color);
+
+  final List<String> phrases;
+  final Color color;
+
+  /// [text] as spans, with every occurrence of a phrase highlighted.
+  List<InlineSpan> spans(String text, TextStyle style) {
+    if (phrases.isEmpty) return [TextSpan(text: text, style: style)];
+    final ranges = <(int, int)>[];
+    for (final phrase in phrases) {
+      for (
+        var i = text.indexOf(phrase);
+        i >= 0;
+        i = text.indexOf(phrase, i + phrase.length)
+      ) {
+        ranges.add((i, i + phrase.length));
+      }
+    }
+    if (ranges.isEmpty) return [TextSpan(text: text, style: style)];
+    ranges.sort((a, b) => a.$1.compareTo(b.$1));
+    final marked = style.copyWith(backgroundColor: color);
+    final out = <InlineSpan>[];
+    var at = 0;
+    for (final (start, end) in ranges) {
+      if (end <= at) continue;
+      final from = start < at ? at : start;
+      if (from > at) {
+        out.add(TextSpan(text: text.substring(at, from), style: style));
+      }
+      out.add(TextSpan(text: text.substring(from, end), style: marked));
+      at = end;
+    }
+    if (at < text.length) {
+      out.add(TextSpan(text: text.substring(at), style: style));
+    }
+    return out;
+  }
 }

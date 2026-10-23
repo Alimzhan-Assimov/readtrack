@@ -7,6 +7,7 @@ import '../library/exporters.dart';
 import '../library/library_scope.dart';
 import '../library/story_sync.dart';
 import '../reader/reader_screen.dart';
+import '../reader/reader_sheets.dart';
 import '../sources/sources.dart';
 import 'download_dialog.dart';
 
@@ -24,6 +25,7 @@ class ReadSection extends StatefulWidget {
 class _ReadSectionState extends State<ReadSection> {
   late Stream<List<Download>> _downloads;
   late Stream<int> _chapterCount;
+  late Stream<List<Annotation>> _annotations;
   bool _checking = false;
 
   AppDatabase get _db => DatabaseScope.of(context);
@@ -40,15 +42,41 @@ class _ReadSectionState extends State<ReadSection> {
     super.didChangeDependencies();
     _downloads = _db.watchDownloads(widget.work.id);
     _chapterCount = _db.watchChapterCount(widget.work.id);
+    _annotations = _db.watchAnnotations(widget.work.id);
   }
 
-  void _read(ReaderMode mode, {int? chapter}) {
+  void _read(ReaderMode mode, {int? chapter, double? offset}) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) =>
-            ReaderScreen(work: widget.work, mode: mode, startChapter: chapter),
+        builder: (_) => ReaderScreen(
+          work: widget.work,
+          mode: mode,
+          startChapter: chapter,
+          startOffset: offset,
+        ),
       ),
     );
+  }
+
+  /// Opens the place of [annotation]: from a download that has the chapter,
+  /// otherwise online.
+  void _openAnnotation(Annotation annotation, List<Download> downloads) {
+    final download = downloads
+        .where(
+          (d) =>
+              d.fromChapter <= annotation.chapterNumber &&
+              annotation.chapterNumber <= d.toChapter,
+        )
+        .firstOrNull;
+    final ReaderMode mode;
+    if (download != null) {
+      mode = DownloadReading(download);
+    } else if (_source != null) {
+      mode = const OnlineReading();
+    } else {
+      return;
+    }
+    _read(mode, chapter: annotation.chapterNumber, offset: annotation.offset);
   }
 
   Future<void> _checkForNew() async {
@@ -277,6 +305,11 @@ class _ReadSectionState extends State<ReadSection> {
                       ),
                     ),
                   ),
+                _AnnotationsPreview(
+                  annotations: _annotations,
+                  onOpen: (a) => _openAnnotation(a, downloads),
+                  onDelete: (a) => _db.deleteAnnotation(a.id),
+                ),
                 ListenableBuilder(
                   listenable: service,
                   builder: (context, _) {
@@ -331,6 +364,73 @@ class _ReadSectionState extends State<ReadSection> {
               ],
             );
           },
+        );
+      },
+    );
+  }
+}
+
+/// The latest bookmarks, quotes and notes, with a way to see all of them.
+class _AnnotationsPreview extends StatelessWidget {
+  const _AnnotationsPreview({
+    required this.annotations,
+    required this.onOpen,
+    required this.onDelete,
+  });
+
+  static const _shown = 3;
+
+  final Stream<List<Annotation>> annotations;
+  final ValueChanged<Annotation> onOpen;
+  final ValueChanged<Annotation> onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    return StreamBuilder<List<Annotation>>(
+      stream: annotations,
+      builder: (context, snapshot) {
+        final items = snapshot.data ?? const <Annotation>[];
+        if (items.isEmpty) return const SizedBox.shrink();
+        final latest = [...items]
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        String chapter(Annotation a) => l10n.chapterCurrent(a.chapterNumber);
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 16),
+            Text(
+              l10n.annotationsTitle,
+              style: theme.textTheme.titleSmall?.copyWith(
+                color: theme.colorScheme.primary,
+              ),
+            ),
+            for (final a in latest.take(_shown))
+              AnnotationTile(
+                annotation: a,
+                chapterTitle: chapter(a),
+                onTap: () => onOpen(a),
+                onDelete: () => onDelete(a),
+              ),
+            if (items.length > _shown)
+              TextButton(
+                onPressed: () async {
+                  final picked = await showModalBottomSheet<Annotation>(
+                    context: context,
+                    isScrollControlled: true,
+                    showDragHandle: true,
+                    builder: (_) => AnnotationsSheet(
+                      annotations: annotations,
+                      chapterTitle: (n) => l10n.chapterCurrent(n),
+                      onDelete: onDelete,
+                    ),
+                  );
+                  if (picked != null) onOpen(picked);
+                },
+                child: Text(l10n.showAllAnnotations(items.length)),
+              ),
+          ],
         );
       },
     );

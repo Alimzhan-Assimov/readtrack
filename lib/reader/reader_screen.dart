@@ -13,7 +13,9 @@ import '../library/library_scope.dart';
 import '../library/story_sync.dart';
 import '../sources/sources.dart';
 import '../ui/layout.dart';
+import '../ui/app_settings.dart';
 import 'chapter_blocks.dart';
+import 'reader_sheets.dart';
 
 /// What the reader shows: chapters live from the site, or a download.
 sealed class ReaderMode {
@@ -30,15 +32,13 @@ class DownloadReading extends ReaderMode {
   final Download download;
 }
 
-/// Text size for the reader, shared by all books while the app runs.
-final readerFontSize = ValueNotifier<double>(18);
-
 class ReaderScreen extends StatefulWidget {
   const ReaderScreen({
     super.key,
     required this.work,
     required this.mode,
     this.startChapter,
+    this.startOffset,
   });
 
   final Work work;
@@ -46,6 +46,9 @@ class ReaderScreen extends StatefulWidget {
 
   /// Opens this chapter instead of the last reading position.
   final int? startChapter;
+
+  /// Scroll position (0–1) within [startChapter], e.g. for a bookmark.
+  final double? startOffset;
 
   @override
   State<ReaderScreen> createState() => _ReaderScreenState();
@@ -64,6 +67,13 @@ class _ReaderScreenState extends State<ReaderScreen> {
 
   /// Latest scroll position (0–1), so it can still be saved in [dispose].
   double? _offset;
+
+  /// Text currently selected in the chapter, for quotes and notes.
+  String? _selection;
+
+  /// Settings used when there is no [SettingsScope] (e.g. in tests).
+  ReaderPrefs _localPrefs = const ReaderPrefs();
+  late Stream<List<Annotation>> _annotations;
 
   // Looked up once: inherited widgets aren't reachable in dispose().
   late final AppDatabase _db = DatabaseScope.of(context);
@@ -93,12 +103,120 @@ class _ReaderScreenState extends State<ReaderScreen> {
     if (widget.startChapter == null && saved != null && saved > 0) {
       _pendingOffset = widget.work.readOffset;
     }
+    if (widget.startOffset case final offset?) _pendingOffset = offset;
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_content == null) _init();
+    if (_content == null) {
+      _annotations = _db.watchAnnotations(widget.work.id);
+      _init();
+    }
+  }
+
+  ReaderPrefs get _prefs =>
+      SettingsScope.maybeOf(context)?.reader ?? _localPrefs;
+
+  void _setPrefs(ReaderPrefs prefs) {
+    final settings = SettingsScope.maybeOf(context);
+    if (settings != null) {
+      settings.setReader(prefs);
+    } else {
+      setState(() => _localPrefs = prefs);
+    }
+  }
+
+  void _showSettings() => showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    isScrollControlled: true,
+    builder: (_) => ReaderSettingsSheet(prefs: _prefs, onChanged: _setPrefs),
+  );
+
+  Future<void> _addBookmark() async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    await _db.addAnnotation(
+      AnnotationsCompanion.insert(
+        workId: widget.work.id,
+        chapterNumber: _current,
+        kind: AnnotationKind.bookmark,
+        offset: Value(_offset ?? 0),
+      ),
+    );
+    messenger.showSnackBar(SnackBar(content: Text(l10n.bookmarkAdded)));
+  }
+
+  Future<void> _saveQuote(String quote, {bool withNote = false}) async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    String? note;
+    if (withNote) {
+      note = await askForNote(context, quote: quote);
+      if (note == null) return;
+    }
+    await _db.addAnnotation(
+      AnnotationsCompanion.insert(
+        workId: widget.work.id,
+        chapterNumber: _current,
+        kind: withNote ? AnnotationKind.note : AnnotationKind.quote,
+        quote: Value(quote),
+        note: Value(note == null || note.isEmpty ? null : note),
+        offset: Value(_offset ?? 0),
+      ),
+    );
+    messenger.showSnackBar(
+      SnackBar(content: Text(withNote ? l10n.noteSaved : l10n.quoteSaved)),
+    );
+  }
+
+  Future<void> _addChapterNote() async {
+    final note = await askForNote(context);
+    if (note == null || note.isEmpty) return;
+    await _db.addAnnotation(
+      AnnotationsCompanion.insert(
+        workId: widget.work.id,
+        chapterNumber: _current,
+        kind: AnnotationKind.note,
+        note: Value(note),
+        offset: Value(_offset ?? 0),
+      ),
+    );
+  }
+
+  Future<void> _editNote(Annotation a) async {
+    final note = await askForNote(
+      context,
+      initial: a.note ?? '',
+      quote: a.quote,
+    );
+    if (note != null) {
+      await _db.updateAnnotationNote(a.id, note.isEmpty ? null : note);
+    }
+  }
+
+  Future<void> _showAnnotations() async {
+    final picked = await showModalBottomSheet<Annotation>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => AnnotationsSheet(
+        annotations: _annotations,
+        chapterTitle: (n) =>
+            _chapter(n)?.title ?? context.l10n.readerPosition(n, _last),
+        onDelete: (a) => _db.deleteAnnotation(a.id),
+        onEditNote: _editNote,
+      ),
+    );
+    if (picked == null || !mounted) return;
+    if (picked.chapterNumber < _first || picked.chapterNumber > _last) return;
+    _pendingOffset = picked.offset;
+    if (picked.chapterNumber == _current) {
+      setState(() {});
+    } else {
+      _open(picked.chapterNumber, keepOffset: true);
+    }
   }
 
   Future<void> _init() async {
@@ -246,6 +364,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
       child: Focus(
         autofocus: true,
         child: Scaffold(
+          backgroundColor: _prefs.theme.background,
           appBar: AppBar(
             title: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -269,19 +388,29 @@ class _ReaderScreenState extends State<ReaderScreen> {
                 tooltip: l10n.readerChapters,
                 onPressed: _chapters.isEmpty ? null : _showChapterList,
               ),
+              IconButton(
+                icon: const Icon(Icons.bookmark_add_outlined),
+                tooltip: l10n.addBookmark,
+                onPressed: _addBookmark,
+              ),
+              IconButton(
+                icon: const Icon(Icons.text_fields),
+                tooltip: l10n.readerSettings,
+                onPressed: _showSettings,
+              ),
               MenuAnchor(
                 menuChildren: [
                   MenuItemButton(
-                    leadingIcon: const Icon(Icons.text_decrease),
-                    onPressed: () => readerFontSize.value =
-                        (readerFontSize.value - 2).clamp(12, 36),
-                    child: Text(l10n.readerSmaller),
+                    leadingIcon: const Icon(
+                      Icons.collections_bookmark_outlined,
+                    ),
+                    onPressed: _showAnnotations,
+                    child: Text(l10n.annotationsTitle),
                   ),
                   MenuItemButton(
-                    leadingIcon: const Icon(Icons.text_increase),
-                    onPressed: () => readerFontSize.value =
-                        (readerFontSize.value + 2).clamp(12, 36),
-                    child: Text(l10n.readerLarger),
+                    leadingIcon: const Icon(Icons.sticky_note_2_outlined),
+                    onPressed: _addChapterNote,
+                    child: Text(l10n.addNote),
                   ),
                   if (chapterUrl != null)
                     MenuItemButton(
@@ -294,8 +423,8 @@ class _ReaderScreenState extends State<ReaderScreen> {
                     ),
                 ],
                 builder: (context, controller, _) => IconButton(
-                  icon: const Icon(Icons.text_fields),
-                  tooltip: l10n.readerTextSize,
+                  icon: const Icon(Icons.more_vert),
+                  tooltip: l10n.moreOptions,
                   onPressed: () => controller.isOpen
                       ? controller.close()
                       : controller.open(),
@@ -332,23 +461,63 @@ class _ReaderScreenState extends State<ReaderScreen> {
                   loading: true,
                 );
               }
-              return ValueListenableBuilder<double>(
-                valueListenable: readerFontSize,
-                builder: (context, fontSize, _) {
+              final prefs = _prefs;
+              final textColor = prefs.theme.text ?? theme.colorScheme.onSurface;
+              return StreamBuilder<List<Annotation>>(
+                stream: _annotations,
+                builder: (context, annotationSnapshot) {
+                  final quotes = [
+                    for (final a
+                        in annotationSnapshot.data ?? const <Annotation>[])
+                      if (a.chapterNumber == _current) ?a.quote,
+                  ];
                   final blocks = buildChapterBlocks(
                     loaded.html,
                     style: theme.textTheme.bodyLarge!.copyWith(
-                      fontSize: fontSize,
-                      height: 1.6,
+                      fontSize: prefs.fontSize,
+                      height: prefs.lineHeight,
+                      fontFamily: prefs.font.family,
+                      color: textColor,
                     ),
                     resolveImage: _resolveImage,
                     colors: theme.colorScheme,
+                    highlights: quotes,
+                    textAlign: prefs.justify
+                        ? TextAlign.justify
+                        : TextAlign.start,
                   );
                   _restoreOffset();
                   // A full column (not a lazy list) so the scroll extent is
                   // exact and the reading position restores precisely.
                   return LayoutBuilder(
                     builder: (context, constraints) => SelectionArea(
+                      onSelectionChanged: (content) =>
+                          _selection = content?.plainText.trim(),
+                      contextMenuBuilder: (context, state) {
+                        final selected = _selection;
+                        return AdaptiveTextSelectionToolbar.buttonItems(
+                          anchors: state.contextMenuAnchors,
+                          buttonItems: [
+                            ...state.contextMenuButtonItems,
+                            if (selected != null && selected.isNotEmpty) ...[
+                              ContextMenuButtonItem(
+                                label: l10n.saveQuote,
+                                onPressed: () {
+                                  state.hideToolbar();
+                                  _saveQuote(selected);
+                                },
+                              ),
+                              ContextMenuButtonItem(
+                                label: l10n.addNote,
+                                onPressed: () {
+                                  state.hideToolbar();
+                                  _saveQuote(selected, withNote: true);
+                                },
+                              ),
+                            ],
+                          ],
+                        );
+                      },
                       child: SingleChildScrollView(
                         controller: _scroll,
                         padding: readablePadding(
@@ -363,7 +532,10 @@ class _ReaderScreenState extends State<ReaderScreen> {
                               padding: const EdgeInsets.only(bottom: 24),
                               child: Text(
                                 loaded.title ?? '',
-                                style: theme.textTheme.headlineSmall,
+                                style: theme.textTheme.headlineSmall?.copyWith(
+                                  color: textColor,
+                                  fontFamily: prefs.font.family,
+                                ),
                               ),
                             ),
                             ...blocks,

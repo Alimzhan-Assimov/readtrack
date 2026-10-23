@@ -129,4 +129,73 @@ void main() {
     expect(find.text('Recognized: AO3'), findsOneWidget);
     await unmount(tester);
   });
+
+  testWidgets('bookmarks are added and saved quotes are highlighted', (
+    tester,
+  ) async {
+    late Work work;
+    late Download download;
+    await tester.runAsync(() async {
+      final id = await db.saveWork(
+        WorksCompanion.insert(
+          type: WorkType.book,
+          format: WorkFormat.digital,
+          title: 'Imported',
+        ),
+      );
+      await db.saveChapterList(id, [
+        (number: 1, title: 'One', url: null, locked: false),
+      ]);
+      await db.saveChapterText(
+        id,
+        1,
+        html: '<p>It is a truth universally acknowledged.</p>',
+        wordCount: 6,
+      );
+      await db.addDownload(
+        DownloadsCompanion.insert(workId: id, fromChapter: 1, toChapter: 1),
+      );
+      await db.addAnnotation(
+        AnnotationsCompanion.insert(
+          workId: id,
+          chapterNumber: 1,
+          kind: AnnotationKind.quote,
+          quote: const Value('truth universally'),
+        ),
+      );
+      work = (await db.watchWork(id).first)!.work;
+      download = (await db.downloadsOf(id)).single;
+    });
+
+    await pump(
+      tester,
+      ReaderScreen(work: work, mode: DownloadReading(download)),
+    );
+    await tester.pumpAndSettle();
+    final highlighted = find.byWidgetPredicate((w) {
+      if (w is! RichText) return false;
+      var found = false;
+      w.text.visitChildren((span) {
+        if (span is TextSpan &&
+            span.text == 'truth universally' &&
+            span.style?.backgroundColor != null) {
+          found = true;
+        }
+        return !found;
+      });
+      return found;
+    });
+    expect(highlighted, findsOneWidget);
+
+    await tester.tap(find.byTooltip('Add bookmark'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bookmark added'), findsOneWidget);
+    final kinds = await tester.runAsync(
+      () async => [
+        for (final a in await db.watchAnnotations(work.id).first) a.kind,
+      ],
+    );
+    expect(kinds, containsAll([AnnotationKind.quote, AnnotationKind.bookmark]));
+    await unmount(tester);
+  });
 }

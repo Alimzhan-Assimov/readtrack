@@ -3533,6 +3533,515 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
   }
 }
 
+class $AnnotationsTable extends Annotations
+    with TableInfo<$AnnotationsTable, Annotation> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AnnotationsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _workIdMeta = const VerificationMeta('workId');
+  @override
+  late final GeneratedColumn<int> workId = GeneratedColumn<int>(
+    'work_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES works (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _chapterNumberMeta = const VerificationMeta(
+    'chapterNumber',
+  );
+  @override
+  late final GeneratedColumn<int> chapterNumber = GeneratedColumn<int>(
+    'chapter_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<AnnotationKind, String> kind =
+      GeneratedColumn<String>(
+        'kind',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<AnnotationKind>($AnnotationsTable.$converterkind);
+  static const VerificationMeta _quoteMeta = const VerificationMeta('quote');
+  @override
+  late final GeneratedColumn<String> quote = GeneratedColumn<String>(
+    'quote',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _offsetMeta = const VerificationMeta('offset');
+  @override
+  late final GeneratedColumn<double> offset = GeneratedColumn<double>(
+    'offset',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    workId,
+    chapterNumber,
+    kind,
+    quote,
+    note,
+    offset,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'annotations';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Annotation> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('work_id')) {
+      context.handle(
+        _workIdMeta,
+        workId.isAcceptableOrUnknown(data['work_id']!, _workIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_workIdMeta);
+    }
+    if (data.containsKey('chapter_number')) {
+      context.handle(
+        _chapterNumberMeta,
+        chapterNumber.isAcceptableOrUnknown(
+          data['chapter_number']!,
+          _chapterNumberMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_chapterNumberMeta);
+    }
+    if (data.containsKey('quote')) {
+      context.handle(
+        _quoteMeta,
+        quote.isAcceptableOrUnknown(data['quote']!, _quoteMeta),
+      );
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    if (data.containsKey('offset')) {
+      context.handle(
+        _offsetMeta,
+        offset.isAcceptableOrUnknown(data['offset']!, _offsetMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Annotation map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Annotation(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      workId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}work_id'],
+      )!,
+      chapterNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}chapter_number'],
+      )!,
+      kind: $AnnotationsTable.$converterkind.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}kind'],
+        )!,
+      ),
+      quote: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}quote'],
+      ),
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      ),
+      offset: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}offset'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $AnnotationsTable createAlias(String alias) {
+    return $AnnotationsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<AnnotationKind, String, String> $converterkind =
+      const EnumNameConverter<AnnotationKind>(AnnotationKind.values);
+}
+
+class Annotation extends DataClass implements Insertable<Annotation> {
+  final int id;
+  final int workId;
+  final int chapterNumber;
+  final AnnotationKind kind;
+
+  /// The quoted text (quotes, and notes made on a selection).
+  final String? quote;
+
+  /// The user's own words (notes).
+  final String? note;
+
+  /// Scroll position in the chapter, from 0 to 1.
+  final double offset;
+  final DateTime createdAt;
+  const Annotation({
+    required this.id,
+    required this.workId,
+    required this.chapterNumber,
+    required this.kind,
+    this.quote,
+    this.note,
+    required this.offset,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['work_id'] = Variable<int>(workId);
+    map['chapter_number'] = Variable<int>(chapterNumber);
+    {
+      map['kind'] = Variable<String>(
+        $AnnotationsTable.$converterkind.toSql(kind),
+      );
+    }
+    if (!nullToAbsent || quote != null) {
+      map['quote'] = Variable<String>(quote);
+    }
+    if (!nullToAbsent || note != null) {
+      map['note'] = Variable<String>(note);
+    }
+    map['offset'] = Variable<double>(offset);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  AnnotationsCompanion toCompanion(bool nullToAbsent) {
+    return AnnotationsCompanion(
+      id: Value(id),
+      workId: Value(workId),
+      chapterNumber: Value(chapterNumber),
+      kind: Value(kind),
+      quote: quote == null && nullToAbsent
+          ? const Value.absent()
+          : Value(quote),
+      note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+      offset: Value(offset),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory Annotation.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Annotation(
+      id: serializer.fromJson<int>(json['id']),
+      workId: serializer.fromJson<int>(json['workId']),
+      chapterNumber: serializer.fromJson<int>(json['chapterNumber']),
+      kind: $AnnotationsTable.$converterkind.fromJson(
+        serializer.fromJson<String>(json['kind']),
+      ),
+      quote: serializer.fromJson<String?>(json['quote']),
+      note: serializer.fromJson<String?>(json['note']),
+      offset: serializer.fromJson<double>(json['offset']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'workId': serializer.toJson<int>(workId),
+      'chapterNumber': serializer.toJson<int>(chapterNumber),
+      'kind': serializer.toJson<String>(
+        $AnnotationsTable.$converterkind.toJson(kind),
+      ),
+      'quote': serializer.toJson<String?>(quote),
+      'note': serializer.toJson<String?>(note),
+      'offset': serializer.toJson<double>(offset),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  Annotation copyWith({
+    int? id,
+    int? workId,
+    int? chapterNumber,
+    AnnotationKind? kind,
+    Value<String?> quote = const Value.absent(),
+    Value<String?> note = const Value.absent(),
+    double? offset,
+    DateTime? createdAt,
+  }) => Annotation(
+    id: id ?? this.id,
+    workId: workId ?? this.workId,
+    chapterNumber: chapterNumber ?? this.chapterNumber,
+    kind: kind ?? this.kind,
+    quote: quote.present ? quote.value : this.quote,
+    note: note.present ? note.value : this.note,
+    offset: offset ?? this.offset,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  Annotation copyWithCompanion(AnnotationsCompanion data) {
+    return Annotation(
+      id: data.id.present ? data.id.value : this.id,
+      workId: data.workId.present ? data.workId.value : this.workId,
+      chapterNumber: data.chapterNumber.present
+          ? data.chapterNumber.value
+          : this.chapterNumber,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      quote: data.quote.present ? data.quote.value : this.quote,
+      note: data.note.present ? data.note.value : this.note,
+      offset: data.offset.present ? data.offset.value : this.offset,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Annotation(')
+          ..write('id: $id, ')
+          ..write('workId: $workId, ')
+          ..write('chapterNumber: $chapterNumber, ')
+          ..write('kind: $kind, ')
+          ..write('quote: $quote, ')
+          ..write('note: $note, ')
+          ..write('offset: $offset, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    workId,
+    chapterNumber,
+    kind,
+    quote,
+    note,
+    offset,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Annotation &&
+          other.id == this.id &&
+          other.workId == this.workId &&
+          other.chapterNumber == this.chapterNumber &&
+          other.kind == this.kind &&
+          other.quote == this.quote &&
+          other.note == this.note &&
+          other.offset == this.offset &&
+          other.createdAt == this.createdAt);
+}
+
+class AnnotationsCompanion extends UpdateCompanion<Annotation> {
+  final Value<int> id;
+  final Value<int> workId;
+  final Value<int> chapterNumber;
+  final Value<AnnotationKind> kind;
+  final Value<String?> quote;
+  final Value<String?> note;
+  final Value<double> offset;
+  final Value<DateTime> createdAt;
+  const AnnotationsCompanion({
+    this.id = const Value.absent(),
+    this.workId = const Value.absent(),
+    this.chapterNumber = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.quote = const Value.absent(),
+    this.note = const Value.absent(),
+    this.offset = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  AnnotationsCompanion.insert({
+    this.id = const Value.absent(),
+    required int workId,
+    required int chapterNumber,
+    required AnnotationKind kind,
+    this.quote = const Value.absent(),
+    this.note = const Value.absent(),
+    this.offset = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  }) : workId = Value(workId),
+       chapterNumber = Value(chapterNumber),
+       kind = Value(kind);
+  static Insertable<Annotation> custom({
+    Expression<int>? id,
+    Expression<int>? workId,
+    Expression<int>? chapterNumber,
+    Expression<String>? kind,
+    Expression<String>? quote,
+    Expression<String>? note,
+    Expression<double>? offset,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (workId != null) 'work_id': workId,
+      if (chapterNumber != null) 'chapter_number': chapterNumber,
+      if (kind != null) 'kind': kind,
+      if (quote != null) 'quote': quote,
+      if (note != null) 'note': note,
+      if (offset != null) 'offset': offset,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  AnnotationsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? workId,
+    Value<int>? chapterNumber,
+    Value<AnnotationKind>? kind,
+    Value<String?>? quote,
+    Value<String?>? note,
+    Value<double>? offset,
+    Value<DateTime>? createdAt,
+  }) {
+    return AnnotationsCompanion(
+      id: id ?? this.id,
+      workId: workId ?? this.workId,
+      chapterNumber: chapterNumber ?? this.chapterNumber,
+      kind: kind ?? this.kind,
+      quote: quote ?? this.quote,
+      note: note ?? this.note,
+      offset: offset ?? this.offset,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (workId.present) {
+      map['work_id'] = Variable<int>(workId.value);
+    }
+    if (chapterNumber.present) {
+      map['chapter_number'] = Variable<int>(chapterNumber.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(
+        $AnnotationsTable.$converterkind.toSql(kind.value),
+      );
+    }
+    if (quote.present) {
+      map['quote'] = Variable<String>(quote.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (offset.present) {
+      map['offset'] = Variable<double>(offset.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AnnotationsCompanion(')
+          ..write('id: $id, ')
+          ..write('workId: $workId, ')
+          ..write('chapterNumber: $chapterNumber, ')
+          ..write('kind: $kind, ')
+          ..write('quote: $quote, ')
+          ..write('note: $note, ')
+          ..write('offset: $offset, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3545,6 +4054,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $PairingsTable pairings = $PairingsTable(this);
   late final $WorkPairingsTable workPairings = $WorkPairingsTable(this);
   late final $SettingsTable settings = $SettingsTable(this);
+  late final $AnnotationsTable annotations = $AnnotationsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3559,6 +4069,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     pairings,
     workPairings,
     settings,
+    annotations,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -3610,6 +4121,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('work_pairings', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'works',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('annotations', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -4216,6 +4734,24 @@ final class $$WorksTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$AnnotationsTable, List<Annotation>>
+  _annotationsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.annotations,
+    aliasName: 'works__id__annotations__work_id',
+  );
+
+  $$AnnotationsTableProcessedTableManager get annotationsRefs {
+    final manager = $$AnnotationsTableTableManager(
+      $_db,
+      $_db.annotations,
+    ).filter((f) => f.workId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_annotationsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$WorksTableFilterComposer extends Composer<_$AppDatabase, $WorksTable> {
@@ -4448,6 +4984,31 @@ class $$WorksTableFilterComposer extends Composer<_$AppDatabase, $WorksTable> {
           }) => $$WorkPairingsTableFilterComposer(
             $db: $db,
             $table: $db.workPairings,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> annotationsRefs(
+    Expression<bool> Function($$AnnotationsTableFilterComposer f) f,
+  ) {
+    final $$AnnotationsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.annotations,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AnnotationsTableFilterComposer(
+            $db: $db,
+            $table: $db.annotations,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4798,6 +5359,31 @@ class $$WorksTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> annotationsRefs<T extends Object>(
+    Expression<T> Function($$AnnotationsTableAnnotationComposer a) f,
+  ) {
+    final $$AnnotationsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.annotations,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AnnotationsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.annotations,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$WorksTableTableManager
@@ -4819,6 +5405,7 @@ class $$WorksTableTableManager
             bool chaptersRefs,
             bool downloadsRefs,
             bool workPairingsRefs,
+            bool annotationsRefs,
           })
         > {
   $$WorksTableTableManager(_$AppDatabase db, $WorksTable table)
@@ -4943,6 +5530,7 @@ class $$WorksTableTableManager
                 chaptersRefs = false,
                 downloadsRefs = false,
                 workPairingsRefs = false,
+                annotationsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -4951,6 +5539,7 @@ class $$WorksTableTableManager
                     if (chaptersRefs) db.chapters,
                     if (downloadsRefs) db.downloads,
                     if (workPairingsRefs) db.workPairings,
+                    if (annotationsRefs) db.annotations,
                   ],
                   addJoins:
                       <
@@ -5056,6 +5645,27 @@ class $$WorksTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (annotationsRefs)
+                        await $_getPrefetchedData<
+                          Work,
+                          $WorksTable,
+                          Annotation
+                        >(
+                          currentTable: table,
+                          referencedTable: $$WorksTableReferences
+                              ._annotationsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WorksTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).annotationsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.workId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -5082,6 +5692,7 @@ typedef $$WorksTableProcessedTableManager =
         bool chaptersRefs,
         bool downloadsRefs,
         bool workPairingsRefs,
+        bool annotationsRefs,
       })
     >;
 typedef $$WorkTagsTableCreateCompanionBuilder = WorkTagsCompanion Function({
@@ -6876,6 +7487,375 @@ typedef $$SettingsTableProcessedTableManager =
       Setting,
       PrefetchHooks Function()
     >;
+typedef $$AnnotationsTableCreateCompanionBuilder =
+    AnnotationsCompanion Function({
+      Value<int> id,
+      required int workId,
+      required int chapterNumber,
+      required AnnotationKind kind,
+      Value<String?> quote,
+      Value<String?> note,
+      Value<double> offset,
+      Value<DateTime> createdAt,
+    });
+typedef $$AnnotationsTableUpdateCompanionBuilder =
+    AnnotationsCompanion Function({
+      Value<int> id,
+      Value<int> workId,
+      Value<int> chapterNumber,
+      Value<AnnotationKind> kind,
+      Value<String?> quote,
+      Value<String?> note,
+      Value<double> offset,
+      Value<DateTime> createdAt,
+    });
+
+final class $$AnnotationsTableReferences
+    extends BaseReferences<_$AppDatabase, $AnnotationsTable, Annotation> {
+  $$AnnotationsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $WorksTable _workIdTable(_$AppDatabase db) =>
+      db.works.createAlias('annotations__work_id__works__id');
+
+  $$WorksTableProcessedTableManager get workId {
+    final $_column = $_itemColumn<int>('work_id')!;
+
+    final manager = $$WorksTableTableManager(
+      $_db,
+      $_db.works,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_workIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$AnnotationsTableFilterComposer
+    extends Composer<_$AppDatabase, $AnnotationsTable> {
+  $$AnnotationsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get chapterNumber => $composableBuilder(
+    column: $table.chapterNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<AnnotationKind, AnnotationKind, String>
+  get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<String> get quote => $composableBuilder(
+    column: $table.quote,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get offset => $composableBuilder(
+    column: $table.offset,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$WorksTableFilterComposer get workId {
+    final $$WorksTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workId,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableFilterComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AnnotationsTableOrderingComposer
+    extends Composer<_$AppDatabase, $AnnotationsTable> {
+  $$AnnotationsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get chapterNumber => $composableBuilder(
+    column: $table.chapterNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get quote => $composableBuilder(
+    column: $table.quote,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get offset => $composableBuilder(
+    column: $table.offset,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$WorksTableOrderingComposer get workId {
+    final $$WorksTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workId,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableOrderingComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AnnotationsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $AnnotationsTable> {
+  $$AnnotationsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get chapterNumber => $composableBuilder(
+    column: $table.chapterNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumnWithTypeConverter<AnnotationKind, String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<String> get quote =>
+      $composableBuilder(column: $table.quote, builder: (column) => column);
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<double> get offset =>
+      $composableBuilder(column: $table.offset, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$WorksTableAnnotationComposer get workId {
+    final $$WorksTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workId,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableAnnotationComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AnnotationsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $AnnotationsTable,
+          Annotation,
+          $$AnnotationsTableFilterComposer,
+          $$AnnotationsTableOrderingComposer,
+          $$AnnotationsTableAnnotationComposer,
+          $$AnnotationsTableCreateCompanionBuilder,
+          $$AnnotationsTableUpdateCompanionBuilder,
+          (Annotation, $$AnnotationsTableReferences),
+          Annotation,
+          PrefetchHooks Function({bool workId})
+        > {
+  $$AnnotationsTableTableManager(_$AppDatabase db, $AnnotationsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AnnotationsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AnnotationsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AnnotationsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> workId = const Value.absent(),
+                Value<int> chapterNumber = const Value.absent(),
+                Value<AnnotationKind> kind = const Value.absent(),
+                Value<String?> quote = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+                Value<double> offset = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => AnnotationsCompanion(
+                id: id,
+                workId: workId,
+                chapterNumber: chapterNumber,
+                kind: kind,
+                quote: quote,
+                note: note,
+                offset: offset,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int workId,
+                required int chapterNumber,
+                required AnnotationKind kind,
+                Value<String?> quote = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+                Value<double> offset = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => AnnotationsCompanion.insert(
+                id: id,
+                workId: workId,
+                chapterNumber: chapterNumber,
+                kind: kind,
+                quote: quote,
+                note: note,
+                offset: offset,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$AnnotationsTable, Annotation>(table),
+                  $$AnnotationsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({workId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (workId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.workId,
+                        referencedTable: $$AnnotationsTableReferences
+                            ._workIdTable(db),
+                        referencedColumn: $$AnnotationsTableReferences
+                            ._workIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$AnnotationsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $AnnotationsTable,
+      Annotation,
+      $$AnnotationsTableFilterComposer,
+      $$AnnotationsTableOrderingComposer,
+      $$AnnotationsTableAnnotationComposer,
+      $$AnnotationsTableCreateCompanionBuilder,
+      $$AnnotationsTableUpdateCompanionBuilder,
+      (Annotation, $$AnnotationsTableReferences),
+      Annotation,
+      PrefetchHooks Function({bool workId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -6897,4 +7877,6 @@ class $AppDatabaseManager {
       $$WorkPairingsTableTableManager(_db, _db.workPairings);
   $$SettingsTableTableManager get settings =>
       $$SettingsTableTableManager(_db, _db.settings);
+  $$AnnotationsTableTableManager get annotations =>
+      $$AnnotationsTableTableManager(_db, _db.annotations);
 }

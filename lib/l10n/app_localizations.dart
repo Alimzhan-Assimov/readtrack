@@ -1269,6 +1269,162 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t import the file: {error}'**
   String importFailed(String error);
+
+  /// No description provided for @readerSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading settings'**
+  String get readerSettings;
+
+  /// No description provided for @readerFont.
+  ///
+  /// In en, this message translates to:
+  /// **'Font'**
+  String get readerFont;
+
+  /// No description provided for @readerFontSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get readerFontSystem;
+
+  /// No description provided for @readerFontSerif.
+  ///
+  /// In en, this message translates to:
+  /// **'Serif'**
+  String get readerFontSerif;
+
+  /// No description provided for @readerFontSans.
+  ///
+  /// In en, this message translates to:
+  /// **'Sans'**
+  String get readerFontSans;
+
+  /// No description provided for @readerFontMono.
+  ///
+  /// In en, this message translates to:
+  /// **'Mono'**
+  String get readerFontMono;
+
+  /// No description provided for @readerLineSpacing.
+  ///
+  /// In en, this message translates to:
+  /// **'Line spacing'**
+  String get readerLineSpacing;
+
+  /// No description provided for @readerTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get readerTheme;
+
+  /// No description provided for @readerThemeApp.
+  ///
+  /// In en, this message translates to:
+  /// **'App'**
+  String get readerThemeApp;
+
+  /// No description provided for @readerThemeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get readerThemeLight;
+
+  /// No description provided for @readerThemeSepia.
+  ///
+  /// In en, this message translates to:
+  /// **'Sepia'**
+  String get readerThemeSepia;
+
+  /// No description provided for @readerThemeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get readerThemeDark;
+
+  /// No description provided for @readerThemeBlack.
+  ///
+  /// In en, this message translates to:
+  /// **'Night'**
+  String get readerThemeBlack;
+
+  /// No description provided for @readerJustify.
+  ///
+  /// In en, this message translates to:
+  /// **'Justify text'**
+  String get readerJustify;
+
+  /// No description provided for @addBookmark.
+  ///
+  /// In en, this message translates to:
+  /// **'Add bookmark'**
+  String get addBookmark;
+
+  /// No description provided for @bookmarkAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookmark added'**
+  String get bookmarkAdded;
+
+  /// No description provided for @bookmarkAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookmark at {percent} %'**
+  String bookmarkAt(int percent);
+
+  /// No description provided for @saveQuote.
+  ///
+  /// In en, this message translates to:
+  /// **'Save quote'**
+  String get saveQuote;
+
+  /// No description provided for @quoteSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Quote saved'**
+  String get quoteSaved;
+
+  /// No description provided for @addNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Add note'**
+  String get addNote;
+
+  /// No description provided for @editNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit note'**
+  String get editNote;
+
+  /// No description provided for @noteSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Note saved'**
+  String get noteSaved;
+
+  /// No description provided for @noteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your thoughts…'**
+  String get noteHint;
+
+  /// No description provided for @annotationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookmarks, quotes & notes'**
+  String get annotationsTitle;
+
+  /// No description provided for @annotationsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing yet. Add a bookmark with the bookmark button, or select text to save a quote or note.'**
+  String get annotationsEmpty;
+
+  /// No description provided for @showAllAnnotations.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all ({count})'**
+  String showAllAnnotations(int count);
 }
 
 class _AppLocalizationsDelegate
