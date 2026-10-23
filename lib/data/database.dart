@@ -6,6 +6,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import 'enums.dart';
+import 'fandom_names.dart';
 
 export 'enums.dart';
 
@@ -146,6 +147,7 @@ class AppDatabase extends _$AppDatabase {
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
+      await mergeSimilarFandoms();
     },
   );
 
@@ -476,14 +478,45 @@ class AppDatabase extends _$AppDatabase {
   Future<void> deleteDownload(int id) =>
       (delete(downloads)..where((d) => d.id.equals(id))).go();
 
+  /// Finds the category for [name], treating variants of a franchise as the
+  /// same category (see [fandomKey]); a new one is stored under its base name.
   Future<int?> _fandomIdFor(String? name) async {
     final n = name?.trim() ?? '';
     if (n.isEmpty) return null;
-    final existing = await (select(
-      fandoms,
-    )..where((f) => f.name.lower().equals(n.toLowerCase()))).getSingleOrNull();
-    return existing?.id ??
-        await into(fandoms).insert(FandomsCompanion.insert(name: n));
+    final key = fandomKey(n);
+    for (final fandom in await select(fandoms).get()) {
+      if (fandomKey(fandom.name) == key) return fandom.id;
+    }
+    return into(fandoms)
+        .insert(FandomsCompanion.insert(name: baseFandomName(n)));
+  }
+
+  /// Merges categories that are variants of the same franchise, e.g. ones
+  /// created before categories were matched this way. Keeps the oldest one,
+  /// named after the base name.
+  Future<void> mergeSimilarFandoms() {
+    return transaction(() async {
+      final groups = <String, List<Fandom>>{};
+      for (final fandom in await (select(
+        fandoms,
+      )..orderBy([(f) => OrderingTerm.asc(f.id)])).get()) {
+        groups.putIfAbsent(fandomKey(fandom.name), () => []).add(fandom);
+      }
+      for (final group in groups.values) {
+        final keep = group.first;
+        for (final duplicate in group.skip(1)) {
+          await (update(works)..where((w) => w.fandomId.equals(duplicate.id)))
+              .write(WorksCompanion(fandomId: Value(keep.id)));
+          await (delete(fandoms)..where((f) => f.id.equals(duplicate.id))).go();
+        }
+        final base = baseFandomName(keep.name);
+        if (base != keep.name) {
+          await (update(fandoms)..where((f) => f.id.equals(keep.id))).write(
+            FandomsCompanion(name: Value(base)),
+          );
+        }
+      }
+    });
   }
 
   Future<int?> _tagIdFor(String name) async {
