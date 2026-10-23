@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/database.dart';
 import '../data/database_scope.dart';
 import '../l10n/l10n.dart';
+import '../library/exporters.dart';
 import '../library/library_scope.dart';
 import '../library/story_sync.dart';
 import '../reader/reader_screen.dart';
@@ -96,6 +97,7 @@ class _ReadSectionState extends State<ReadSection> {
       from: choice.from,
       to: choice.to,
       appendTo: choice.appendTo,
+      format: choice.format,
     );
     final file = result.file;
     messenger.showSnackBar(
@@ -113,6 +115,22 @@ class _ReadSectionState extends State<ReadSection> {
                 label: l10n.openFile,
                 onPressed: () => openFile(file.path),
               ),
+      ),
+    );
+  }
+
+  Future<void> _exportAs(Download download, ExportFormat format) async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    final file = await LibraryScope.of(context).downloads
+        .exportAs(download, format);
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(l10n.exportedAs(format.label)),
+        action: SnackBarAction(
+          label: l10n.openFile,
+          onPressed: () => openFile(file.path),
+        ),
       ),
     );
   }
@@ -221,6 +239,18 @@ class _ReadSectionState extends State<ReadSection> {
                               l10n.openFileFormat(d.format.toUpperCase()),
                             ),
                           ),
+                        SubmenuButton(
+                          leadingIcon: const Icon(Icons.ios_share),
+                          menuChildren: [
+                            for (final f in ExportFormat.values)
+                              if (f.name != d.format)
+                                MenuItemButton(
+                                  onPressed: () => _exportAs(d, f),
+                                  child: Text(f.label),
+                                ),
+                          ],
+                          child: Text(l10n.exportAs),
+                        ),
                         MenuItemButton(
                           leadingIcon: const Icon(Icons.delete_outline),
                           onPressed: () => _deleteDownload(d),

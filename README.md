@@ -12,8 +12,9 @@ place, whether they sit on your shelf or live online.
 - **Read online** inside the app; chapters are loaded live from the site and
   reading continues where you stopped.
 - **Download** chapters for offline reading, including images. Each download
-  is a chapter range (e.g. 1–30) exported as a TXT file to
-  `~/Documents/ReadTrack`. When new chapters appear, add them to an existing
+  is a chapter range (e.g. 1–30) saved as **EPUB, FB2, HTML or TXT** to
+  `~/Documents/ReadTrack`; a download can also be exported again in another
+  format. When new chapters appear, add them to an existing
   download (1–30 → 1–40) or create a separate one (31–40).
 
 ### Supported sites

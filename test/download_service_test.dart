@@ -5,6 +5,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:readtrack/data/database.dart';
 import 'package:readtrack/library/download_service.dart';
+import 'package:readtrack/library/exporters.dart';
 import 'package:readtrack/library/storage.dart';
 import 'package:readtrack/sources/sources.dart';
 
@@ -192,5 +193,35 @@ void main() {
       for (final c in await db.chaptersOf(work.id)) c.content != null,
     ];
     expect(stored, [true, true, false, false, false]);
+  });
+
+  test('downloads in the chosen format; extending keeps it', () async {
+    final first = await service.download(
+      work: work,
+      source: const _FakeSource(),
+      from: 1,
+      to: 2,
+      format: ExportFormat.epub,
+    );
+    expect(first.file!.path, endsWith('(Chapters 1–2).epub'));
+    final download = (await db.downloadsOf(work.id)).single;
+    expect(download.format, 'epub');
+
+    final extended = await service.download(
+      work: work,
+      source: const _FakeSource(),
+      from: 3,
+      to: 3,
+      appendTo: download,
+      format: ExportFormat.txt, // ignored when extending
+    );
+    expect(extended.file!.path, endsWith('(Chapters 1–3).epub'));
+
+    final copy = await service.exportAs(
+      (await db.downloadsOf(work.id)).single,
+      ExportFormat.fb2,
+    );
+    expect(copy.path, endsWith('(Chapters 1–3).fb2'));
+    expect((await db.downloadsOf(work.id)).single.format, 'epub');
   });
 }

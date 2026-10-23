@@ -3,15 +3,24 @@ import 'package:flutter/material.dart';
 import '../data/database.dart';
 import '../data/database_scope.dart';
 import '../l10n/l10n.dart';
+import '../library/exporters.dart';
 import '../library/story_sync.dart';
 import '../sources/sources.dart';
 
 /// What the user chose in [DownloadDialog].
 class DownloadChoice {
-  const DownloadChoice({required this.from, required this.to, this.appendTo});
+  const DownloadChoice({
+    required this.from,
+    required this.to,
+    this.appendTo,
+    this.format = ExportFormat.txt,
+  });
 
   final int from;
   final int to;
+
+  /// File format of a new download (an extended one keeps its format).
+  final ExportFormat format;
 
   /// Extend this download instead of creating a new file.
   final Download? appendTo;
@@ -40,6 +49,7 @@ class _DownloadDialogState extends State<DownloadDialog> {
   List<Chapter> _chapters = const [];
   List<Download> _downloads = const [];
   _Mode _mode = _Mode.newFile;
+  ExportFormat _format = ExportFormat.epub;
 
   AppDatabase get _db => DatabaseScope.of(context);
 
@@ -110,7 +120,10 @@ class _DownloadDialogState extends State<DownloadDialog> {
     }
     final range = _range;
     if (range != null) {
-      Navigator.pop(context, DownloadChoice(from: range.from, to: range.to));
+      Navigator.pop(
+        context,
+        DownloadChoice(from: range.from, to: range.to, format: _format),
+      );
     }
   }
 
@@ -207,7 +220,19 @@ class _DownloadDialogState extends State<DownloadDialog> {
                     ],
                   ),
                 ),
-                if (_mode == _Mode.newFile)
+                if (_mode == _Mode.newFile) ...[
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: SegmentedButton<ExportFormat>(
+                      segments: [
+                        for (final f in ExportFormat.values)
+                          ButtonSegment(value: f, label: Text(f.label)),
+                      ],
+                      selected: {_format},
+                      onSelectionChanged: (s) =>
+                          setState(() => _format = s.first),
+                    ),
+                  ),
                   Row(
                     children: [
                       Expanded(
@@ -234,6 +259,14 @@ class _DownloadDialogState extends State<DownloadDialog> {
                       ),
                     ],
                   ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      l10n.downloadFormatHint,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ),
+                ],
               ],
             ],
           ),

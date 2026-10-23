@@ -789,4 +789,16 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get exportAs => 'Export as…';
+
+  @override
+  String exportedAs(String format) {
+    return 'Saved as $format';
+  }
+
+  @override
+  String get downloadFormatHint =>
+      'EPUB works in most e-book readers, FB2 in many Russian ones, HTML in any browser. Files are saved to ~/Documents/ReadTrack.';
 }
