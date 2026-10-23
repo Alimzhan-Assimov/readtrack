@@ -436,5 +436,20 @@
   "readerLatestChapter": "You've reached the latest chapter.",
   "readerEndOfDownload": "End of this download.",
   "sortStatus": "By reading status",
-  "filterStatus": "Status"
+  "filterStatus": "Status",
+  "chooseExisting": "Choose from existing",
+  "pickTags": "Choose tags",
+  "pickCategory": "Choose a category",
+  "pickAuthor": "Choose an author",
+  "pickerSearch": "Search…",
+  "pickerDone": "Done",
+  "frequentlyUsed": "Frequently used:",
+  "pickerAdd": "Add “{value}”",
+  "@pickerAdd": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  }
 }

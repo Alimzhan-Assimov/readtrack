@@ -310,6 +310,27 @@ class AppDatabase extends _$AppDatabase {
     tags,
   )..orderBy([(t) => OrderingTerm.asc(t.name)])).map((t) => t.name).get();
 
+  /// Distinct author names, for picking an existing author.
+  Future<List<String>> authorNames() async {
+    final query = selectOnly(works, distinct: true)
+      ..addColumns([works.author])
+      ..where(works.author.isNotNull())
+      ..orderBy([OrderingTerm.asc(works.author.collate(Collate.noCase))]);
+    return query.map((row) => row.read(works.author)!).get();
+  }
+
+  /// The tags used on the most works, most used first.
+  Future<List<String>> frequentTags({int limit = 12}) async {
+    final uses = workTags.workId.count();
+    final query = selectOnly(workTags)
+      ..join([innerJoin(tags, tags.id.equalsExp(workTags.tagId))])
+      ..addColumns([tags.name, uses])
+      ..groupBy([tags.id])
+      ..orderBy([OrderingTerm.desc(uses), OrderingTerm.asc(tags.name)])
+      ..limit(limit);
+    return query.map((row) => row.read(tags.name)!).get();
+  }
+
   /// Inserts a work, or updates it if `data.id` is set. Category and tags are
   /// created as needed, ignoring case so "naruto" and "Naruto" end up as the
   /// same category.
