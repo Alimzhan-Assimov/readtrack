@@ -781,12 +781,18 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
+  /// Finds the row named [name], ignoring case. Compared in Dart because
+  /// SQLite's lower() only knows ASCII: "Фанфик" wouldn't match "фанфик".
+  static T? _sameName<T>(List<T> rows, String Function(T) nameOf, String name) {
+    final key = name.toLowerCase();
+    return rows.where((r) => nameOf(r) == name).firstOrNull ??
+        rows.where((r) => nameOf(r).toLowerCase() == key).firstOrNull;
+  }
+
   Future<int?> _tagIdFor(String name, {bool adult = false}) async {
     final n = name.trim();
     if (n.isEmpty) return null;
-    final existing = await (select(
-      tags,
-    )..where((t) => t.name.lower().equals(n.toLowerCase()))).getSingleOrNull();
+    final existing = _sameName(await select(tags).get(), (t) => t.name, n);
     if (existing != null) {
       if (adult && !existing.isAdult) await setTagAdult(existing.id, true);
       return existing.id;
@@ -799,9 +805,7 @@ class AppDatabase extends _$AppDatabase {
   Future<int?> _pairingIdFor(String name) async {
     final n = name.trim();
     if (n.isEmpty) return null;
-    final existing = await (select(
-      pairings,
-    )..where((p) => p.name.lower().equals(n.toLowerCase()))).getSingleOrNull();
+    final existing = _sameName(await select(pairings).get(), (p) => p.name, n);
     return existing?.id ??
         await into(pairings).insert(PairingsCompanion.insert(name: n));
   }

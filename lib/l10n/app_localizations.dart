@@ -1641,6 +1641,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Updates'**
   String get updatesHeading;
+
+  /// No description provided for @saveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save: {error}'**
+  String saveFailed(String error);
 }
 
 class _AppLocalizationsDelegate
