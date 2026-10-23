@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' show max;
 
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
@@ -125,6 +126,13 @@ class Works extends Table {
 
   /// Set while the work is in the trash.
   DateTimeColumn get deletedAt => dateTime().nullable()();
+
+  /// Whether [wordCount] / [pageCount] were worked out by the app because
+  /// the site didn't give them; such values are updated as more is known.
+  BoolColumn get wordsEstimated =>
+      boolean().withDefault(const Constant(false))();
+  BoolColumn get pagesEstimated =>
+      boolean().withDefault(const Constant(false))();
 }
 
 class WorkTags extends Table {
@@ -226,7 +234,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -259,6 +267,13 @@ class AppDatabase extends _$AppDatabase {
         await _addColumnIfMissing(m, works, works.newChapters);
       }
       if (from < 7) await _addColumnIfMissing(m, works, works.deletedAt);
+      if (from < 8) {
+        await _addColumnIfMissing(m, works, works.wordsEstimated);
+        await _addColumnIfMissing(m, works, works.pagesEstimated);
+        for (final w in await select(works).get()) {
+          await fillMissingCounts(w.id);
+        }
+      }
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
@@ -721,16 +736,77 @@ class AppDatabase extends _$AppDatabase {
     int number, {
     required String html,
     required int wordCount,
-  }) =>
-      (update(
-        chapters,
-      )..where((c) => c.workId.equals(workId) & c.number.equals(number))).write(
-        ChaptersCompanion(
-          content: Value(html),
-          wordCount: Value(wordCount),
-          downloadedAt: Value(DateTime.now()),
-        ),
-      );
+  }) async {
+    await (update(
+      chapters,
+    )..where((c) => c.workId.equals(workId) & c.number.equals(number))).write(
+      ChaptersCompanion(
+        content: Value(html),
+        wordCount: Value(wordCount),
+        downloadedAt: Value(DateTime.now()),
+      ),
+    );
+    await fillMissingCounts(workId);
+  }
+
+  /// Words per page for estimates (a typical paperback page).
+  static const wordsPerPage = 250;
+
+  /// Works out word and page counts the site didn't give: words from the
+  /// chapters read so far (scaled up to all chapters), pages from words, or
+  /// words from pages. Values from the site or the user are kept.
+  Future<void> fillMissingCounts(int workId) async {
+    final w = await workById(workId);
+    if (w == null) return;
+    final words = chapters.wordCount.sum();
+    final counted = chapters.wordCount.count();
+    final row =
+        await (selectOnly(chapters)
+              ..addColumns([words, counted])
+              ..where(
+                chapters.workId.equals(workId) & chapters.wordCount.isNotNull(),
+              ))
+            .getSingle();
+    final known = row.read(counted) ?? 0;
+    final sum = row.read(words) ?? 0;
+    final total = max(w.chapterCount ?? 0, known);
+    final givenPages = w.pagesEstimated ? null : w.pageCount;
+
+    final wordCount = !(w.wordCount == null || w.wordsEstimated)
+        ? w.wordCount
+        : known > 0 && sum > 0
+        ? (sum * total / known).round()
+        : givenPages != null
+        // Royal Road counts 275 words per page.
+        ? givenPages * 275
+        : null;
+    final pageCount = !(w.pageCount == null || w.pagesEstimated)
+        ? w.pageCount
+        : wordCount == null
+        ? null
+        : max(1, (wordCount / wordsPerPage).round());
+
+    final wordsEstimated =
+        wordCount != null && (w.wordCount == null || w.wordsEstimated);
+    final pagesEstimated =
+        pageCount != null && (w.pageCount == null || w.pagesEstimated);
+    if (wordCount == w.wordCount &&
+        pageCount == w.pageCount &&
+        wordsEstimated == w.wordsEstimated &&
+        pagesEstimated == w.pagesEstimated) {
+      return;
+    }
+    await updateWork(
+      workId,
+      WorksCompanion(
+        wordCount: Value(wordCount),
+        pageCount: Value(pageCount),
+        wordsEstimated: Value(wordsEstimated),
+        pagesEstimated: Value(pagesEstimated),
+      ),
+      touch: false,
+    );
+  }
 
   /// Forgets the downloaded text of chapters no download covers anymore.
   Future<void> purgeUncoveredText(int workId) async {

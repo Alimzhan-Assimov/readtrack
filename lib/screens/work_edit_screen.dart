@@ -115,7 +115,12 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _summary.text = w?.summary ?? '';
     _notes.text = w?.notes ?? '';
     if (widget.imported case final info?) _prefill(info);
+    _initialWords = _words.text;
+    _initialPages = _pages.text;
   }
+
+  late final String _initialWords;
+  late final String _initialPages;
 
   void _prefill(StoryInfo info) {
     _type = info.type;
@@ -251,6 +256,13 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
       currentChapter: Value(_parseInt(_currentChapter.text)),
       wordCount: Value(_parseInt(_words.text)),
       pageCount: Value(_parseInt(_pages.text)),
+      // A number the user typed is theirs; an unchanged estimate stays one.
+      wordsEstimated: _words.text == _initialWords
+          ? const Value.absent()
+          : const Value(false),
+      pagesEstimated: _pages.text == _initialPages
+          ? const Value.absent()
+          : const Value(false),
       rating: Value(_rating),
       notes: Value(_text(_notes)),
       coverUrl: switch (widget.imported?.coverUrl) {
@@ -277,6 +289,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
       if (widget.imported case final info?) {
         await _db.saveChapterList(id, chapterListing(info));
       }
+      await _db.fillMissingCounts(id);
     } catch (e) {
       // Never leave the button stuck without saying why.
       if (mounted) {

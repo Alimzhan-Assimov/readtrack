@@ -84,6 +84,8 @@ void main() {
       checkedAt: checked,
       lastChapterAt: last,
       newChapters: 0,
+      wordsEstimated: false,
+      pagesEstimated: false,
     );
 
     expect(
