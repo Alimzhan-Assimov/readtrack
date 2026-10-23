@@ -469,5 +469,15 @@
         "type": "int"
       }
     }
-  }
+  },
+  "exportAs": "Export as…",
+  "exportedAs": "Saved as {format}",
+  "@exportedAs": {
+    "placeholders": {
+      "format": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadFormatHint": "EPUB works in most e-book readers, FB2 in many Russian ones, HTML in any browser. Files are saved to ~/Documents/ReadTrack."
 }

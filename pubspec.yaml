@@ -47,6 +47,7 @@ dependencies:
   html: ^0.15.7
   desktop_webview_window: ^0.4.0
   crypto: ^3.0.7
+  archive: ^4.5.2
 
 dev_dependencies:
   flutter_test:
@@ -60,6 +61,7 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   drift_dev: ^2.35.1
   build_runner: ^2.16.2
+  xml: ^7.1.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

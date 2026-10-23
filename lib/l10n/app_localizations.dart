@@ -1215,6 +1215,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{+1 hidden 18+ tag} other{+{count} hidden 18+ tags}}'**
   String hiddenAdultTags(int count);
+
+  /// No description provided for @exportAs.
+  ///
+  /// In en, this message translates to:
+  /// **'Export as…'**
+  String get exportAs;
+
+  /// No description provided for @exportedAs.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved as {format}'**
+  String exportedAs(String format);
+
+  /// No description provided for @downloadFormatHint.
+  ///
+  /// In en, this message translates to:
+  /// **'EPUB works in most e-book readers, FB2 in many Russian ones, HTML in any browser. Files are saved to ~/Documents/ReadTrack.'**
+  String get downloadFormatHint;
 }
 
 class _AppLocalizationsDelegate

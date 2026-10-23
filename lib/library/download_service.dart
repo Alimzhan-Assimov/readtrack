@@ -8,7 +8,7 @@ import '../sources/html_clean.dart';
 import '../sources/sources.dart';
 import 'storage.dart';
 import 'story_sync.dart';
-import 'txt_export.dart';
+import 'exporters.dart';
 
 @immutable
 class DownloadProgress {
@@ -69,6 +69,7 @@ class DownloadService extends ChangeNotifier {
     required int from,
     required int to,
     Download? appendTo,
+    ExportFormat format = ExportFormat.txt,
   }) async {
     if (isRunning(work.id)) throw StateError('A download is already running.');
     final id = work.id;
@@ -124,7 +125,14 @@ class DownloadService extends ChangeNotifier {
           cancelled: true,
         );
       }
-      final file = await _export(work, start, to, appendTo);
+      final file = await _export(
+        work,
+        start,
+        to,
+        appendTo,
+        // An extended download keeps its format.
+        appendTo == null ? format : ExportFormat.fromName(appendTo.format),
+      );
       return DownloadResult(
         downloaded: downloaded,
         failed: failed,
@@ -140,23 +148,22 @@ class DownloadService extends ChangeNotifier {
     }
   }
 
-  /// Writes the TXT file for chapters [from]..[to] and records the download.
-  Future<File> _export(Work work, int from, int to, Download? appendTo) async {
-    final latest = await (_db.select(
-      _db.works,
-    )..where((w) => w.id.equals(work.id))).getSingle();
-    final chapters = await _db.chaptersOf(work.id);
-    final file = storage.exportFile(latest.title, from, to, 'txt');
-    await file.parent.create(recursive: true);
-    await file.writeAsString(
-      buildTxt(work: latest, chapters: chapters, from: from, to: to),
-    );
+  /// Writes the file for chapters [from]..[to] and records the download.
+  Future<File> _export(
+    Work work,
+    int from,
+    int to,
+    Download? appendTo,
+    ExportFormat format,
+  ) async {
+    final file = await _write(work.id, from, to, format);
     if (appendTo == null) {
       await _db.addDownload(
         DownloadsCompanion.insert(
           workId: work.id,
           fromChapter: from,
           toChapter: to,
+          format: Value(format.name),
           filePath: Value(file.path),
         ),
       );
@@ -170,6 +177,34 @@ class DownloadService extends ChangeNotifier {
     }
     return file;
   }
+
+  Future<File> _write(int workId, int from, int to, ExportFormat format) async {
+    final details = (await _db.watchWork(workId).first)!;
+    final file = storage.exportFile(
+      details.work.title,
+      from,
+      to,
+      format.extension,
+    );
+    await writeExport(
+      format,
+      ExportBook(
+        work: details.work,
+        chapters: await _db.chaptersOf(workId),
+        from: from,
+        to: to,
+        storage: storage,
+        tags: [for (final t in details.tags) t.name],
+      ),
+      file,
+    );
+    return file;
+  }
+
+  /// Saves an existing download again in another [format], next to it.
+  /// The download itself (and its file) stays as it is.
+  Future<File> exportAs(Download download, ExportFormat format) =>
+      _write(download.workId, download.fromChapter, download.toChapter, format);
 
   Future<void> _saveCover(Work work, PageFetcher fetcher) async {
     final url = work.coverUrl;
