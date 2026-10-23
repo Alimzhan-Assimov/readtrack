@@ -1,8 +1,14 @@
+import 'dart:io';
+
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart' as p;
 
 import '../data/database.dart';
 import '../data/database_scope.dart';
 import '../l10n/l10n.dart';
+import '../library/backup.dart';
+import '../library/library_scope.dart';
 import '../ui/app_settings.dart';
 import '../ui/layout.dart';
 
@@ -23,6 +29,85 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _tags = _db.watchAllTags();
+  }
+
+  bool _busy = false;
+
+  Future<void> _createBackup() async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    final storage = LibraryScope.of(context).storage;
+    setState(() => _busy = true);
+    try {
+      final backup = await LibraryBackup.open(storage);
+      final file = await backup.create(
+        _db,
+        Directory(p.join(storage.exportDir.path, 'Backups')),
+      );
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.backupCreated(file.path))),
+      );
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.backupFailed('$e'))));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _restoreBackup() async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    final storage = LibraryScope.of(context).storage;
+    final picked = await openFile(
+      initialDirectory: p.join(storage.exportDir.path, 'Backups'),
+      acceptedTypeGroups: [
+        XTypeGroup(label: l10n.backupFiles, extensions: const ['zip']),
+      ],
+    );
+    if (picked == null || !mounted) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.restoreBackupTitle),
+        content: Text(l10n.restoreBackupWarning),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.restoreBackup),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() => _busy = true);
+    try {
+      final backup = await LibraryBackup.open(storage);
+      await backup.stageRestore(File(picked.path));
+      if (!mounted) return;
+      await showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: Text(l10n.restoreReadyTitle),
+          content: Text(l10n.restoreReadyHint),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(l10n.later),
+            ),
+            FilledButton(onPressed: () => exit(0), child: Text(l10n.closeApp)),
+          ],
+        ),
+      );
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.restoreFailed('$e'))));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   @override
@@ -60,6 +145,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     value: settings.hideAdultTags,
                     onChanged: settings.setHideAdultTags,
                   ),
+                const SizedBox(height: 16),
+                Text(
+                  l10n.backupHeading,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(l10n.backupHint, style: theme.textTheme.bodySmall),
+                if (_busy)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8),
+                    child: LinearProgressIndicator(),
+                  ),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  enabled: !_busy,
+                  leading: const Icon(Icons.archive_outlined),
+                  title: Text(l10n.createBackup),
+                  onTap: _createBackup,
+                ),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  enabled: !_busy,
+                  leading: const Icon(Icons.settings_backup_restore),
+                  title: Text(l10n.restoreBackup),
+                  onTap: _restoreBackup,
+                ),
                 const SizedBox(height: 16),
                 Text(
                   l10n.adultTagsHeading,

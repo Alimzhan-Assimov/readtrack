@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 
 import '../data/database.dart';
+import '../library/shelves.dart';
 
 enum ReaderFont {
   system(null),
@@ -70,6 +73,43 @@ class AppSettings extends ChangeNotifier {
 
   bool _hideAdultTags = false;
   ReaderPrefs _reader = const ReaderPrefs();
+  bool _gridView = false;
+  List<Shelf> _shelves = const [];
+
+  static const _gridViewKey = 'library.grid';
+  static const _shelvesKey = 'library.shelves';
+
+  /// Whether the library shows covers in a grid instead of a list.
+  bool get gridView => _gridView;
+
+  Future<void> setGridView(bool grid) async {
+    _gridView = grid;
+    notifyListeners();
+    await _db.setSetting(_gridViewKey, '$grid');
+  }
+
+  List<Shelf> get shelves => _shelves;
+
+  /// Saves [shelf], replacing one with the same name.
+  Future<void> saveShelf(Shelf shelf) => _storeShelves([
+    for (final s in _shelves)
+      if (s.name != shelf.name) s,
+    shelf,
+  ]);
+
+  Future<void> deleteShelf(String name) => _storeShelves([
+    for (final s in _shelves)
+      if (s.name != name) s,
+  ]);
+
+  Future<void> _storeShelves(List<Shelf> shelves) async {
+    _shelves = shelves;
+    notifyListeners();
+    await _db.setSetting(
+      _shelvesKey,
+      jsonEncode([for (final s in shelves) s.toJson()]),
+    );
+  }
 
   static const _readerKeys = (
     fontSize: 'reader.fontSize',
@@ -96,6 +136,18 @@ class AppSettings extends ChangeNotifier {
 
   Future<void> load() async {
     _hideAdultTags = await _db.setting(_hideAdultTagsKey) == 'true';
+    _gridView = await _db.setting(_gridViewKey) == 'true';
+    final shelves = await _db.setting(_shelvesKey);
+    if (shelves != null) {
+      try {
+        _shelves = [
+          for (final s in jsonDecode(shelves) as List)
+            Shelf.fromJson((s as Map).cast<String, Object?>()),
+        ];
+      } on FormatException {
+        _shelves = const [];
+      }
+    }
     const defaults = ReaderPrefs();
     T byName<T extends Enum>(List<T> values, String? name, T fallback) =>
         values.where((v) => v.name == name).firstOrNull ?? fallback;

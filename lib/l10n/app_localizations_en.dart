@@ -909,4 +909,98 @@ class AppLocalizationsEn extends AppLocalizations {
   String showAllAnnotations(int count) {
     return 'Show all ($count)';
   }
+
+  @override
+  String get filterLength => 'Length';
+
+  @override
+  String atLeastWords(int count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString+ words';
+  }
+
+  @override
+  String get filterCompletion => 'Completion';
+
+  @override
+  String get completeOnly => 'Complete';
+
+  @override
+  String get ongoingOnly => 'Ongoing';
+
+  @override
+  String get saveShelf => 'Save as shelf';
+
+  @override
+  String get saveShelfTitle => 'Save these filters as a shelf';
+
+  @override
+  String get shelfNameHint => 'e.g. Long finished romance';
+
+  @override
+  String get openShelf => 'Show this shelf';
+
+  @override
+  String get deleteShelf => 'Delete shelf';
+
+  @override
+  String get showAsGrid => 'Show as grid';
+
+  @override
+  String get showAsList => 'Show as list';
+
+  @override
+  String get backupHeading => 'Backup';
+
+  @override
+  String get backupHint =>
+      'Saves your whole library – entries, progress, notes and downloaded books – in one zip file.';
+
+  @override
+  String get createBackup => 'Create backup';
+
+  @override
+  String backupCreated(String path) {
+    return 'Backup saved: $path';
+  }
+
+  @override
+  String backupFailed(String error) {
+    return 'Backup failed: $error';
+  }
+
+  @override
+  String get backupFiles => 'ReadTrack backups';
+
+  @override
+  String get restoreBackup => 'Restore backup';
+
+  @override
+  String get restoreBackupTitle => 'Restore this backup?';
+
+  @override
+  String get restoreBackupWarning =>
+      'Your current library is replaced by the backup. A copy of it is kept as \"before-restore\" in the app folder.';
+
+  @override
+  String get restoreReadyTitle => 'Backup ready';
+
+  @override
+  String get restoreReadyHint =>
+      'Restart ReadTrack to finish restoring the backup.';
+
+  @override
+  String restoreFailed(String error) {
+    return 'Could not restore the backup: $error';
+  }
+
+  @override
+  String get later => 'Later';
+
+  @override
+  String get closeApp => 'Close ReadTrack';
 }

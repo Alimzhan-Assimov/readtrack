@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'data/database.dart';
 import 'data/database_scope.dart';
 import 'l10n/l10n.dart';
+import 'library/backup.dart';
 import 'library/download_service.dart';
 import 'library/library_scope.dart';
 import 'library/storage.dart';
@@ -13,8 +14,13 @@ import 'ui/theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final db = AppDatabase();
   final storage = await LibraryStorage.open();
+  final backup = await LibraryBackup.open(storage);
+  final restoredFrom = await backup.applyPendingRestore();
+  final db = AppDatabase();
+  if (restoredFrom != null) {
+    await db.moveCoverPaths(restoredFrom, storage.dataDir.path);
+  }
   final settings = AppSettings(db);
   await settings.load();
   runApp(

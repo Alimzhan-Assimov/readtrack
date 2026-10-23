@@ -281,6 +281,12 @@ class AppDatabase extends _$AppDatabase {
     int? tagId,
     int? pairingId,
     ReadingStatus? status,
+
+    /// At least this many words.
+    int? minWords,
+
+    /// Only finished (true) or ongoing (false) stories.
+    bool? complete,
     WorkSort sort = WorkSort.updated,
   }) {
     final query = _worksWithFandom();
@@ -296,6 +302,10 @@ class AppDatabase extends _$AppDatabase {
     if (type != null) query.where(works.type.equalsValue(type));
     if (fandomId != null) query.where(works.fandomId.equals(fandomId));
     if (status != null) query.where(works.status.equalsValue(status));
+    if (minWords != null) {
+      query.where(works.wordCount.isBiggerOrEqualValue(minWords));
+    }
+    if (complete != null) query.where(works.isComplete.equals(complete));
     if (pairingId != null) {
       query.where(
         works.id.isInQuery(
@@ -837,6 +847,23 @@ class AppDatabase extends _$AppDatabase {
   Future<String?> setting(String key) async => (await (select(
     settings,
   )..where((s) => s.key.equals(key))).getSingleOrNull())?.value;
+
+  /// After restoring a backup made elsewhere, points the stored cover paths
+  /// at this device's books folder.
+  Future<void> moveCoverPaths(String from, String to) async {
+    if (from == to) return;
+    await customUpdate(
+      'UPDATE works SET cover_path = ? || substr(cover_path, ?) '
+      'WHERE substr(cover_path, 1, ?) = ?',
+      variables: [
+        Variable.withString(to),
+        Variable.withInt(from.length + 1),
+        Variable.withInt(from.length),
+        Variable.withString(from),
+      ],
+      updates: {works},
+    );
+  }
 
   Future<void> setSetting(String key, String value) => into(settings)
       .insertOnConflictUpdate(SettingsCompanion.insert(key: key, value: value));
