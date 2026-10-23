@@ -3,6 +3,7 @@ import 'author_today.dart';
 import 'fanfiction_net.dart';
 import 'fanfics_me.dart';
 import 'ficbook.dart';
+import 'gutenberg.dart';
 import 'honeyfeed.dart';
 import 'inkitt.dart';
 import 'litmarket.dart';
@@ -16,9 +17,11 @@ import 'rulate.dart';
 import 'samlib.dart';
 import 'scribble_hub.dart';
 import 'source.dart';
+import 'standard_ebooks.dart';
 import 'tapas.dart';
 import 'wattpad.dart';
 import 'webnovel.dart';
+import 'wikisource.dart';
 import 'wuxiaworld.dart';
 import 'xenforo.dart';
 import 'zelluloza.dart';
@@ -53,6 +56,9 @@ const kSources = <StorySource>[
   RulateSource(),
   ProdamanSource(),
   ZellulozaSource(),
+  GutenbergSource(),
+  StandardEbooksSource(),
+  WikisourceSource(),
 ];
 
 /// The source that can read [url], or null if the site isn't supported.

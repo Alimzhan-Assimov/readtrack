@@ -44,6 +44,9 @@ place, whether they sit on your shelf or live online.
 | Rulate | HTTP, browser as fallback; paid chapters are skipped |
 | ПродаМан | HTTP, browser as fallback; each reader page is a chapter |
 | Целлюлоза | details only; the site protects its text |
+| Project Gutenberg | HTTP; the book file is split at its chapter headings |
+| Standard Ebooks | HTTP; chapters from the single-page edition |
+| Wikisource (ru, en, de, uk) | MediaWiki API; a work's direct subpages are its chapters |
 
 Sites protected against bots are loaded through a small browser window
 (WebKitGTK on Linux), so pages arrive exactly as in a normal browser. Paywalls
