@@ -8,7 +8,6 @@ import '../data/database.dart';
 import '../data/database_scope.dart';
 import '../l10n/l10n.dart';
 import '../library/library_scope.dart';
-import '../sources/sources.dart';
 import '../ui/app_settings.dart';
 import '../ui/format.dart';
 import '../ui/labels.dart';
@@ -210,11 +209,8 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
             ),
             if (w.chapterCount != null || w.currentChapter != null)
               _buildProgress(l10n, w),
-            if (url != null && (sourceFor(Uri.parse(url))?.canRead ?? false))
-              _Section(
-                title: l10n.sectionRead,
-                child: ReadSection(work: w),
-              ),
+            // Shows itself for readable sources and imported books.
+            ReadSection(work: w),
             if (url != null)
               _Section(
                 title: l10n.sectionLink,

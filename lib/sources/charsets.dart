@@ -19,6 +19,16 @@ String _decodeSingleByte(List<int> bytes, String upperHalf) {
   return out.toString();
 }
 
+/// Decodes [bytes] in the named [charset]; unknown names mean UTF-8.
+String decodeCharset(List<int> bytes, String? charset) =>
+    switch (charset?.toLowerCase()) {
+      'koi8-r' || 'koi8r' => _decodeSingleByte(bytes, _koi8r),
+      'windows-1251' ||
+      'cp1251' ||
+      'win-1251' => _decodeSingleByte(bytes, _windows1251),
+      _ => utf8.decode(bytes, allowMalformed: true),
+    };
+
 /// Decodes a page body using the charset from the Content-Type header, or
 /// from a `<meta charset>` near the top of the page. Falls back to UTF-8.
 String decodeBody(List<int> bytes, {String? contentType}) {

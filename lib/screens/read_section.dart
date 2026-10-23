@@ -28,9 +28,11 @@ class _ReadSectionState extends State<ReadSection> {
 
   AppDatabase get _db => DatabaseScope.of(context);
 
+  /// The site to read from, if it hosts the text.
   StorySource? get _source {
     final url = widget.work.sourceUrl;
-    return url == null ? null : sourceFor(Uri.parse(url));
+    final source = url == null ? null : sourceFor(Uri.parse(url));
+    return source != null && source.canRead ? source : null;
   }
 
   @override
@@ -164,6 +166,15 @@ class _ReadSectionState extends State<ReadSection> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 24, bottom: 8),
+                  child: Text(
+                    l10n.sectionRead,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                ),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
