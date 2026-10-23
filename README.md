@@ -36,6 +36,14 @@ place, whether they sit on your shelf or live online.
 | Honeyfeed | Browser window (Cloudflare) |
 | Wuxiaworld | HTTP, browser as fallback; paid chapters are skipped |
 | Novel Updates | Browser window; details only, chapters live on the translators' sites |
+| Fanfics.me | HTTP, browser as fallback |
+| Litnet | HTTP; only chapters that are free to read |
+| LitMarket | HTTP; only the freely readable part |
+| Samlib | HTTP (KOI8-R); each work is one chapter |
+| Proza.ru | HTTP (Windows-1251); each work is one chapter |
+| Rulate | HTTP, browser as fallback; paid chapters are skipped |
+| ПродаМан | HTTP, browser as fallback; each reader page is a chapter |
+| Целлюлоза | details only; the site protects its text |
 
 Sites protected against bots are loaded through a small browser window
 (WebKitGTK on Linux), so pages arrive exactly as in a normal browser. Paywalls

@@ -160,8 +160,11 @@ class FallbackFetcher implements PageFetcher {
   }) => _run((f) => f.getWithHeaders(uri, headers: headers));
 
   @override
-  Future<String> postForm(Uri uri, Map<String, String> fields) =>
-      _run((f) => f.postForm(uri, fields));
+  Future<String> postForm(
+    Uri uri,
+    Map<String, String> fields, {
+    Map<String, String> headers = const {},
+  }) => _run((f) => f.postForm(uri, fields, headers: headers));
 
   @override
   Future<Uint8List> getBytes(Uri uri) => _run((f) => f.getBytes(uri));

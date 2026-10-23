@@ -1,8 +1,9 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
+
+import 'charsets.dart';
 
 /// Thrown when a page or chapter cannot be loaded or understood.
 class SourceException implements Exception {
@@ -25,7 +26,11 @@ abstract class PageFetcher {
     Map<String, String> headers = const {},
   });
 
-  Future<String> postForm(Uri uri, Map<String, String> fields);
+  Future<String> postForm(
+    Uri uri,
+    Map<String, String> fields, {
+    Map<String, String> headers = const {},
+  });
 
   Future<Uint8List> getBytes(Uri uri);
 
@@ -64,6 +69,22 @@ class HttpFetcher implements PageFetcher {
   final http.Client _client;
   final RateLimiter _limiter;
 
+  /// Cookies per host, so session-bound tokens (CSRF) keep working.
+  final _cookies = <String, Map<String, String>>{};
+
+  void _storeCookies(Uri uri, http.Response response) {
+    final header = response.headers['set-cookie'];
+    if (header == null) return;
+    final jar = _cookies.putIfAbsent(uri.host, () => {});
+    // Several cookies arrive joined by commas; dates contain commas too, so
+    // split only where a new "name=" begins.
+    for (final cookie in header.split(RegExp(r',(?=\s*[^;,=\s]+=)'))) {
+      final pair = cookie.split(';').first.trim();
+      final eq = pair.indexOf('=');
+      if (eq > 0) jar[pair.substring(0, eq)] = pair.substring(eq + 1);
+    }
+  }
+
   Future<http.Response> _send(
     Future<http.Response> Function() request,
     Uri uri,
@@ -90,15 +111,27 @@ class HttpFetcher implements PageFetcher {
       if (code >= 400) {
         throw SourceException('${uri.host} answered with error $code.');
       }
+      _storeCookies(uri, response);
       return response;
     }
   }
 
-  Map<String, String> _headers(Map<String, String> extra) => {
-    'User-Agent': userAgent,
-    'Accept-Language': 'en-US,en;q=0.9',
-    ...extra,
-  };
+  Map<String, String> _headers(Uri uri, Map<String, String> extra) {
+    final jar = _cookies[uri.host];
+    return {
+      'User-Agent': userAgent,
+      'Accept-Language': 'en-US,en;q=0.9,ru;q=0.8',
+      if (jar != null && jar.isNotEmpty)
+        'Cookie': [for (final e in jar.entries) '${e.key}=${e.value}']
+            .join('; '),
+      ...extra,
+    };
+  }
+
+  static String _decode(http.Response response) => decodeBody(
+    response.bodyBytes,
+    contentType: response.headers['content-type'],
+  );
 
   @override
   Future<String> getText(
@@ -112,27 +145,28 @@ class HttpFetcher implements PageFetcher {
     Map<String, String> headers = const {},
   }) async {
     final response = await _send(
-      () => _client.get(uri, headers: _headers(headers)),
+      () => _client.get(uri, headers: _headers(uri, headers)),
       uri,
     );
-    return (
-      body: utf8.decode(response.bodyBytes, allowMalformed: true),
-      headers: response.headers,
-    );
+    return (body: _decode(response), headers: response.headers);
   }
 
   @override
-  Future<String> postForm(Uri uri, Map<String, String> fields) async {
+  Future<String> postForm(
+    Uri uri,
+    Map<String, String> fields, {
+    Map<String, String> headers = const {},
+  }) async {
     final response = await _send(
-      () => _client.post(uri, headers: _headers(const {}), body: fields),
+      () => _client.post(uri, headers: _headers(uri, headers), body: fields),
       uri,
     );
-    return utf8.decode(response.bodyBytes, allowMalformed: true);
+    return _decode(response);
   }
 
   @override
   Future<Uint8List> getBytes(Uri uri) async => (await _send(
-    () => _client.get(uri, headers: _headers(const {})),
+    () => _client.get(uri, headers: _headers(uri, const {})),
     uri,
   )).bodyBytes;
 
