@@ -41,6 +41,25 @@ void main() {
     expect(await db.watchWorks(type: WorkType.book).first, isEmpty);
   });
 
+  test('non-ASCII tags match regardless of case', () async {
+    // SQLite's lower() leaves "Ф" alone; this used to fail with a UNIQUE
+    // constraint error when saving a second Russian story.
+    await db.saveWork(
+      fic('First'),
+      tagNames: ['Фанфик'],
+      pairingNames: ['Ли/Ма'],
+    );
+    final id = await db.saveWork(
+      fic('Second'),
+      tagNames: ['Фанфик', 'фанфик', 'ФАНФИК'],
+      pairingNames: ['ли/ма'],
+    );
+    final work = await db.watchWork(id).first;
+    expect(work!.tags.map((t) => t.name), ['Фанфик']);
+    expect(work.pairings.map((p) => p.name), ['Ли/Ма']);
+    expect(await db.usedTags(), hasLength(1));
+  });
+
   test('editing replaces tags, deleting can be undone', () async {
     final id = await db.saveWork(fic('Fic'), tagNames: ['Fluff', 'Drama']);
     await db.saveWork(

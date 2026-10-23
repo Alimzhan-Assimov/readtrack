@@ -1058,4 +1058,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get updatesHeading => 'Updates';
+
+  @override
+  String saveFailed(String error) {
+    return 'Could not save: $error';
+  }
 }

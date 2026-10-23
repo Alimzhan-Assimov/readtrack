@@ -635,5 +635,13 @@
   "abandonedShort": "Abandoned?",
   "checkOnStart": "Check for new chapters on start",
   "checkOnStartHint": "Ongoing stories that update often are checked more often, finished ones about once a month. Sites that need a browser window are only checked from the story page.",
-  "updatesHeading": "Updates"
+  "updatesHeading": "Updates",
+  "saveFailed": "Could not save: {error}",
+  "@saveFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
 }

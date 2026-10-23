@@ -265,15 +265,27 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
         null => const Value.absent(),
       },
     );
-    final id = await _db.saveWork(
-      data,
-      fandomName: _fandom.text,
-      tagNames: tags,
-      pairingNames: pairings,
-      adultTags: widget.imported?.adultTags ?? const {},
-    );
-    if (widget.imported case final info?) {
-      await _db.saveChapterList(id, chapterListing(info));
+    final int id;
+    try {
+      id = await _db.saveWork(
+        data,
+        fandomName: _fandom.text,
+        tagNames: tags,
+        pairingNames: pairings,
+        adultTags: widget.imported?.adultTags ?? const {},
+      );
+      if (widget.imported case final info?) {
+        await _db.saveChapterList(id, chapterListing(info));
+      }
+    } catch (e) {
+      // Never leave the button stuck without saying why.
+      if (mounted) {
+        setState(() => _saving = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(context.l10n.saveFailed('$e'))));
+      }
+      return;
     }
     // Navigator.pop bypasses PopScope, so there is no prompt after saving.
     if (mounted) Navigator.of(context).pop(id);
