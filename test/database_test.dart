@@ -150,6 +150,53 @@ void main() {
     expect(await db.watchTrash().first, isEmpty);
   });
 
+  test('missing word and page counts are estimated', () async {
+    // Four chapters, two of them read: words are scaled up to all four.
+    final id = await db.saveWork(
+      fic('Long').copyWith(chapterCount: const Value(4)),
+    );
+    await db.saveChapterList(id, [
+      for (var n = 1; n <= 4; n++)
+        (number: n, title: 'C$n', url: 'https://x/$n', locked: false),
+    ]);
+    await db.saveChapterText(id, 1, html: '<p>a</p>', wordCount: 1000);
+    await db.saveChapterText(id, 2, html: '<p>b</p>', wordCount: 1500);
+    var w = (await db.workById(id))!;
+    expect((w.wordCount, w.wordsEstimated), (5000, true));
+    expect((w.pageCount, w.pagesEstimated), (20, true));
+
+    // Reading more refines the estimate.
+    await db.saveChapterText(id, 3, html: '<p>c</p>', wordCount: 500);
+    w = (await db.workById(id))!;
+    expect(w.wordCount, 4000);
+
+    // Numbers from the site or the user are never replaced.
+    final given = await db.saveWork(
+      fic('Given').copyWith(wordCount: const Value(12345)),
+    );
+    await db.fillMissingCounts(given);
+    w = (await db.workById(given))!;
+    expect((w.wordCount, w.wordsEstimated), (12345, false));
+    expect((w.pageCount, w.pagesEstimated), (49, true));
+
+    // Only pages known (Royal Road): words follow from them.
+    final pages = await db.saveWork(
+      fic('Pages').copyWith(pageCount: const Value(100)),
+    );
+    await db.fillMissingCounts(pages);
+    w = (await db.workById(pages))!;
+    expect((w.wordCount, w.wordsEstimated), (27500, true));
+    expect((w.pageCount, w.pagesEstimated), (100, false));
+    await db.fillMissingCounts(pages);
+    expect((await db.workById(pages))!.wordCount, 27500, reason: 'stable');
+
+    // Nothing known: nothing made up.
+    final empty = await db.saveWork(fic('Empty'));
+    await db.fillMissingCounts(empty);
+    w = (await db.workById(empty))!;
+    expect((w.wordCount, w.pageCount), (null, null));
+  });
+
   test('sorting by title ignores case', () async {
     for (final title in ['beta', 'Gamma', 'Alpha']) {
       await db.saveWork(fic(title));

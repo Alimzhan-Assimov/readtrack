@@ -49,9 +49,15 @@ Future<int> applyStoryInfo(
       wordCount: info.wordCount == null
           ? const Value.absent()
           : Value(info.wordCount),
+      wordsEstimated: info.wordCount == null
+          ? const Value.absent()
+          : const Value(false),
       pageCount: info.pageCount == null
           ? const Value.absent()
           : Value(info.pageCount),
+      pagesEstimated: info.pageCount == null
+          ? const Value.absent()
+          : const Value(false),
       isComplete: info.isComplete == null
           ? const Value.absent()
           : Value(info.isComplete!),
@@ -71,6 +77,7 @@ Future<int> applyStoryInfo(
     // Checks that find nothing new shouldn't reorder the library.
     touch: added > 0,
   );
+  await db.fillMissingCounts(work.id);
   return info.chapters.length - known;
 }
 

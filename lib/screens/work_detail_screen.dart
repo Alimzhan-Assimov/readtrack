@@ -220,9 +220,15 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
                         : l10n.chaptersOngoing,
                   ),
                 if (w.wordCount case final n?)
-                  _StatBox(value: l10n.formatNumber(n), label: l10n.fieldWords),
+                  _StatBox(
+                    value: estimated(l10n.formatNumber(n), w.wordsEstimated),
+                    label: l10n.fieldWords,
+                  ),
                 if (w.pageCount case final n?)
-                  _StatBox(value: l10n.formatNumber(n), label: l10n.fieldPages),
+                  _StatBox(
+                    value: estimated(l10n.formatNumber(n), w.pagesEstimated),
+                    label: l10n.fieldPages,
+                  ),
               ],
             ),
             if (w.chapterCount != null || w.currentChapter != null)

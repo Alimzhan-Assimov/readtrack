@@ -39,6 +39,8 @@ void main() {
       addedAt: DateTime(2026),
       updatedAt: DateTime(2026),
       newChapters: 0,
+      wordsEstimated: false,
+      pagesEstimated: false,
     );
     Chapter chapter(int n, String? html, {bool locked = false}) => Chapter(
       id: n,
