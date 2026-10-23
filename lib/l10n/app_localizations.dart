@@ -358,12 +358,6 @@ abstract class AppLocalizations {
   /// **'Couldn\'t open the link'**
   String get linkOpenFailed;
 
-  /// No description provided for @deletedMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Deleted “{title}”'**
-  String deletedMessage(String title);
-
   /// No description provided for @undo.
   ///
   /// In en, this message translates to:
@@ -1647,6 +1641,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not save: {error}'**
   String saveFailed(String error);
+
+  /// No description provided for @deleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete “{title}”?'**
+  String deleteTitle(String title);
+
+  /// No description provided for @deleteToTrashHint.
+  ///
+  /// In en, this message translates to:
+  /// **'It goes to the trash in Settings, where you can restore it for six months.'**
+  String get deleteToTrashHint;
+
+  /// No description provided for @movedToTrash.
+  ///
+  /// In en, this message translates to:
+  /// **'“{title}” moved to the trash'**
+  String movedToTrash(String title);
+
+  /// No description provided for @trashTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Trash'**
+  String get trashTitle;
+
+  /// No description provided for @trashHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted entries stay here for six months, then they are removed for good together with their downloaded files.'**
+  String get trashHint;
+
+  /// No description provided for @trashEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'The trash is empty'**
+  String get trashEmpty;
+
+  /// No description provided for @trashDates.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted {deleted} · removed for good on {purge}'**
+  String trashDates(String deleted, String purge);
+
+  /// No description provided for @trashCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Empty} =1{1 entry} other{{count} entries}}'**
+  String trashCount(int count);
+
+  /// No description provided for @restore.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get restore;
+
+  /// No description provided for @deleteForever.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete for good'**
+  String get deleteForever;
+
+  /// No description provided for @deleteForeverTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete “{title}” for good?'**
+  String deleteForeverTitle(String title);
+
+  /// No description provided for @emptyTrash.
+  ///
+  /// In en, this message translates to:
+  /// **'Empty trash'**
+  String get emptyTrash;
+
+  /// No description provided for @emptyTrashTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Delete 1 entry for good?} other{Delete {count} entries for good?}}'**
+  String emptyTrashTitle(int count);
+
+  /// No description provided for @cannotUndo.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloaded chapters and files are deleted too. This cannot be undone.'**
+  String get cannotUndo;
+
+  /// No description provided for @restoredFromTrash.
+  ///
+  /// In en, this message translates to:
+  /// **'Restored from the trash'**
+  String get restoredFromTrash;
 }
 
 class _AppLocalizationsDelegate

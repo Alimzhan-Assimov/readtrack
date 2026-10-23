@@ -83,14 +83,6 @@
   "deleteTooltip": "Delete",
   "notFound": "Entry not found",
   "linkOpenFailed": "Couldn't open the link",
-  "deletedMessage": "Deleted “{title}”",
-  "@deletedMessage": {
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
   "undo": "Undo",
   "byAuthor": "by {author}",
   "@byAuthor": {
@@ -643,5 +635,65 @@
         "type": "String"
       }
     }
-  }
+  },
+  "deleteTitle": "Delete “{title}”?",
+  "@deleteTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteToTrashHint": "It goes to the trash in Settings, where you can restore it for six months.",
+  "movedToTrash": "“{title}” moved to the trash",
+  "@movedToTrash": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "trashTitle": "Trash",
+  "trashHint": "Deleted entries stay here for six months, then they are removed for good together with their downloaded files.",
+  "trashEmpty": "The trash is empty",
+  "trashDates": "Deleted {deleted} · removed for good on {purge}",
+  "@trashDates": {
+    "placeholders": {
+      "deleted": {
+        "type": "String"
+      },
+      "purge": {
+        "type": "String"
+      }
+    }
+  },
+  "trashCount": "{count, plural, =0{Empty} =1{1 entry} other{{count} entries}}",
+  "@trashCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "restore": "Restore",
+  "deleteForever": "Delete for good",
+  "deleteForeverTitle": "Delete “{title}” for good?",
+  "@deleteForeverTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "emptyTrash": "Empty trash",
+  "emptyTrashTitle": "{count, plural, =1{Delete 1 entry for good?} other{Delete {count} entries for good?}}",
+  "@emptyTrashTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cannotUndo": "Downloaded chapters and files are deleted too. This cannot be undone.",
+  "restoredFromTrash": "Restored from the trash"
 }

@@ -54,4 +54,25 @@ void main() {
       expect((await db.watchWork(id).first)!.work.readOffset, 0.5);
     },
   );
+
+  test('a column that already exists does not stop the upgrade', () async {
+    final db = AppDatabase(
+      NativeDatabase.memory(
+        setup: (raw) {
+          for (final statement in _v1Schema) {
+            raw.execute(statement);
+          }
+          // As left behind by a development build.
+          raw.execute('ALTER TABLE works ADD COLUMN deleted_at INTEGER NULL');
+          raw.execute(
+            "INSERT INTO works (type, format, title) VALUES ('book', 'digital', 'Kept')",
+          );
+          raw.execute('PRAGMA user_version = 1');
+        },
+      ),
+    );
+    addTearDown(db.close);
+    final works = await db.watchWorks().first;
+    expect(works.single.work.title, 'Kept');
+  });
 }

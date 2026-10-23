@@ -9,6 +9,7 @@ import '../data/database_scope.dart';
 import '../l10n/l10n.dart';
 import '../library/backup.dart';
 import '../library/library_scope.dart';
+import 'trash_screen.dart';
 import '../ui/app_settings.dart';
 import '../ui/layout.dart';
 
@@ -22,6 +23,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final _search = TextEditingController();
   late Stream<List<Tag>> _tags;
+  late Stream<List<Work>> _trash;
 
   AppDatabase get _db => DatabaseScope.of(context);
 
@@ -29,6 +31,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _tags = _db.watchAllTags();
+    _trash = _db.watchTrash();
   }
 
   bool _busy = false;
@@ -181,6 +184,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   leading: const Icon(Icons.settings_backup_restore),
                   title: Text(l10n.restoreBackup),
                   onTap: _restoreBackup,
+                ),
+                StreamBuilder<List<Work>>(
+                  stream: _trash,
+                  builder: (context, snapshot) => ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.delete_outline),
+                    title: Text(l10n.trashTitle),
+                    subtitle: Text(l10n.trashCount(snapshot.data?.length ?? 0)),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const TrashScreen()),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Text(

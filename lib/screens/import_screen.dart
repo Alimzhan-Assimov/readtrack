@@ -54,8 +54,14 @@ class _ImportScreenState extends State<ImportScreen> {
     }
     final existing = await db.workBySourceUrl(source.storyUrl(url).toString());
     if (existing != null) {
+      final trashed = existing.deletedAt != null;
+      if (trashed) await db.restoreFromTrash(existing.id);
       messenger.showSnackBar(
-        SnackBar(content: Text(l10n.importAlreadyInLibrary)),
+        SnackBar(
+          content: Text(
+            trashed ? l10n.restoredFromTrash : l10n.importAlreadyInLibrary,
+          ),
+        ),
       );
       navigator.pop(existing.id);
       return;

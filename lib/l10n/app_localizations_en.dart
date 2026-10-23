@@ -192,11 +192,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get linkOpenFailed => 'Couldn\'t open the link';
 
   @override
-  String deletedMessage(String title) {
-    return 'Deleted “$title”';
-  }
-
-  @override
   String get undo => 'Undo';
 
   @override
@@ -1063,4 +1058,77 @@ class AppLocalizationsEn extends AppLocalizations {
   String saveFailed(String error) {
     return 'Could not save: $error';
   }
+
+  @override
+  String deleteTitle(String title) {
+    return 'Delete “$title”?';
+  }
+
+  @override
+  String get deleteToTrashHint =>
+      'It goes to the trash in Settings, where you can restore it for six months.';
+
+  @override
+  String movedToTrash(String title) {
+    return '“$title” moved to the trash';
+  }
+
+  @override
+  String get trashTitle => 'Trash';
+
+  @override
+  String get trashHint =>
+      'Deleted entries stay here for six months, then they are removed for good together with their downloaded files.';
+
+  @override
+  String get trashEmpty => 'The trash is empty';
+
+  @override
+  String trashDates(String deleted, String purge) {
+    return 'Deleted $deleted · removed for good on $purge';
+  }
+
+  @override
+  String trashCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries',
+      one: '1 entry',
+      zero: 'Empty',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get restore => 'Restore';
+
+  @override
+  String get deleteForever => 'Delete for good';
+
+  @override
+  String deleteForeverTitle(String title) {
+    return 'Delete “$title” for good?';
+  }
+
+  @override
+  String get emptyTrash => 'Empty trash';
+
+  @override
+  String emptyTrashTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Delete $count entries for good?',
+      one: 'Delete 1 entry for good?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cannotUndo =>
+      'Downloaded chapters and files are deleted too. This cannot be undone.';
+
+  @override
+  String get restoredFromTrash => 'Restored from the trash';
 }

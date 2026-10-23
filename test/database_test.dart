@@ -126,6 +126,30 @@ void main() {
     expect(works.first.work.id, id);
   });
 
+  test('trash hides works; old ones are deleted for good', () async {
+    final old = await db.saveWork(fic('Old'), tagNames: ['Gone']);
+    final recent = await db.saveWork(fic('Recent'));
+    await db.saveWork(fic('Kept'));
+    await db.moveToTrash(old, now: DateTime(2026));
+    await db.moveToTrash(recent, now: DateTime(2026, 10));
+
+    final visible = await db.watchWorks().first;
+    expect(visible.map((w) => w.work.title), ['Kept']);
+    expect(await db.usedTags(), isEmpty, reason: 'only used by trashed works');
+    expect((await db.watchTrash().first).map((w) => w.title), [
+      'Recent',
+      'Old',
+    ]);
+
+    final removed = await db.emptyTrash(before: DateTime(2026, 6));
+    expect(removed.keys, [old]);
+    expect(await db.workById(old), isNull);
+
+    await db.restoreFromTrash(recent);
+    expect(await db.watchWorks().first, hasLength(2));
+    expect(await db.watchTrash().first, isEmpty);
+  });
+
   test('sorting by title ignores case', () async {
     for (final title in ['beta', 'Gamma', 'Alpha']) {
       await db.saveWork(fic(title));
