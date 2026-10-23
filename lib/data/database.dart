@@ -122,6 +122,9 @@ class Works extends Table {
 
   /// Chapters found by update checks that the user hasn't looked at yet.
   IntColumn get newChapters => integer().withDefault(const Constant(0))();
+
+  /// Set while the work is in the trash.
+  DateTimeColumn get deletedAt => dateTime().nullable()();
 }
 
 class WorkTags extends Table {
@@ -223,7 +226,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -251,16 +254,31 @@ class AppDatabase extends _$AppDatabase {
       if (from < 4) await moveRelationshipTagsToPairings();
       if (from < 5) await m.createTable(annotations);
       if (from < 6) {
-        await m.addColumn(works, works.checkedAt);
-        await m.addColumn(works, works.lastChapterAt);
-        await m.addColumn(works, works.newChapters);
+        await _addColumnIfMissing(m, works, works.checkedAt);
+        await _addColumnIfMissing(m, works, works.lastChapterAt);
+        await _addColumnIfMissing(m, works, works.newChapters);
       }
+      if (from < 7) await _addColumnIfMissing(m, works, works.deletedAt);
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
       await mergeSimilarFandoms();
     },
   );
+
+  /// Adds [column] unless a development build already did; adding it twice
+  /// would stop the database from opening.
+  Future<void> _addColumnIfMissing(
+    Migrator m,
+    TableInfo table,
+    GeneratedColumn column,
+  ) async {
+    final existing = await customSelect(
+      'SELECT name FROM pragma_table_info(?)',
+      variables: [Variable.withString(table.actualTableName)],
+    ).map((row) => row.read<String>('name')).get();
+    if (!existing.contains(column.name)) await m.addColumn(table, column);
+  }
 
   static QueryExecutor _openConnection() => driftDatabase(
     name: 'readtrack',
@@ -304,7 +322,7 @@ class AppDatabase extends _$AppDatabase {
     bool? complete,
     WorkSort sort = WorkSort.updated,
   }) {
-    final query = _worksWithFandom();
+    final query = _worksWithFandom()..where(works.deletedAt.isNull());
     final term = search.trim();
     if (term.isNotEmpty) {
       final pattern = '%$term%';
@@ -434,7 +452,9 @@ class AppDatabase extends _$AppDatabase {
       (select(fandoms)
             ..where(
               (f) => f.id.isInQuery(
-                selectOnly(works)..addColumns([works.fandomId]),
+                selectOnly(works)
+                  ..addColumns([works.fandomId])
+                  ..where(works.deletedAt.isNull()),
               ),
             )
             ..orderBy([(f) => OrderingTerm.asc(f.name)]))
@@ -445,7 +465,11 @@ class AppDatabase extends _$AppDatabase {
       (select(tags)
             ..where(
               (t) => t.id.isInQuery(
-                selectOnly(workTags)..addColumns([workTags.tagId]),
+                selectOnly(workTags).join([
+                    innerJoin(works, works.id.equalsExp(workTags.workId)),
+                  ])
+                  ..addColumns([workTags.tagId])
+                  ..where(works.deletedAt.isNull()),
               ),
             )
             ..orderBy([(t) => OrderingTerm.asc(t.name)]))
@@ -551,7 +575,47 @@ class AppDatabase extends _$AppDatabase {
     touch ? changes.copyWith(updatedAt: Value(DateTime.now())) : changes,
   );
 
-  /// Deletes a work and returns everything [restoreWork] needs to undo it.
+  /// Moves a work to the trash; [restoreFromTrash] brings it back.
+  Future<void> moveToTrash(int id, {DateTime? now}) =>
+      (update(works)..where((w) => w.id.equals(id))).write(
+        WorksCompanion(deletedAt: Value(now ?? DateTime.now())),
+      );
+
+  Future<void> restoreFromTrash(int id) =>
+      (update(works)..where((w) => w.id.equals(id))).write(
+        const WorksCompanion(deletedAt: Value(null)),
+      );
+
+  /// Works in the trash, most recently deleted first.
+  Stream<List<Work>> watchTrash() =>
+      (select(works)
+            ..where((w) => w.deletedAt.isNotNull())
+            ..orderBy([(w) => OrderingTerm.desc(w.deletedAt)]))
+          .watch();
+
+  /// Deletes works in the trash for good: one ([id]), those deleted before
+  /// [before], or all. Returns each work's id with its downloaded files, so
+  /// the caller can remove them.
+  Future<Map<int, List<String>>> emptyTrash({int? id, DateTime? before}) =>
+      transaction(() async {
+        final query = select(works)..where((w) => w.deletedAt.isNotNull());
+        if (id != null) query.where((w) => w.id.equals(id));
+        if (before != null) {
+          query.where((w) => w.deletedAt.isSmallerThanValue(before));
+        }
+        final ids = [for (final w in await query.get()) w.id];
+        final files = {for (final i in ids) i: <String>[]};
+        for (final d in await (select(
+          downloads,
+        )..where((d) => d.workId.isIn(ids))).get()) {
+          if (d.filePath case final path?) files[d.workId]!.add(path);
+        }
+        await (delete(works)..where((w) => w.id.isIn(ids))).go();
+        return files;
+      });
+
+  /// Deletes a work for good and returns everything [restoreWork] needs to
+  /// undo it.
   Future<DeletedWork?> deleteWork(int id) {
     return transaction(() async {
       final work = await (select(
@@ -704,8 +768,9 @@ class AppDatabase extends _$AppDatabase {
       (select(works)..where((w) => w.id.equals(id))).getSingleOrNull();
 
   /// Online stories that update checks can look at.
-  Future<List<Work>> worksWithSource() =>
-      (select(works)..where((w) => w.sourceUrl.isNotNull())).get();
+  Future<List<Work>> worksWithSource() => (select(
+    works,
+  )..where((w) => w.sourceUrl.isNotNull() & w.deletedAt.isNull())).get();
 
   /// Clears the "new chapters" badge, e.g. when the story is opened.
   Future<void> markChaptersSeen(int id) =>
@@ -851,7 +916,11 @@ class AppDatabase extends _$AppDatabase {
       (select(pairings)
             ..where(
               (p) => p.id.isInQuery(
-                selectOnly(workPairings)..addColumns([workPairings.pairingId]),
+                selectOnly(workPairings).join([
+                    innerJoin(works, works.id.equalsExp(workPairings.workId)),
+                  ])
+                  ..addColumns([workPairings.pairingId])
+                  ..where(works.deletedAt.isNull()),
               ),
             )
             ..orderBy([(p) => OrderingTerm.asc(p.name)]))

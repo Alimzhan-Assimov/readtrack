@@ -1,3 +1,6 @@
+import 'package:flutter/widgets.dart';
+import 'package:intl/intl.dart';
+
 import '../data/database.dart';
 import '../l10n/l10n.dart';
 
@@ -15,3 +18,7 @@ String? siteName(String? url) {
   if (host.isEmpty) return null;
   return host.startsWith('www.') ? host.substring(4) : host;
 }
+
+/// A date such as "Oct 23, 2026" in the app's language.
+String formatDate(BuildContext context, DateTime date) =>
+    DateFormat.yMMMd(Localizations.localeOf(context).toString()).format(date);

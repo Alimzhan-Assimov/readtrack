@@ -8,6 +8,7 @@ import 'library/backup.dart';
 import 'library/download_service.dart';
 import 'library/library_scope.dart';
 import 'library/storage.dart';
+import 'library/trash.dart';
 import 'library/update_checker.dart';
 import 'screens/library_screen.dart';
 import 'ui/app_settings.dart';
@@ -22,6 +23,11 @@ Future<void> main() async {
   if (restoredFrom != null) {
     await db.moveCoverPaths(restoredFrom, storage.dataDir.path);
   }
+  await deleteFromTrash(
+    db,
+    storage,
+    before: DateTime.now().subtract(kTrashKeep),
+  );
   final settings = AppSettings(db);
   await settings.load();
   runApp(

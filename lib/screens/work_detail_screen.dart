@@ -7,7 +7,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '../data/database.dart';
 import '../data/database_scope.dart';
 import '../l10n/l10n.dart';
-import '../library/library_scope.dart';
 import '../ui/app_settings.dart';
 import '../ui/format.dart';
 import '../ui/labels.dart';
@@ -84,37 +83,45 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
     );
   }
 
-  /// Deletes right away and offers "Undo" instead of asking first.
+  /// Asks first, then moves the work to the trash (with "Undo").
   Future<void> _delete(Work w) async {
     final db = _db;
     final l10n = context.l10n;
     final messenger = ScaffoldMessenger.of(context);
-    final storage = LibraryScope.of(context).storage;
-    final deleted = await db.deleteWork(w.id);
-    if (deleted == null || !mounted) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.deleteTitle(w.title)),
+        content: Text(l10n.deleteToTrashHint),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.deleteTooltip),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    await db.moveToTrash(w.id);
+    if (!mounted) return;
     if (widget.onDeleted case final onDeleted?) {
       onDeleted();
     } else {
       Navigator.of(context).pop();
     }
-    final snackBar = messenger.showSnackBar(
+    messenger.showSnackBar(
       SnackBar(
-        content: Text(l10n.deletedMessage(w.title)),
+        content: Text(l10n.movedToTrash(w.title)),
         persist: false,
         action: SnackBarAction(
           label: l10n.undo,
-          onPressed: () => db.restoreWork(deleted),
+          onPressed: () => db.restoreFromTrash(w.id),
         ),
       ),
-    );
-    // Downloaded files are removed only once "Undo" is no longer possible.
-    unawaited(
-      snackBar.closed.then((reason) async {
-        if (reason == SnackBarClosedReason.action) return;
-        await storage.deleteBookFiles(w.id, [
-          for (final d in deleted.downloads) ?d.filePath,
-        ]);
-      }),
     );
   }
 

@@ -82,16 +82,52 @@ void main() {
     await unmount(tester);
   });
 
-  testWidgets('deleting can be undone from the snackbar', (tester) async {
+  testWidgets('deleting asks first and can be undone', (tester) async {
     await pumpApp(tester, width: 1200);
     await tester.tap(find.text('The New Dawn'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.byTooltip('Delete'));
     await tester.pumpAndSettle();
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(find.text('The New Dawn'), findsWidgets, reason: 'cancelled');
+
+    await tester.tap(find.byTooltip('Delete'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
+    await tester.pumpAndSettle();
     expect(find.text('The New Dawn'), findsNothing);
 
     await tester.tap(find.text('Undo'));
+    await tester.pumpAndSettle();
+    expect(find.text('The New Dawn'), findsOneWidget);
+    await unmount(tester);
+  });
+
+  testWidgets('deleted entries can be restored from the trash', (tester) async {
+    await pumpApp(tester, width: 1200);
+    await tester.tap(find.text('The New Dawn'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Delete'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
+    await tester.pumpAndSettle();
+    expect(find.text('The New Dawn'), findsNothing);
+
+    await tester.tap(find.byTooltip('Settings'));
+    await tester.pumpAndSettle();
+    expect(find.text('1 entry'), findsOneWidget);
+    await tester.tap(find.text('Trash'));
+    await tester.pumpAndSettle();
+    expect(find.text('The New Dawn'), findsOneWidget);
+    await tester.tap(find.byTooltip('Restore'));
+    await tester.pumpAndSettle();
+    expect(find.text('The trash is empty'), findsOneWidget);
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.pageBack();
     await tester.pumpAndSettle();
     expect(find.text('The New Dawn'), findsOneWidget);
     await unmount(tester);
