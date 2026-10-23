@@ -546,5 +546,60 @@
         "type": "int"
       }
     }
-  }
+  },
+  "filterLength": "Length",
+  "atLeastWords": "{count}+ words",
+  "@atLeastWords": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "compact"
+      }
+    }
+  },
+  "filterCompletion": "Completion",
+  "completeOnly": "Complete",
+  "ongoingOnly": "Ongoing",
+  "saveShelf": "Save as shelf",
+  "saveShelfTitle": "Save these filters as a shelf",
+  "shelfNameHint": "e.g. Long finished romance",
+  "openShelf": "Show this shelf",
+  "deleteShelf": "Delete shelf",
+  "showAsGrid": "Show as grid",
+  "showAsList": "Show as list",
+  "backupHeading": "Backup",
+  "backupHint": "Saves your whole library – entries, progress, notes and downloaded books – in one zip file.",
+  "createBackup": "Create backup",
+  "backupCreated": "Backup saved: {path}",
+  "@backupCreated": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "backupFailed": "Backup failed: {error}",
+  "@backupFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "backupFiles": "ReadTrack backups",
+  "restoreBackup": "Restore backup",
+  "restoreBackupTitle": "Restore this backup?",
+  "restoreBackupWarning": "Your current library is replaced by the backup. A copy of it is kept as \"before-restore\" in the app folder.",
+  "restoreReadyTitle": "Backup ready",
+  "restoreReadyHint": "Restart ReadTrack to finish restoring the backup.",
+  "restoreFailed": "Could not restore the backup: {error}",
+  "@restoreFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "later": "Later",
+  "closeApp": "Close ReadTrack"
 }

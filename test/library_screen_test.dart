@@ -10,6 +10,7 @@ import 'package:readtrack/library/storage.dart';
 import 'package:readtrack/main.dart';
 import 'package:readtrack/ui/app_settings.dart';
 import 'package:readtrack/widgets/tag_input.dart';
+import 'package:readtrack/widgets/work_grid_tile.dart';
 
 void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
@@ -249,6 +250,50 @@ void main() {
     expect(find.text('Explicit Sex'), findsNothing);
     expect(find.text('Action'), findsOneWidget);
     expect(await tester.runAsync(() => db.setting('hideAdultTags')), 'true');
+    await unmount(tester);
+  });
+
+  testWidgets('filters can be saved as a shelf; grid view', (tester) async {
+    final settings = AppSettings(db);
+    tester.view.physicalSize = const Size(400, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      ReadTrackApp(
+        db: db,
+        storage: storage,
+        downloads: DownloadService(db, storage),
+        settings: settings,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Length'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('50K+ words'));
+    await tester.pumpAndSettle();
+    expect(find.text('The New Dawn'), findsNothing);
+
+    await tester.tap(find.text('Save as shelf'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).last, 'Long reads');
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+    expect(settings.shelves.single.filter.minWords, 50000);
+
+    await tester.tap(find.text('Clear filters'));
+    await tester.pumpAndSettle();
+    expect(find.text('The New Dawn'), findsOneWidget);
+    await tester.tap(find.text('Long reads'));
+    await tester.pumpAndSettle();
+    expect(find.text('The New Dawn'), findsNothing);
+    await tester.tap(find.text('Clear filters'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Show as grid'));
+    await tester.pumpAndSettle();
+    expect(find.byType(WorkGridTile), findsOneWidget);
+    expect(settings.gridView, isTrue);
     await unmount(tester);
   });
 }

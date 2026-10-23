@@ -62,6 +62,51 @@ void main() {
     expect(restored?.tags.map((t) => t.name), ['Fluff']);
   });
 
+  test('length and completion filters', () async {
+    await db.saveWork(
+      fic(
+        'Short done',
+      ).copyWith(wordCount: const Value(5000), isComplete: const Value(true)),
+    );
+    await db.saveWork(
+      fic('Long ongoing').copyWith(
+        wordCount: const Value(120000),
+        isComplete: const Value(false),
+      ),
+    );
+    await db.saveWork(fic('Unknown'));
+    Future<List<String>> titles({int? minWords, bool? complete}) async => [
+      for (final w
+          in await db
+              .watchWorks(
+                minWords: minWords,
+                complete: complete,
+                sort: WorkSort.title,
+              )
+              .first)
+        w.work.title,
+    ];
+    expect(await titles(minWords: 50000), ['Long ongoing']);
+    expect(await titles(complete: true), ['Short done']);
+    expect(await titles(complete: false), ['Long ongoing', 'Unknown']);
+  });
+
+  test('cover paths move to another books folder', () async {
+    final id = await db.saveWork(
+      fic('Covered').copyWith(coverPath: const Value('/old/books/1/cover.jpg')),
+    );
+    await db.saveWork(
+      fic('Other').copyWith(coverPath: const Value('/x/c.jpg')),
+    );
+    await db.moveCoverPaths('/old/books', '/new/books');
+    final works = await db.watchWorks(sort: WorkSort.title).first;
+    expect(works.map((w) => w.work.coverPath), [
+      '/new/books/1/cover.jpg',
+      '/x/c.jpg',
+    ]);
+    expect(works.first.work.id, id);
+  });
+
   test('sorting by title ignores case', () async {
     for (final title in ['beta', 'Gamma', 'Alpha']) {
       await db.saveWork(fic(title));

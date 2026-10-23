@@ -134,7 +134,7 @@ class WorkTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              _StatusBadge(w.status),
+              StatusBadge(w.status),
             ],
           ),
         ),
@@ -164,8 +164,8 @@ class _SmallTag extends StatelessWidget {
 
 /// Labeled reading status. An icon alone is easy to mistake for a button,
 /// e.g. "Dropped" (⊗) looks like delete.
-class _StatusBadge extends StatelessWidget {
-  const _StatusBadge(this.status);
+class StatusBadge extends StatelessWidget {
+  const StatusBadge(this.status, {super.key});
 
   final ReadingStatus status;
 
@@ -195,9 +195,13 @@ class _StatusBadge extends StatelessWidget {
         children: [
           Icon(status.icon, size: 14, color: foreground),
           const SizedBox(width: 4),
-          Text(
-            status.label(context.l10n),
-            style: theme.textTheme.labelSmall?.copyWith(color: foreground),
+          Flexible(
+            child: Text(
+              status.label(context.l10n),
+              style: theme.textTheme.labelSmall?.copyWith(color: foreground),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ],
       ),

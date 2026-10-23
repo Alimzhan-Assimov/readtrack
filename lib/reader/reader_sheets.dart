@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/database.dart';
 import '../l10n/l10n.dart';
 import '../ui/app_settings.dart';
+import '../widgets/text_prompt.dart';
 
 /// Bottom sheet with the reader's text settings; changes apply right away.
 class ReaderSettingsSheet extends StatefulWidget {
@@ -286,47 +287,22 @@ Future<String?> askForNote(
   String? quote,
 }) {
   final l10n = context.l10n;
-  final controller = TextEditingController(text: initial);
-  return showDialog<String>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text(initial == null ? l10n.addNote : l10n.editNote),
-      content: SizedBox(
-        width: 420,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (quote != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Text(
-                  '„$quote“',
-                  maxLines: 4,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontStyle: FontStyle.italic),
-                ),
-              ),
-            TextField(
-              controller: controller,
-              autofocus: true,
-              minLines: 2,
-              maxLines: 6,
-              decoration: InputDecoration(hintText: l10n.noteHint),
+  return showTextPrompt(
+    context,
+    title: initial == null ? l10n.addNote : l10n.editNote,
+    hint: l10n.noteHint,
+    initial: initial,
+    multiline: true,
+    header: quote == null
+        ? null
+        : Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Text(
+              '„$quote“',
+              maxLines: 4,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontStyle: FontStyle.italic),
             ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(l10n.cancel),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.pop(context, controller.text.trim()),
-          child: Text(l10n.save),
-        ),
-      ],
-    ),
-  ).whenComplete(controller.dispose);
+          ),
+  );
 }

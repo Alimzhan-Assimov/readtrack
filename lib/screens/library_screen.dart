@@ -10,9 +10,12 @@ import '../l10n/l10n.dart';
 import '../library/book_importer.dart';
 import '../library/file_import.dart';
 import '../library/library_scope.dart';
+import '../library/shelves.dart';
 import '../ui/app_settings.dart';
 import '../ui/labels.dart';
 import '../ui/layout.dart';
+import '../widgets/text_prompt.dart';
+import '../widgets/work_grid_tile.dart';
 import '../widgets/work_tile.dart';
 import 'import_screen.dart';
 import 'settings_screen.dart';
@@ -40,7 +43,12 @@ class _LibraryScreenState extends State<LibraryScreen> {
   Tag? _tag;
   Pairing? _pairing;
   ReadingStatus? _status;
+  int? _minWords;
+  bool? _complete;
   WorkSort _sort = WorkSort.updated;
+
+  /// Word-count thresholds offered by the length filter.
+  static const _lengths = [10000, 50000, 100000, 250000];
   int? _selectedId;
   late Stream<List<WorkWithDetails>> _works;
 
@@ -52,7 +60,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
       _fandom != null ||
       _tag != null ||
       _pairing != null ||
-      _status != null;
+      _status != null ||
+      _minWords != null ||
+      _complete != null;
 
   @override
   void didChangeDependencies() {
@@ -76,8 +86,53 @@ class _LibraryScreenState extends State<LibraryScreen> {
       tagId: _tag?.id,
       pairingId: _pairing?.id,
       status: _status,
+      minWords: _minWords,
+      complete: _complete,
       sort: _sort,
     );
+  }
+
+  LibraryFilter get _filter => LibraryFilter(
+    type: _type,
+    fandomId: _fandom?.id,
+    tagId: _tag?.id,
+    pairingId: _pairing?.id,
+    status: _status,
+    minWords: _minWords,
+    complete: _complete,
+    sort: _sort,
+  );
+
+  /// Applies a saved shelf; categories, tags and pairings are looked up by id.
+  Future<void> _applyShelf(Shelf shelf) async {
+    final f = shelf.filter;
+    final fandoms = await _db.usedFandoms();
+    final tags = await _db.usedTags();
+    final pairings = await _db.usedPairings();
+    if (!mounted) return;
+    _setFilter(() {
+      _type = f.type;
+      _fandom = fandoms.where((x) => x.id == f.fandomId).firstOrNull;
+      _tag = tags.where((x) => x.id == f.tagId).firstOrNull;
+      _pairing = pairings.where((x) => x.id == f.pairingId).firstOrNull;
+      _status = f.status;
+      _minWords = f.minWords;
+      _complete = f.complete;
+      _sort = f.sort;
+    });
+  }
+
+  Future<void> _saveShelf() async {
+    final l10n = context.l10n;
+    final settings = SettingsScope.maybeOf(context);
+    if (settings == null) return;
+    final name = await showTextPrompt(
+      context,
+      title: l10n.saveShelfTitle,
+      hint: l10n.shelfNameHint,
+    );
+    if (name == null || name.isEmpty) return;
+    await settings.saveShelf(Shelf(name, _filter));
   }
 
   void _setFilter(VoidCallback change) => setState(() {
@@ -259,6 +314,18 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 floating: true,
                 snap: true,
                 actions: [
+                  if (SettingsScope.maybeOf(context) case final settings?)
+                    IconButton(
+                      icon: Icon(
+                        settings.gridView
+                            ? Icons.view_list_outlined
+                            : Icons.grid_view,
+                      ),
+                      tooltip: settings.gridView
+                          ? l10n.showAsList
+                          : l10n.showAsGrid,
+                      onPressed: () => settings.setGridView(!settings.gridView),
+                    ),
                   IconButton(
                     icon: const Icon(Icons.settings_outlined),
                     tooltip: l10n.settingsTitle,
@@ -303,6 +370,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   ),
                 ),
               ),
+              if (SettingsScope.maybeOf(context)?.shelves case final shelves?
+                  when shelves.isNotEmpty)
+                SliverToBoxAdapter(child: _buildShelves(l10n, shelves)),
               SliverToBoxAdapter(child: _buildFilters(l10n)),
               if (snapshot.hasError)
                 SliverFillRemaining(
@@ -333,22 +403,46 @@ class _LibraryScreenState extends State<LibraryScreen> {
                     ),
                   ),
                 ),
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 96),
-                  sliver: SliverList.builder(
-                    itemCount: items.length,
-                    itemBuilder: (context, i) {
-                      final id = items[i].work.id;
-                      return WorkTile(
-                        item: items[i],
-                        selected: wide && id == _selectedId,
-                        // Hero animation only on page transitions (narrow layout).
-                        heroTag: wide ? null : 'cover-$id',
-                        onTap: () => _open(id, wide: wide),
-                      );
-                    },
+                if (SettingsScope.maybeOf(context)?.gridView ?? false)
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 96),
+                    sliver: SliverGrid.builder(
+                      gridDelegate:
+                          const SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: 170,
+                            childAspectRatio: 0.52,
+                            mainAxisSpacing: 4,
+                            crossAxisSpacing: 4,
+                          ),
+                      itemCount: items.length,
+                      itemBuilder: (context, i) {
+                        final id = items[i].work.id;
+                        return WorkGridTile(
+                          item: items[i],
+                          selected: wide && id == _selectedId,
+                          heroTag: wide ? null : 'cover-$id',
+                          onTap: () => _open(id, wide: wide),
+                        );
+                      },
+                    ),
+                  )
+                else
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 96),
+                    sliver: SliverList.builder(
+                      itemCount: items.length,
+                      itemBuilder: (context, i) {
+                        final id = items[i].work.id;
+                        return WorkTile(
+                          item: items[i],
+                          selected: wide && id == _selectedId,
+                          // Hero animation only on page transitions (narrow layout).
+                          heroTag: wide ? null : 'cover-$id',
+                          onTap: () => _open(id, wide: wide),
+                        );
+                      },
+                    ),
                   ),
-                ),
               ],
             ],
           );
@@ -363,12 +457,48 @@ class _LibraryScreenState extends State<LibraryScreen> {
     );
   }
 
+  Widget _buildShelves(AppLocalizations l10n, List<Shelf> shelves) {
+    final settings = SettingsScope.maybeOf(context)!;
+    return SizedBox(
+      height: 44,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        children: [
+          for (final shelf in shelves)
+            Padding(
+              padding: const EdgeInsets.only(right: 8, bottom: 4),
+              child: InputChip(
+                avatar: const Icon(Icons.shelves, size: 18),
+                label: Text(shelf.name),
+                tooltip: l10n.openShelf,
+                onPressed: () => _applyShelf(shelf),
+                onDeleted: () => settings.deleteShelf(shelf.name),
+                deleteButtonTooltipMessage: l10n.deleteShelf,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  bool get _isFilteredByChips =>
+      _type != null ||
+      _fandom != null ||
+      _tag != null ||
+      _pairing != null ||
+      _status != null ||
+      _minWords != null ||
+      _complete != null;
+
   void _clearFilters() => _setFilter(() {
     _type = null;
     _fandom = null;
     _tag = null;
     _pairing = null;
     _status = null;
+    _minWords = null;
+    _complete = null;
   });
 
   /// All filters are compact picker chips, so they fit the 400 dp list pane
@@ -425,25 +555,43 @@ class _LibraryScreenState extends State<LibraryScreen> {
             iconOf: (s) => s.icon,
             onSelected: (s) => _setFilter(() => _status = s),
           ),
-          if (_type != null ||
-              _fandom != null ||
-              _tag != null ||
-              _pairing != null ||
-              _status != null)
+          _PickerChip<int>(
+            icon: Icons.straighten,
+            emptyLabel: l10n.filterLength,
+            selected: _minWords,
+            loadOptions: () async => _lengths,
+            nameOf: (n) => l10n.atLeastWords(n),
+            onSelected: (n) => _setFilter(() => _minWords = n),
+          ),
+          _PickerChip<bool>(
+            icon: Icons.flag_outlined,
+            emptyLabel: l10n.filterCompletion,
+            selected: _complete,
+            loadOptions: () async => const [true, false],
+            nameOf: (c) => c ? l10n.completeOnly : l10n.ongoingOnly,
+            onSelected: (c) => _setFilter(() => _complete = c),
+          ),
+          if (_isFilteredByChips) ...[
+            ActionChip(
+              avatar: const Icon(Icons.bookmark_add_outlined, size: 18),
+              label: Text(l10n.saveShelf),
+              onPressed: _saveShelf,
+            ),
             ActionChip(
               avatar: const Icon(Icons.filter_alt_off_outlined, size: 18),
               label: Text(l10n.clearFilters),
               onPressed: _clearFilters,
             ),
+          ],
         ],
       ),
     );
   }
 }
 
-/// Filter chip that opens a list of options when tapped.
 enum _AddKind { link, file, manual }
 
+/// Filter chip that opens a list of options when tapped.
 class _PickerChip<T> extends StatelessWidget {
   const _PickerChip({
     required this.icon,

@@ -1425,6 +1425,162 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Show all ({count})'**
   String showAllAnnotations(int count);
+
+  /// No description provided for @filterLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Length'**
+  String get filterLength;
+
+  /// No description provided for @atLeastWords.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}+ words'**
+  String atLeastWords(int count);
+
+  /// No description provided for @filterCompletion.
+  ///
+  /// In en, this message translates to:
+  /// **'Completion'**
+  String get filterCompletion;
+
+  /// No description provided for @completeOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete'**
+  String get completeOnly;
+
+  /// No description provided for @ongoingOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Ongoing'**
+  String get ongoingOnly;
+
+  /// No description provided for @saveShelf.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as shelf'**
+  String get saveShelf;
+
+  /// No description provided for @saveShelfTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save these filters as a shelf'**
+  String get saveShelfTitle;
+
+  /// No description provided for @shelfNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Long finished romance'**
+  String get shelfNameHint;
+
+  /// No description provided for @openShelf.
+  ///
+  /// In en, this message translates to:
+  /// **'Show this shelf'**
+  String get openShelf;
+
+  /// No description provided for @deleteShelf.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete shelf'**
+  String get deleteShelf;
+
+  /// No description provided for @showAsGrid.
+  ///
+  /// In en, this message translates to:
+  /// **'Show as grid'**
+  String get showAsGrid;
+
+  /// No description provided for @showAsList.
+  ///
+  /// In en, this message translates to:
+  /// **'Show as list'**
+  String get showAsList;
+
+  /// No description provided for @backupHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup'**
+  String get backupHeading;
+
+  /// No description provided for @backupHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Saves your whole library – entries, progress, notes and downloaded books – in one zip file.'**
+  String get backupHint;
+
+  /// No description provided for @createBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Create backup'**
+  String get createBackup;
+
+  /// No description provided for @backupCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup saved: {path}'**
+  String backupCreated(String path);
+
+  /// No description provided for @backupFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup failed: {error}'**
+  String backupFailed(String error);
+
+  /// No description provided for @backupFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'ReadTrack backups'**
+  String get backupFiles;
+
+  /// No description provided for @restoreBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore backup'**
+  String get restoreBackup;
+
+  /// No description provided for @restoreBackupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore this backup?'**
+  String get restoreBackupTitle;
+
+  /// No description provided for @restoreBackupWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Your current library is replaced by the backup. A copy of it is kept as \"before-restore\" in the app folder.'**
+  String get restoreBackupWarning;
+
+  /// No description provided for @restoreReadyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup ready'**
+  String get restoreReadyTitle;
+
+  /// No description provided for @restoreReadyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Restart ReadTrack to finish restoring the backup.'**
+  String get restoreReadyHint;
+
+  /// No description provided for @restoreFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not restore the backup: {error}'**
+  String restoreFailed(String error);
+
+  /// No description provided for @later.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get later;
+
+  /// No description provided for @closeApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Close ReadTrack'**
+  String get closeApp;
 }
 
 class _AppLocalizationsDelegate
