@@ -64,10 +64,54 @@ class _LibraryScreenState extends State<LibraryScreen> {
       _minWords != null ||
       _complete != null;
 
+  bool _checking = false;
+  bool _checkedOnStart = false;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _updateQuery();
+    if (!_checkedOnStart) {
+      _checkedOnStart = true;
+      if (SettingsScope.maybeOf(context)?.checkOnStart ?? false) {
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => _checkForUpdates(quiet: true),
+        );
+      }
+    }
+  }
+
+  /// Looks for new chapters; with [quiet], only reports when there are some.
+  Future<void> _checkForUpdates({bool quiet = false}) async {
+    final checker = LibraryScope.of(context).updates;
+    if (checker == null || !mounted) return;
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _checking = true);
+    try {
+      final summary = await checker.check(all: !quiet);
+      if (summary.newChapters > 0) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(
+              l10n.updatesFound(summary.newChapters, summary.updatedWorks),
+            ),
+          ),
+        );
+      } else if (!quiet) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(
+              summary.failed > 0
+                  ? l10n.updatesFailed(summary.failed)
+                  : l10n.noUpdatesFound,
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _checking = false);
+    }
   }
 
   @override
@@ -307,13 +351,24 @@ class _LibraryScreenState extends State<LibraryScreen> {
         stream: _works,
         builder: (context, snapshot) {
           final items = snapshot.data;
-          return CustomScrollView(
+          final list = CustomScrollView(
             slivers: [
               SliverAppBar(
                 title: Text(l10n.libraryTitle),
                 floating: true,
                 snap: true,
                 actions: [
+                  if (LibraryScope.of(context).updates != null)
+                    IconButton(
+                      icon: _checking
+                          ? const SizedBox.square(
+                              dimension: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.refresh),
+                      tooltip: l10n.checkForUpdates,
+                      onPressed: _checking ? null : _checkForUpdates,
+                    ),
                   if (SettingsScope.maybeOf(context) case final settings?)
                     IconButton(
                       icon: Icon(
@@ -446,6 +501,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
               ],
             ],
           );
+          return LibraryScope.of(context).updates == null
+              ? list
+              : RefreshIndicator(onRefresh: _checkForUpdates, child: list);
         },
       ),
       floatingActionButton: FloatingActionButton.extended(

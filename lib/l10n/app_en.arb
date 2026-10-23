@@ -601,5 +601,39 @@
     }
   },
   "later": "Later",
-  "closeApp": "Close ReadTrack"
+  "closeApp": "Close ReadTrack",
+  "checkForUpdates": "Check for new chapters",
+  "updatesFound": "{chapters, plural, =1{1 new chapter} other{{chapters} new chapters}} in {works, plural, =1{1 story} other{{works} stories}}",
+  "@updatesFound": {
+    "placeholders": {
+      "chapters": {
+        "type": "int"
+      },
+      "works": {
+        "type": "int"
+      }
+    }
+  },
+  "noUpdatesFound": "No new chapters",
+  "updatesFailed": "No new chapters found; {count, plural, =1{1 story} other{{count} stories}} could not be checked",
+  "@updatesFailed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "newChaptersBadge": "+{count} new",
+  "@newChaptersBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "abandonedBadge": "No update for over a year",
+  "abandonedShort": "Abandoned?",
+  "checkOnStart": "Check for new chapters on start",
+  "checkOnStartHint": "Ongoing stories that update often are checked more often, finished ones about once a month. Sites that need a browser window are only checked from the story page.",
+  "updatesHeading": "Updates"
 }

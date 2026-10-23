@@ -1003,4 +1003,59 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get closeApp => 'Close ReadTrack';
+
+  @override
+  String get checkForUpdates => 'Check for new chapters';
+
+  @override
+  String updatesFound(int chapters, int works) {
+    String _temp0 = intl.Intl.pluralLogic(
+      chapters,
+      locale: localeName,
+      other: '$chapters new chapters',
+      one: '1 new chapter',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      works,
+      locale: localeName,
+      other: '$works stories',
+      one: '1 story',
+    );
+    return '$_temp0 in $_temp1';
+  }
+
+  @override
+  String get noUpdatesFound => 'No new chapters';
+
+  @override
+  String updatesFailed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count stories',
+      one: '1 story',
+    );
+    return 'No new chapters found; $_temp0 could not be checked';
+  }
+
+  @override
+  String newChaptersBadge(int count) {
+    return '+$count new';
+  }
+
+  @override
+  String get abandonedBadge => 'No update for over a year';
+
+  @override
+  String get abandonedShort => 'Abandoned?';
+
+  @override
+  String get checkOnStart => 'Check for new chapters on start';
+
+  @override
+  String get checkOnStartHint =>
+      'Ongoing stories that update often are checked more often, finished ones about once a month. Sites that need a browser window are only checked from the story page.';
+
+  @override
+  String get updatesHeading => 'Updates';
 }

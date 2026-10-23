@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../data/database.dart';
 import '../l10n/l10n.dart';
+import '../library/update_checker.dart';
 import '../ui/app_settings.dart';
 import '../ui/format.dart';
 import '../ui/labels.dart';
@@ -134,7 +135,20 @@ class WorkTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              StatusBadge(w.status),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  StatusBadge(w.status),
+                  if (w.newChapters > 0) ...[
+                    const SizedBox(height: 6),
+                    NewChaptersBadge(w.newChapters),
+                  ],
+                  if (looksAbandoned(w)) ...[
+                    const SizedBox(height: 6),
+                    const AbandonedBadge(),
+                  ],
+                ],
+              ),
             ],
           ),
         ),
@@ -158,6 +172,62 @@ class _SmallTag extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(label, style: theme.textTheme.labelSmall),
+    );
+  }
+}
+
+/// How many chapters came out since the user last opened the story.
+class NewChaptersBadge extends StatelessWidget {
+  const NewChaptersBadge(this.count, {super.key});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.primary,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        context.l10n.newChaptersBadge(count),
+        style: theme.textTheme.labelSmall?.copyWith(
+          color: theme.colorScheme.onPrimary,
+        ),
+      ),
+    );
+  }
+}
+
+/// Shown for ongoing stories without an update for over a year.
+class AbandonedBadge extends StatelessWidget {
+  const AbandonedBadge({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = context.l10n;
+    return Tooltip(
+      message: l10n.abandonedBadge,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.hourglass_disabled,
+            size: 14,
+            color: theme.colorScheme.error,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            l10n.abandonedShort,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: theme.colorScheme.error,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

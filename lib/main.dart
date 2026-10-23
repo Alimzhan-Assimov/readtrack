@@ -8,6 +8,7 @@ import 'library/backup.dart';
 import 'library/download_service.dart';
 import 'library/library_scope.dart';
 import 'library/storage.dart';
+import 'library/update_checker.dart';
 import 'screens/library_screen.dart';
 import 'ui/app_settings.dart';
 import 'ui/theme.dart';
@@ -28,6 +29,7 @@ Future<void> main() async {
       db: db,
       storage: storage,
       downloads: DownloadService(db, storage),
+      updates: UpdateChecker(db),
       settings: settings,
     ),
   );
@@ -39,12 +41,14 @@ class ReadTrackApp extends StatelessWidget {
     required this.db,
     required this.storage,
     required this.downloads,
+    this.updates,
     this.settings,
   });
 
   final AppDatabase db;
   final LibraryStorage storage;
   final DownloadService downloads;
+  final UpdateChecker? updates;
 
   /// Defaults to unloaded settings (nothing hidden), e.g. in tests.
   final AppSettings? settings;
@@ -56,6 +60,7 @@ class ReadTrackApp extends StatelessWidget {
       child: LibraryScope(
         storage: storage,
         downloads: downloads,
+        updates: updates,
         child: SettingsScope(
           settings: settings ?? AppSettings(db),
           // Uses the system accent color on Android 12+ (Material You). The

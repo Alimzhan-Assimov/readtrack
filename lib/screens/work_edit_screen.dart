@@ -257,6 +257,13 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
         final cover? => Value(cover.toString()),
         null => const Value.absent(),
       },
+      checkedAt: widget.imported == null
+          ? const Value.absent()
+          : Value(DateTime.now()),
+      lastChapterAt: switch (widget.imported?.updatedOn) {
+        final date? => Value(date),
+        null => const Value.absent(),
+      },
     );
     final id = await _db.saveWork(
       data,

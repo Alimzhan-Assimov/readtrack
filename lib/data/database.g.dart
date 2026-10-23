@@ -680,6 +680,41 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
     requiredDuringInsert: false,
     defaultValue: currentDateAndTime,
   );
+  static const VerificationMeta _checkedAtMeta = const VerificationMeta(
+    'checkedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> checkedAt = GeneratedColumn<DateTime>(
+    'checked_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _lastChapterAtMeta = const VerificationMeta(
+    'lastChapterAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastChapterAt =
+      GeneratedColumn<DateTime>(
+        'last_chapter_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _newChaptersMeta = const VerificationMeta(
+    'newChapters',
+  );
+  @override
+  late final GeneratedColumn<int> newChapters = GeneratedColumn<int>(
+    'new_chapters',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -704,6 +739,9 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
     notes,
     addedAt,
     updatedAt,
+    checkedAt,
+    lastChapterAt,
+    newChapters,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -836,6 +874,30 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
         updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
       );
     }
+    if (data.containsKey('checked_at')) {
+      context.handle(
+        _checkedAtMeta,
+        checkedAt.isAcceptableOrUnknown(data['checked_at']!, _checkedAtMeta),
+      );
+    }
+    if (data.containsKey('last_chapter_at')) {
+      context.handle(
+        _lastChapterAtMeta,
+        lastChapterAt.isAcceptableOrUnknown(
+          data['last_chapter_at']!,
+          _lastChapterAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('new_chapters')) {
+      context.handle(
+        _newChaptersMeta,
+        newChapters.isAcceptableOrUnknown(
+          data['new_chapters']!,
+          _newChaptersMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -939,6 +1001,18 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}updated_at'],
       )!,
+      checkedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}checked_at'],
+      ),
+      lastChapterAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_chapter_at'],
+      ),
+      newChapters: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}new_chapters'],
+      )!,
     );
   }
 
@@ -986,6 +1060,16 @@ class Work extends DataClass implements Insertable<Work> {
   final String? notes;
   final DateTime addedAt;
   final DateTime updatedAt;
+
+  /// When the site was last checked for new chapters.
+  final DateTime? checkedAt;
+
+  /// When the latest chapter came out: the site's date if it shows one,
+  /// otherwise when ReadTrack first saw it.
+  final DateTime? lastChapterAt;
+
+  /// Chapters found by update checks that the user hasn't looked at yet.
+  final int newChapters;
   const Work({
     required this.id,
     required this.type,
@@ -1009,6 +1093,9 @@ class Work extends DataClass implements Insertable<Work> {
     this.notes,
     required this.addedAt,
     required this.updatedAt,
+    this.checkedAt,
+    this.lastChapterAt,
+    required this.newChapters,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1073,6 +1160,13 @@ class Work extends DataClass implements Insertable<Work> {
     }
     map['added_at'] = Variable<DateTime>(addedAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || checkedAt != null) {
+      map['checked_at'] = Variable<DateTime>(checkedAt);
+    }
+    if (!nullToAbsent || lastChapterAt != null) {
+      map['last_chapter_at'] = Variable<DateTime>(lastChapterAt);
+    }
+    map['new_chapters'] = Variable<int>(newChapters);
     return map;
   }
 
@@ -1126,6 +1220,13 @@ class Work extends DataClass implements Insertable<Work> {
           : Value(notes),
       addedAt: Value(addedAt),
       updatedAt: Value(updatedAt),
+      checkedAt: checkedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(checkedAt),
+      lastChapterAt: lastChapterAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastChapterAt),
+      newChapters: Value(newChapters),
     );
   }
 
@@ -1163,6 +1264,9 @@ class Work extends DataClass implements Insertable<Work> {
       notes: serializer.fromJson<String?>(json['notes']),
       addedAt: serializer.fromJson<DateTime>(json['addedAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      checkedAt: serializer.fromJson<DateTime?>(json['checkedAt']),
+      lastChapterAt: serializer.fromJson<DateTime?>(json['lastChapterAt']),
+      newChapters: serializer.fromJson<int>(json['newChapters']),
     );
   }
   @override
@@ -1197,6 +1301,9 @@ class Work extends DataClass implements Insertable<Work> {
       'notes': serializer.toJson<String?>(notes),
       'addedAt': serializer.toJson<DateTime>(addedAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'checkedAt': serializer.toJson<DateTime?>(checkedAt),
+      'lastChapterAt': serializer.toJson<DateTime?>(lastChapterAt),
+      'newChapters': serializer.toJson<int>(newChapters),
     };
   }
 
@@ -1223,6 +1330,9 @@ class Work extends DataClass implements Insertable<Work> {
     Value<String?> notes = const Value.absent(),
     DateTime? addedAt,
     DateTime? updatedAt,
+    Value<DateTime?> checkedAt = const Value.absent(),
+    Value<DateTime?> lastChapterAt = const Value.absent(),
+    int? newChapters,
   }) => Work(
     id: id ?? this.id,
     type: type ?? this.type,
@@ -1248,6 +1358,11 @@ class Work extends DataClass implements Insertable<Work> {
     notes: notes.present ? notes.value : this.notes,
     addedAt: addedAt ?? this.addedAt,
     updatedAt: updatedAt ?? this.updatedAt,
+    checkedAt: checkedAt.present ? checkedAt.value : this.checkedAt,
+    lastChapterAt: lastChapterAt.present
+        ? lastChapterAt.value
+        : this.lastChapterAt,
+    newChapters: newChapters ?? this.newChapters,
   );
   Work copyWithCompanion(WorksCompanion data) {
     return Work(
@@ -1281,6 +1396,13 @@ class Work extends DataClass implements Insertable<Work> {
       notes: data.notes.present ? data.notes.value : this.notes,
       addedAt: data.addedAt.present ? data.addedAt.value : this.addedAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      checkedAt: data.checkedAt.present ? data.checkedAt.value : this.checkedAt,
+      lastChapterAt: data.lastChapterAt.present
+          ? data.lastChapterAt.value
+          : this.lastChapterAt,
+      newChapters: data.newChapters.present
+          ? data.newChapters.value
+          : this.newChapters,
     );
   }
 
@@ -1308,7 +1430,10 @@ class Work extends DataClass implements Insertable<Work> {
           ..write('rating: $rating, ')
           ..write('notes: $notes, ')
           ..write('addedAt: $addedAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('checkedAt: $checkedAt, ')
+          ..write('lastChapterAt: $lastChapterAt, ')
+          ..write('newChapters: $newChapters')
           ..write(')'))
         .toString();
   }
@@ -1337,6 +1462,9 @@ class Work extends DataClass implements Insertable<Work> {
     notes,
     addedAt,
     updatedAt,
+    checkedAt,
+    lastChapterAt,
+    newChapters,
   ]);
   @override
   bool operator ==(Object other) =>
@@ -1363,7 +1491,10 @@ class Work extends DataClass implements Insertable<Work> {
           other.rating == this.rating &&
           other.notes == this.notes &&
           other.addedAt == this.addedAt &&
-          other.updatedAt == this.updatedAt);
+          other.updatedAt == this.updatedAt &&
+          other.checkedAt == this.checkedAt &&
+          other.lastChapterAt == this.lastChapterAt &&
+          other.newChapters == this.newChapters);
 }
 
 class WorksCompanion extends UpdateCompanion<Work> {
@@ -1389,6 +1520,9 @@ class WorksCompanion extends UpdateCompanion<Work> {
   final Value<String?> notes;
   final Value<DateTime> addedAt;
   final Value<DateTime> updatedAt;
+  final Value<DateTime?> checkedAt;
+  final Value<DateTime?> lastChapterAt;
+  final Value<int> newChapters;
   const WorksCompanion({
     this.id = const Value.absent(),
     this.type = const Value.absent(),
@@ -1412,6 +1546,9 @@ class WorksCompanion extends UpdateCompanion<Work> {
     this.notes = const Value.absent(),
     this.addedAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.checkedAt = const Value.absent(),
+    this.lastChapterAt = const Value.absent(),
+    this.newChapters = const Value.absent(),
   });
   WorksCompanion.insert({
     this.id = const Value.absent(),
@@ -1436,6 +1573,9 @@ class WorksCompanion extends UpdateCompanion<Work> {
     this.notes = const Value.absent(),
     this.addedAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.checkedAt = const Value.absent(),
+    this.lastChapterAt = const Value.absent(),
+    this.newChapters = const Value.absent(),
   }) : type = Value(type),
        format = Value(format),
        title = Value(title);
@@ -1462,6 +1602,9 @@ class WorksCompanion extends UpdateCompanion<Work> {
     Expression<String>? notes,
     Expression<DateTime>? addedAt,
     Expression<DateTime>? updatedAt,
+    Expression<DateTime>? checkedAt,
+    Expression<DateTime>? lastChapterAt,
+    Expression<int>? newChapters,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1486,6 +1629,9 @@ class WorksCompanion extends UpdateCompanion<Work> {
       if (notes != null) 'notes': notes,
       if (addedAt != null) 'added_at': addedAt,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (checkedAt != null) 'checked_at': checkedAt,
+      if (lastChapterAt != null) 'last_chapter_at': lastChapterAt,
+      if (newChapters != null) 'new_chapters': newChapters,
     });
   }
 
@@ -1512,6 +1658,9 @@ class WorksCompanion extends UpdateCompanion<Work> {
     Value<String?>? notes,
     Value<DateTime>? addedAt,
     Value<DateTime>? updatedAt,
+    Value<DateTime?>? checkedAt,
+    Value<DateTime?>? lastChapterAt,
+    Value<int>? newChapters,
   }) {
     return WorksCompanion(
       id: id ?? this.id,
@@ -1536,6 +1685,9 @@ class WorksCompanion extends UpdateCompanion<Work> {
       notes: notes ?? this.notes,
       addedAt: addedAt ?? this.addedAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      checkedAt: checkedAt ?? this.checkedAt,
+      lastChapterAt: lastChapterAt ?? this.lastChapterAt,
+      newChapters: newChapters ?? this.newChapters,
     );
   }
 
@@ -1614,6 +1766,15 @@ class WorksCompanion extends UpdateCompanion<Work> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
+    if (checkedAt.present) {
+      map['checked_at'] = Variable<DateTime>(checkedAt.value);
+    }
+    if (lastChapterAt.present) {
+      map['last_chapter_at'] = Variable<DateTime>(lastChapterAt.value);
+    }
+    if (newChapters.present) {
+      map['new_chapters'] = Variable<int>(newChapters.value);
+    }
     return map;
   }
 
@@ -1641,7 +1802,10 @@ class WorksCompanion extends UpdateCompanion<Work> {
           ..write('rating: $rating, ')
           ..write('notes: $notes, ')
           ..write('addedAt: $addedAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('checkedAt: $checkedAt, ')
+          ..write('lastChapterAt: $lastChapterAt, ')
+          ..write('newChapters: $newChapters')
           ..write(')'))
         .toString();
   }
@@ -4614,6 +4778,9 @@ typedef $$WorksTableCreateCompanionBuilder = WorksCompanion Function({
   Value<String?> notes,
   Value<DateTime> addedAt,
   Value<DateTime> updatedAt,
+  Value<DateTime?> checkedAt,
+  Value<DateTime?> lastChapterAt,
+  Value<int> newChapters,
 });
 typedef $$WorksTableUpdateCompanionBuilder = WorksCompanion Function({
   Value<int> id,
@@ -4638,6 +4805,9 @@ typedef $$WorksTableUpdateCompanionBuilder = WorksCompanion Function({
   Value<String?> notes,
   Value<DateTime> addedAt,
   Value<DateTime> updatedAt,
+  Value<DateTime?> checkedAt,
+  Value<DateTime?> lastChapterAt,
+  Value<int> newChapters,
 });
 
 final class $$WorksTableReferences
@@ -4867,6 +5037,21 @@ class $$WorksTableFilterComposer extends Composer<_$AppDatabase, $WorksTable> {
 
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
     column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get checkedAt => $composableBuilder(
+    column: $table.checkedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastChapterAt => $composableBuilder(
+    column: $table.lastChapterAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get newChapters => $composableBuilder(
+    column: $table.newChapters,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5133,6 +5318,21 @@ class $$WorksTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get checkedAt => $composableBuilder(
+    column: $table.checkedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastChapterAt => $composableBuilder(
+    column: $table.lastChapterAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get newChapters => $composableBuilder(
+    column: $table.newChapters,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$FandomsTableOrderingComposer get fandomId {
     final $$FandomsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -5236,6 +5436,19 @@ class $$WorksTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get checkedAt =>
+      $composableBuilder(column: $table.checkedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastChapterAt => $composableBuilder(
+    column: $table.lastChapterAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get newChapters => $composableBuilder(
+    column: $table.newChapters,
+    builder: (column) => column,
+  );
 
   $$FandomsTableAnnotationComposer get fandomId {
     final $$FandomsTableAnnotationComposer composer = $composerBuilder(
@@ -5443,6 +5656,9 @@ class $$WorksTableTableManager
                 Value<String?> notes = const Value.absent(),
                 Value<DateTime> addedAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> checkedAt = const Value.absent(),
+                Value<DateTime?> lastChapterAt = const Value.absent(),
+                Value<int> newChapters = const Value.absent(),
               }) => WorksCompanion(
                 id: id,
                 type: type,
@@ -5466,6 +5682,9 @@ class $$WorksTableTableManager
                 notes: notes,
                 addedAt: addedAt,
                 updatedAt: updatedAt,
+                checkedAt: checkedAt,
+                lastChapterAt: lastChapterAt,
+                newChapters: newChapters,
               ),
           createCompanionCallback:
               ({
@@ -5491,6 +5710,9 @@ class $$WorksTableTableManager
                 Value<String?> notes = const Value.absent(),
                 Value<DateTime> addedAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> checkedAt = const Value.absent(),
+                Value<DateTime?> lastChapterAt = const Value.absent(),
+                Value<int> newChapters = const Value.absent(),
               }) => WorksCompanion.insert(
                 id: id,
                 type: type,
@@ -5514,6 +5736,9 @@ class $$WorksTableTableManager
                 notes: notes,
                 addedAt: addedAt,
                 updatedAt: updatedAt,
+                checkedAt: checkedAt,
+                lastChapterAt: lastChapterAt,
+                newChapters: newChapters,
               ),
           withReferenceMapper: (p0) => p0
               .map(

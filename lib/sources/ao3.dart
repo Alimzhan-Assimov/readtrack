@@ -71,6 +71,12 @@ class Ao3Source extends StorySource {
       isComplete: chapterStats == null || chapterStats.length != 2
           ? null
           : chapterStats[0].trim() == chapterStats[1].trim(),
+      // "Updated"/"Completed" date, or the publishing date for one-shots.
+      updatedOn: DateTime.tryParse(
+        textOf(doc.querySelector('dd.status')) ??
+            textOf(doc.querySelector('dd.published')) ??
+            '',
+      ),
       chapters: await _chapters(storyUrl, fetcher),
     );
   }

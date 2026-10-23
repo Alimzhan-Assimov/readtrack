@@ -99,6 +99,7 @@ void main() {
         <dd class="fandom tags"><a class="tag">Naruto (Anime &amp; Manga)</a></dd>
         <dd class="relationship tags"><a class="tag">Sasuke/Naruto</a></dd>
         <dd class="freeform tags"><a class="tag">Marriage</a><a class="tag">Child Care</a></dd>
+        <dd class="published">2023-01-05</dd><dd class="status">2024-03-01</dd>
         <dd class="words">4,215</dd><dd class="chapters">2/2</dd>
         <div class="summary module"><blockquote class="userstuff"><p>Naruto is brilliant.</p></blockquote></div>''',
       '$story/navigate': '''
@@ -116,6 +117,7 @@ void main() {
     expect(info.wordCount, 4215);
     expect(info.isComplete, isTrue);
     expect(info.chapters.map((c) => c.title), ['Start', 'End']);
+    expect(info.updatedOn, DateTime(2024, 3, 1));
     final chapter = await source.fetchChapter(info.chapters.first, fetcher);
     expect(chapter.title, 'Chapter 1: Start');
     expect(chapter.html, '<p>Hello.</p>');

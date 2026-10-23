@@ -45,6 +45,17 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _work = _db.watchWork(widget.workId);
+    // Opening the story counts as having seen its new chapters.
+    _db.markChaptersSeen(widget.workId);
+  }
+
+  @override
+  void didUpdateWidget(WorkDetailScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.workId != widget.workId) {
+      _work = _db.watchWork(widget.workId);
+      _db.markChaptersSeen(widget.workId);
+    }
   }
 
   Future<void> _openUrl(String url) async {
