@@ -139,7 +139,8 @@ class Downloads extends Table {
 }
 
 /// A chapter as listed on the site, for [AppDatabase.saveChapterList].
-typedef ChapterListing = ({int number, String title, String url, bool locked});
+/// [url] is null for chapters of imported files.
+typedef ChapterListing = ({int number, String title, String? url, bool locked});
 
 class WorkWithDetails {
   WorkWithDetails(

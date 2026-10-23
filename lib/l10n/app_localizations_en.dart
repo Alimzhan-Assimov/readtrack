@@ -801,4 +801,29 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get downloadFormatHint =>
       'EPUB works in most e-book readers, FB2 in many Russian ones, HTML in any browser. Files are saved to ~/Documents/ReadTrack.';
+
+  @override
+  String get addFromFile => 'Import a file';
+
+  @override
+  String get addFromFileHint =>
+      'EPUB, FB2, TXT or HTML you already have – read it in ReadTrack';
+
+  @override
+  String get bookFiles => 'Books';
+
+  @override
+  String importingFile(String name) {
+    return 'Importing $name…';
+  }
+
+  @override
+  String importedFile(String name) {
+    return 'Imported $name';
+  }
+
+  @override
+  String importFailed(String error) {
+    return 'Couldn\'t import the file: $error';
+  }
 }

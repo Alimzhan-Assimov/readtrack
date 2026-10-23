@@ -17,6 +17,11 @@ place, whether they sit on your shelf or live online.
   format. When new chapters appear, add them to an existing
   download (1–30 → 1–40) or create a separate one (31–40).
 
+- **Import your own files**: EPUB, FB2 (also zipped, incl. Windows-1251),
+  TXT and HTML. Chapters, cover and images are taken over, and the book is
+  readable offline in the app; a copy of the file goes to
+  `~/Documents/ReadTrack`.
+
 ### Supported sites
 
 | Site | How it is loaded |

@@ -1,11 +1,15 @@
 import 'dart:async';
 
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../data/database.dart';
 import '../data/database_scope.dart';
 import '../l10n/l10n.dart';
+import '../library/book_importer.dart';
+import '../library/file_import.dart';
+import '../library/library_scope.dart';
 import '../ui/app_settings.dart';
 import '../ui/labels.dart';
 import '../ui/layout.dart';
@@ -107,9 +111,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
   }
 
   /// Asks whether to add from a link or by hand, then opens the new entry.
+  /// Asks how to add an entry (link, file or by hand), then opens it.
   Future<void> _create({required bool wide}) async {
     final l10n = context.l10n;
-    final fromLink = await showModalBottomSheet<bool>(
+    final kind = await showModalBottomSheet<_AddKind>(
       context: context,
       showDragHandle: true,
       builder: (context) => SafeArea(
@@ -120,27 +125,83 @@ class _LibraryScreenState extends State<LibraryScreen> {
               leading: const Icon(Icons.link),
               title: Text(l10n.addFromLink),
               subtitle: Text(l10n.addFromLinkHint),
-              onTap: () => Navigator.pop(context, true),
+              onTap: () => Navigator.pop(context, _AddKind.link),
+            ),
+            ListTile(
+              leading: const Icon(Icons.file_open_outlined),
+              title: Text(l10n.addFromFile),
+              subtitle: Text(l10n.addFromFileHint),
+              onTap: () => Navigator.pop(context, _AddKind.file),
             ),
             ListTile(
               leading: const Icon(Icons.edit_note),
               title: Text(l10n.addManually),
               subtitle: Text(l10n.addManuallyHint),
-              onTap: () => Navigator.pop(context, false),
+              onTap: () => Navigator.pop(context, _AddKind.manual),
             ),
             const SizedBox(height: 8),
           ],
         ),
       ),
     );
-    if (fromLink == null || !mounted) return;
-    final id = await Navigator.of(context).push<int>(
-      MaterialPageRoute(
-        builder: (_) =>
-            fromLink ? const ImportScreen() : const WorkEditScreen(),
+    if (kind == null || !mounted) return;
+    final int? id;
+    if (kind == _AddKind.file) {
+      id = await _importFile();
+    } else {
+      id = await Navigator.of(context).push<int>(
+        MaterialPageRoute(
+          builder: (_) => kind == _AddKind.link
+              ? const ImportScreen()
+              : const WorkEditScreen(),
+        ),
+      );
+    }
+    if (id != null && mounted) _open(id, wide: wide);
+  }
+
+  /// Lets the user pick a book file and adds it; returns the new id.
+  Future<int?> _importFile() async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    final importer = BookImporter(_db, LibraryScope.of(context).storage);
+    final file = await openFile(
+      acceptedTypeGroups: [
+        XTypeGroup(label: l10n.bookFiles, extensions: kImportExtensions),
+      ],
+    );
+    if (file == null || !mounted) return null;
+    unawaited(
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          content: Row(
+            children: [
+              const SizedBox.square(
+                dimension: 24,
+                child: CircularProgressIndicator(),
+              ),
+              const SizedBox(width: 16),
+              Expanded(child: Text(l10n.importingFile(file.name))),
+            ],
+          ),
+        ),
       ),
     );
-    if (id != null && mounted) _open(id, wide: wide);
+    try {
+      final id = await importer.importFile(file.path);
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.importedFile(file.name))),
+      );
+      return id;
+    } on Exception catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.importFailed('$e'))));
+      return null;
+    } finally {
+      navigator.pop(); // the progress dialog
+    }
   }
 
   @override
@@ -381,6 +442,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
 }
 
 /// Filter chip that opens a list of options when tapped.
+enum _AddKind { link, file, manual }
+
 class _PickerChip<T> extends StatelessWidget {
   const _PickerChip({
     required this.icon,

@@ -1233,6 +1233,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'EPUB works in most e-book readers, FB2 in many Russian ones, HTML in any browser. Files are saved to ~/Documents/ReadTrack.'**
   String get downloadFormatHint;
+
+  /// No description provided for @addFromFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Import a file'**
+  String get addFromFile;
+
+  /// No description provided for @addFromFileHint.
+  ///
+  /// In en, this message translates to:
+  /// **'EPUB, FB2, TXT or HTML you already have – read it in ReadTrack'**
+  String get addFromFileHint;
+
+  /// No description provided for @bookFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Books'**
+  String get bookFiles;
+
+  /// No description provided for @importingFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Importing {name}…'**
+  String importingFile(String name);
+
+  /// No description provided for @importedFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported {name}'**
+  String importedFile(String name);
+
+  /// No description provided for @importFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t import the file: {error}'**
+  String importFailed(String error);
 }
 
 class _AppLocalizationsDelegate

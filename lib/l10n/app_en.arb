@@ -479,5 +479,32 @@
       }
     }
   },
-  "downloadFormatHint": "EPUB works in most e-book readers, FB2 in many Russian ones, HTML in any browser. Files are saved to ~/Documents/ReadTrack."
+  "downloadFormatHint": "EPUB works in most e-book readers, FB2 in many Russian ones, HTML in any browser. Files are saved to ~/Documents/ReadTrack.",
+  "addFromFile": "Import a file",
+  "addFromFileHint": "EPUB, FB2, TXT or HTML you already have – read it in ReadTrack",
+  "bookFiles": "Books",
+  "importingFile": "Importing {name}…",
+  "@importingFile": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "importedFile": "Imported {name}",
+  "@importedFile": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "importFailed": "Couldn't import the file: {error}",
+  "@importFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
 }
