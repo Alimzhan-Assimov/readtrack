@@ -38,6 +38,8 @@ class StoryInfo {
     this.coverUrl,
     this.fandom,
     this.tags = const [],
+    this.pairings = const [],
+    this.adultTags = const {},
     this.wordCount,
     this.pageCount,
     this.isComplete,
@@ -53,6 +55,12 @@ class StoryInfo {
   final Uri? coverUrl;
   final String? fandom;
   final List<String> tags;
+
+  /// Relationships such as "Naruto/Hinata".
+  final List<String> pairings;
+
+  /// Tags the site itself marks as adult content.
+  final Set<String> adultTags;
   final List<ChapterRef> chapters;
   final int? wordCount;
   final int? pageCount;

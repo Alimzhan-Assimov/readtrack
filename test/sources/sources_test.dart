@@ -111,7 +111,8 @@ void main() {
     const source = Ao3Source();
     final info = await source.fetchStory(story, fetcher);
     expect(info.fandom, 'Naruto (Anime & Manga)');
-    expect(info.tags, ['Sasuke/Naruto', 'Marriage', 'Child Care']);
+    expect(info.tags, ['Marriage', 'Child Care']);
+    expect(info.pairings, ['Sasuke/Naruto']);
     expect(info.wordCount, 4215);
     expect(info.isComplete, isTrue);
     expect(info.chapters.map((c) => c.title), ['Start', 'End']);
@@ -128,7 +129,7 @@ void main() {
         <div id="profile_top"><img class="cimage" src="/image/9/75/"><b class="xcontrast_txt">Enter, Naruto Hyuga</b>
         By: <a class="xcontrast_txt" href="/u/1/forgetmenot">forgetmenot</a>
         <div class="xcontrast_txt">Naruto is the son of Hizashi.</div>
-        <span class="xgray xcontrast_txt">Rated: Fiction T - English - Hurt/Comfort/Adventure - Naruto U. -
+        <span class="xgray xcontrast_txt">Rated: Fiction T - English - Hurt/Comfort/Adventure - [Naruto U., Hinata H.] Neji H. -
         Chapters: 2 - Words: 3,142 - Status: Complete - id: 42</span></div>
         <select id="chap_select"><option value="1">1. Chapter 1</option><option value="2">2. The Exam</option></select>
         <div id="storytext"><p>If Hizashi could…</p></div>''',
@@ -141,6 +142,7 @@ void main() {
     expect(info.author, 'forgetmenot');
     expect(info.fandom, 'Naruto');
     expect(info.tags, ['Hurt/Comfort', 'Adventure']);
+    expect(info.pairings, ['Naruto U./Hinata H.']);
     expect(info.wordCount, 3142);
     expect(info.isComplete, isTrue);
     expect(info.coverUrl.toString(), 'https://www.fanfiction.net/image/9/180/');
@@ -256,7 +258,8 @@ void main() {
         <a href="/authors/1" itemprop="author">Fak_k</a>
         <div class="mb-10"><strong>Фэндом:</strong><div><a href="/fanfiction/anime_and_manga/naruto"> Naruto </a></div></div>
         <div class="mb-10"><strong>Размер:</strong><div> написано 1 124 страницы, 553 964 слова, 2 части </div></div>
-        <div class="mb-10"><strong>Метки:</strong><div class="tags"><a class="tag">AU</a><a class="tag">Ангст</a></div></div>
+        <div class="mb-10"><strong>Метки:</strong><div class="tags"><a class="tag">AU</a><a class="tag">Ангст</a><a class="tag tag-adult">Underage</a></div></div>
+        <div class="mb-10"><strong>Пэйринг и персонажи:</strong><div><a class="pairing-link">Какаши Хатаке/Наруто Узумаки</a>, <a class="pairing-link">Ямато</a></div></div>
         <div itemprop="description">Первая строка.
 Вторая строка.</div>
         <ul class="list-of-fanfic-parts">
@@ -275,7 +278,9 @@ void main() {
     expect(info.author, 'Fak_k');
     expect(info.fandom, 'Naruto');
     expect(info.type, WorkType.fanfiction);
-    expect(info.tags, ['AU', 'Ангст']);
+    expect(info.tags, ['AU', 'Ангст', 'Underage']);
+    expect(info.adultTags, {'Underage'});
+    expect(info.pairings, ['Какаши Хатаке/Наруто Узумаки']);
     expect(
       (info.pageCount, info.wordCount, info.isComplete),
       (1124, 553964, true),

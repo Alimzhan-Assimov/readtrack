@@ -64,7 +64,9 @@ class Ao3Source extends StorySource {
           ? null
           : htmlToPlainText(cleanHtml(summary, base: storyUrl)),
       fandom: tags('fandom').firstOrNull,
-      tags: [...tags('relationship'), ...tags('freeform')],
+      // "Uchiha Sasuke/Uzumaki Naruto" etc. are relationships, not tags.
+      pairings: tags('relationship'),
+      tags: tags('freeform'),
       wordCount: parseCount(textOf(doc.querySelector('dd.words'))),
       isComplete: chapterStats == null || chapterStats.length != 2
           ? null

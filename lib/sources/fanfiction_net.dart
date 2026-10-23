@@ -102,11 +102,25 @@ class FanFictionNetSource extends StorySource {
           ? textOf(doc.querySelectorAll('#pre_story_links a').lastOrNull)
           : null,
       tags: genres,
+      pairings: _pairings(segments),
       wordCount: parseCount(field('Words')),
       isComplete: field('Status') == 'Complete',
       chapters: _chapters(doc, storyId!, title),
     );
   }
+
+  /// The characters segment marks pairings with brackets:
+  /// "[Naruto U., Hinata H.] Sasuke U." -> "Naruto U./Hinata H."
+  static List<String> _pairings(List<String> segments) => [
+    for (final segment in segments.take(5))
+      for (final m in RegExp(r'\[([^\]]+)\]').allMatches(segment))
+        m
+            .group(1)!
+            .split(',')
+            .map((c) => c.trim())
+            .where((c) => c.isNotEmpty)
+            .join('/'),
+  ];
 
   List<ChapterRef> _chapters(
     dom.Document doc,

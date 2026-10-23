@@ -451,5 +451,23 @@
         "type": "String"
       }
     }
+  },
+  "sectionPairings": "Pairings",
+  "filterPairing": "Pairing",
+  "addPairing": "Add pairing",
+  "addPairingHint": "e.g. Naruto/Hinata",
+  "pickPairings": "Choose pairings",
+  "settingsTitle": "Settings",
+  "hideAdultTags": "Hide 18+ tags",
+  "hideAdultTagsHint": "Tags with adult content stay on your entries but are not shown.",
+  "adultTagsHeading": "18+ tags",
+  "adultTagsHint": "Tags are marked automatically when they look like adult content or the site marks them. Tick or untick to correct it.",
+  "hiddenAdultTags": "{count, plural, =1{+1 hidden 18+ tag} other{+{count} hidden 18+ tags}}",
+  "@hiddenAdultTags": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

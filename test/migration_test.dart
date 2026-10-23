@@ -25,11 +25,17 @@ void main() {
             raw.execute(
               "INSERT INTO works (type, format, title) VALUES ('fanfiction', 'online', 'The new dawn')",
             );
+            raw.execute(
+              "INSERT INTO tags (name) VALUES ('Анальный секс'), ('Romance')",
+            );
             raw.execute('PRAGMA user_version = 1');
           },
         ),
       );
       addTearDown(db.close);
+
+      final flags = {for (final t in await db.allTags()) t.name: t.isAdult};
+      expect(flags, {'Romance': false, 'Анальный секс': true});
 
       final works = await db.watchWorks().first;
       expect(works.single.work.title, 'The new dawn');

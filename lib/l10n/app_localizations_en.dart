@@ -746,4 +746,47 @@ class AppLocalizationsEn extends AppLocalizations {
   String pickerAdd(String value) {
     return 'Add “$value”';
   }
+
+  @override
+  String get sectionPairings => 'Pairings';
+
+  @override
+  String get filterPairing => 'Pairing';
+
+  @override
+  String get addPairing => 'Add pairing';
+
+  @override
+  String get addPairingHint => 'e.g. Naruto/Hinata';
+
+  @override
+  String get pickPairings => 'Choose pairings';
+
+  @override
+  String get settingsTitle => 'Settings';
+
+  @override
+  String get hideAdultTags => 'Hide 18+ tags';
+
+  @override
+  String get hideAdultTagsHint =>
+      'Tags with adult content stay on your entries but are not shown.';
+
+  @override
+  String get adultTagsHeading => '18+ tags';
+
+  @override
+  String get adultTagsHint =>
+      'Tags are marked automatically when they look like adult content or the site marks them. Tick or untick to correct it.';
+
+  @override
+  String hiddenAdultTags(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '+$count hidden 18+ tags',
+      one: '+1 hidden 18+ tag',
+    );
+    return '$_temp0';
+  }
 }

@@ -65,6 +65,21 @@ class FicbookSource extends StorySource {
                 const <dom.Element>[])
           squash(a.text),
       ],
+      // Ficbook marks adult tags itself.
+      adultTags: {
+        for (final a
+            in block('Метки')?.querySelectorAll('a.tag-adult') ??
+                const <dom.Element>[])
+          squash(a.text),
+      },
+      // Pairing links contain "/" ("Какаши Хатаке/Наруто Узумаки"); the
+      // others in that block are single characters.
+      pairings: [
+        for (final a
+            in block('Пэйринг')?.querySelectorAll('a.pairing-link') ??
+                const <dom.Element>[])
+          if (squash(a.text).contains('/')) squash(a.text),
+      ],
       // "написано 1 124 страницы, 553 964 слова, 74 части"
       pageCount: parseCount(
         RegExp(r'([\d\s]+)\s+страниц').firstMatch(size)?.group(1),

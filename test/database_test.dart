@@ -87,4 +87,42 @@ void main() {
     final reading = await db.watchWorks(status: ReadingStatus.reading).first;
     expect(reading.map((w) => w.work.title), ['Now']);
   });
+
+  test(
+    'pairings are saved, filterable and restored; adult tags flagged',
+    () async {
+      final id = await db.saveWork(
+        fic('Fic'),
+        tagNames: ['Romance', 'Anal Sex', 'Kink X'],
+        pairingNames: ['Naruto/Hinata', 'naruto/hinata', 'Sasuke/Sakura'],
+        adultTags: {'Kink X'},
+      );
+      await db.saveWork(fic('Other'), pairingNames: ['Sasuke/Sakura']);
+
+      final work = (await db.watchWork(id).first)!;
+      expect(work.pairings.map((p) => p.name), [
+        'Naruto/Hinata',
+        'Sasuke/Sakura',
+      ]);
+      expect(
+        {for (final t in work.tags) t.name: t.isAdult},
+        {'Anal Sex': true, 'Kink X': true, 'Romance': false},
+      );
+
+      final naruHina = work.pairings.first;
+      expect(await db.watchWorks(pairingId: naruHina.id).first, hasLength(1));
+      expect(await db.usedPairings(), hasLength(2));
+
+      final deleted = await db.deleteWork(id);
+      await db.restoreWork(deleted!);
+      expect((await db.watchWork(id).first)!.pairings, hasLength(2));
+    },
+  );
+
+  test('settings are stored', () async {
+    expect(await db.setting('x'), isNull);
+    await db.setSetting('x', 'true');
+    await db.setSetting('x', 'false');
+    expect(await db.setting('x'), 'false');
+  });
 }

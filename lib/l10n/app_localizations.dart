@@ -1149,6 +1149,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add “{value}”'**
   String pickerAdd(String value);
+
+  /// No description provided for @sectionPairings.
+  ///
+  /// In en, this message translates to:
+  /// **'Pairings'**
+  String get sectionPairings;
+
+  /// No description provided for @filterPairing.
+  ///
+  /// In en, this message translates to:
+  /// **'Pairing'**
+  String get filterPairing;
+
+  /// No description provided for @addPairing.
+  ///
+  /// In en, this message translates to:
+  /// **'Add pairing'**
+  String get addPairing;
+
+  /// No description provided for @addPairingHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Naruto/Hinata'**
+  String get addPairingHint;
+
+  /// No description provided for @pickPairings.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose pairings'**
+  String get pickPairings;
+
+  /// No description provided for @settingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsTitle;
+
+  /// No description provided for @hideAdultTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide 18+ tags'**
+  String get hideAdultTags;
+
+  /// No description provided for @hideAdultTagsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags with adult content stay on your entries but are not shown.'**
+  String get hideAdultTagsHint;
+
+  /// No description provided for @adultTagsHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'18+ tags'**
+  String get adultTagsHeading;
+
+  /// No description provided for @adultTagsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags are marked automatically when they look like adult content or the site marks them. Tick or untick to correct it.'**
+  String get adultTagsHint;
+
+  /// No description provided for @hiddenAdultTags.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{+1 hidden 18+ tag} other{+{count} hidden 18+ tags}}'**
+  String hiddenAdultTags(int count);
 }
 
 class _AppLocalizationsDelegate
