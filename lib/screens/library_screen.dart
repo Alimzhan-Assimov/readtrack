@@ -32,6 +32,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
   WorkType? _type;
   Fandom? _fandom;
   Tag? _tag;
+  ReadingStatus? _status;
   WorkSort _sort = WorkSort.updated;
   int? _selectedId;
   late Stream<List<WorkWithDetails>> _works;
@@ -42,7 +43,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
       _search.text.trim().isNotEmpty ||
       _type != null ||
       _fandom != null ||
-      _tag != null;
+      _tag != null ||
+      _status != null;
 
   @override
   void didChangeDependencies() {
@@ -64,6 +66,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
       type: _type,
       fandomId: _fandom?.id,
       tagId: _tag?.id,
+      status: _status,
       sort: _sort,
     );
   }
@@ -291,6 +294,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     _type = null;
     _fandom = null;
     _tag = null;
+    _status = null;
   });
 
   /// All filters are compact picker chips, so they fit the 400 dp list pane
@@ -327,7 +331,19 @@ class _LibraryScreenState extends State<LibraryScreen> {
             nameOf: (t) => t.name,
             onSelected: (t) => _setFilter(() => _tag = t),
           ),
-          if (_type != null || _fandom != null || _tag != null)
+          _PickerChip<ReadingStatus>(
+            icon: Icons.bookmark_outline,
+            emptyLabel: l10n.filterStatus,
+            selected: _status,
+            loadOptions: () async => ReadingStatus.values,
+            nameOf: (s) => s.label(l10n),
+            iconOf: (s) => s.icon,
+            onSelected: (s) => _setFilter(() => _status = s),
+          ),
+          if (_type != null ||
+              _fandom != null ||
+              _tag != null ||
+              _status != null)
             ActionChip(
               avatar: const Icon(Icons.filter_alt_off_outlined, size: 18),
               label: Text(l10n.clearFilters),

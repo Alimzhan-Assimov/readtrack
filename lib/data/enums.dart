@@ -17,4 +17,4 @@ enum WorkType {
 
 enum ReadingStatus { planned, reading, finished, paused, dropped }
 
-enum WorkSort { updated, added, title, rating }
+enum WorkSort { updated, added, title, rating, status }

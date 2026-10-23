@@ -434,5 +434,7 @@
   "readerLockedChapter": "This chapter is locked on the site.",
   "readerNotDownloaded": "This chapter isn't downloaded.",
   "readerLatestChapter": "You've reached the latest chapter.",
-  "readerEndOfDownload": "End of this download."
+  "readerEndOfDownload": "End of this download.",
+  "sortStatus": "By reading status",
+  "filterStatus": "Status"
 }

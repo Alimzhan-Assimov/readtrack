@@ -1089,6 +1089,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'End of this download.'**
   String get readerEndOfDownload;
+
+  /// No description provided for @sortStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'By reading status'**
+  String get sortStatus;
+
+  /// No description provided for @filterStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get filterStatus;
 }
 
 class _AppLocalizationsDelegate

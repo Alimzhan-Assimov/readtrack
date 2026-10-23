@@ -183,6 +183,7 @@ class AppDatabase extends _$AppDatabase {
     WorkType? type,
     int? fandomId,
     int? tagId,
+    ReadingStatus? status,
     WorkSort sort = WorkSort.updated,
   }) {
     final query = _worksWithFandom();
@@ -197,6 +198,7 @@ class AppDatabase extends _$AppDatabase {
     }
     if (type != null) query.where(works.type.equalsValue(type));
     if (fandomId != null) query.where(works.fandomId.equals(fandomId));
+    if (status != null) query.where(works.status.equalsValue(status));
     if (tagId != null) {
       query.where(
         works.id.isInQuery(
@@ -211,6 +213,10 @@ class AppDatabase extends _$AppDatabase {
       WorkSort.updated => [OrderingTerm.desc(works.updatedAt)],
       WorkSort.added => [OrderingTerm.desc(works.addedAt)],
       WorkSort.title => [byTitle],
+      WorkSort.status => [
+        OrderingTerm.asc(_statusOrder),
+        OrderingTerm.desc(works.updatedAt),
+      ],
       WorkSort.rating => [
         OrderingTerm(
           expression: works.rating,
@@ -222,6 +228,21 @@ class AppDatabase extends _$AppDatabase {
     });
     return query.watch().asyncMap(_withTags);
   }
+
+  /// Reading first, then what's planned or paused, then finished and dropped.
+  static const _statusRank = [
+    ReadingStatus.reading,
+    ReadingStatus.planned,
+    ReadingStatus.paused,
+    ReadingStatus.finished,
+    ReadingStatus.dropped,
+  ];
+
+  Expression<int> get _statusOrder => CustomExpression<int>(
+    'CASE "works"."status" '
+    '${[for (final (i, s) in _statusRank.indexed) "WHEN '${s.name}' THEN $i"].join(' ')} '
+    'ELSE ${_statusRank.length} END',
+  );
 
   Stream<WorkWithDetails?> watchWork(int id) {
     final query = _worksWithFandom()..where(works.id.equals(id));
