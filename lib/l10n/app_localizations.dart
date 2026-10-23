@@ -1101,6 +1101,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Status'**
   String get filterStatus;
+
+  /// No description provided for @chooseExisting.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from existing'**
+  String get chooseExisting;
+
+  /// No description provided for @pickTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose tags'**
+  String get pickTags;
+
+  /// No description provided for @pickCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a category'**
+  String get pickCategory;
+
+  /// No description provided for @pickAuthor.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an author'**
+  String get pickAuthor;
+
+  /// No description provided for @pickerSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search…'**
+  String get pickerSearch;
+
+  /// No description provided for @pickerDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get pickerDone;
+
+  /// No description provided for @frequentlyUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Frequently used:'**
+  String get frequentlyUsed;
+
+  /// No description provided for @pickerAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add “{value}”'**
+  String pickerAdd(String value);
 }
 
 class _AppLocalizationsDelegate

@@ -720,4 +720,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get filterStatus => 'Status';
+
+  @override
+  String get chooseExisting => 'Choose from existing';
+
+  @override
+  String get pickTags => 'Choose tags';
+
+  @override
+  String get pickCategory => 'Choose a category';
+
+  @override
+  String get pickAuthor => 'Choose an author';
+
+  @override
+  String get pickerSearch => 'Search…';
+
+  @override
+  String get pickerDone => 'Done';
+
+  @override
+  String get frequentlyUsed => 'Frequently used:';
+
+  @override
+  String pickerAdd(String value) {
+    return 'Add “$value”';
+  }
 }

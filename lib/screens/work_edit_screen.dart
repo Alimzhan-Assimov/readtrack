@@ -12,6 +12,7 @@ import '../ui/labels.dart';
 import '../ui/layout.dart';
 import '../widgets/suggest_field.dart';
 import '../widgets/tag_input.dart';
+import '../widgets/value_picker.dart';
 
 /// Form for creating ([existing] == null) or editing a work.
 /// Pops with the work's id as the result after saving.
@@ -49,7 +50,9 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
   int? _rating;
   late List<String> _tags;
   List<String> _fandomSuggestions = const [];
+  List<String> _authorSuggestions = const [];
   List<String> _tagSuggestions = kDefaultTags;
+  List<String> _frequentTags = const [];
   bool _suggestionsRequested = false;
   bool _saving = false;
 
@@ -134,14 +137,42 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
 
   Future<void> _loadSuggestions() async {
     final fandoms = await _db.fandomNames();
+    final authors = await _db.authorNames();
     final tags = await _db.tagNames();
+    final frequent = await _db.frequentTags();
     if (!mounted) return;
     setState(() {
       _fandomSuggestions = fandoms;
+      _authorSuggestions = authors;
+      _frequentTags = frequent;
       _tagSuggestions = TagInput.merge(tags, kDefaultTags.join(','))
         ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
     });
   }
+
+  /// Lets the user pick one of [options] for the field [controller].
+  Future<void> _pickInto(
+    TextEditingController controller,
+    String title,
+    List<String> options,
+  ) async {
+    final picked = await pickValues(
+      context,
+      title: title,
+      options: options,
+      selected: [if (controller.text.trim().isNotEmpty) controller.text.trim()],
+      multiple: false,
+    );
+    if (picked != null && picked.isNotEmpty) {
+      _change(() => controller.text = picked.single);
+    }
+  }
+
+  Widget _pickButton(VoidCallback onPressed) => IconButton(
+    icon: const Icon(Icons.checklist),
+    tooltip: context.l10n.chooseExisting,
+    onPressed: onPressed,
+  );
 
   /// Changes state and records that there are unsaved changes.
   void _change(VoidCallback fn) => setState(() {
@@ -358,19 +389,28 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
             v == null || v.trim().isEmpty ? l10n.titleRequired : null,
       ),
       gap,
-      TextFormField(
+      SuggestField(
         controller: _author,
-        decoration: _decoration(l10n.fieldAuthor),
-        textCapitalization: TextCapitalization.words,
+        suggestions: _authorSuggestions,
+        decoration: _decoration(l10n.fieldAuthor).copyWith(
+          suffixIcon: _pickButton(
+            () => _pickInto(_author, l10n.pickAuthor, _authorSuggestions),
+          ),
+        ),
       ),
       gap,
       SuggestField(
         controller: _fandom,
         suggestions: _fandomSuggestions,
-        decoration: _decoration(
-          l10n.fieldCategory,
-          hint: l10n.fieldCategoryHint,
-        ),
+        decoration:
+            _decoration(
+              l10n.fieldCategory,
+              hint: l10n.fieldCategoryHint,
+            ).copyWith(
+              suffixIcon: _pickButton(
+                () => _pickInto(_fandom, l10n.pickCategory, _fandomSuggestions),
+              ),
+            ),
       ),
       gap,
       TextFormField(
@@ -445,6 +485,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
         controller: _tagInput,
         tags: _tags,
         suggestions: _tagSuggestions,
+        frequent: _frequentTags,
         onChanged: (tags) => _change(() => _tags = tags),
       ),
       _Heading(l10n.sectionRating),

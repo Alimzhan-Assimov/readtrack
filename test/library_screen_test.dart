@@ -8,6 +8,7 @@ import 'package:readtrack/data/database.dart';
 import 'package:readtrack/library/download_service.dart';
 import 'package:readtrack/library/storage.dart';
 import 'package:readtrack/main.dart';
+import 'package:readtrack/widgets/tag_input.dart';
 
 void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
@@ -155,6 +156,60 @@ void main() {
     await tester.tap(find.text('Clear filters'));
     await tester.pumpAndSettle();
     expect(find.text('The New Dawn'), findsOneWidget);
+    await unmount(tester);
+  });
+
+  testWidgets('existing tags and categories can be picked from a list', (
+    tester,
+  ) async {
+    await pumpApp(tester, width: 400);
+    await tester.tap(find.text('Add'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Enter manually'));
+    await tester.pumpAndSettle();
+
+    // "Action" is used by the existing entry, so it is offered directly.
+    final form = find.byType(Scrollable).first;
+    await tester.scrollUntilVisible(
+      find.text('Frequently used:'),
+      300,
+      scrollable: form,
+    );
+    expect(find.widgetWithText(ActionChip, 'Action'), findsOneWidget);
+
+    // Pick a suggested tag from the full list.
+    final browseTags = find.descendant(
+      of: find.byType(TagInput),
+      matching: find.byTooltip('Choose from existing'),
+    );
+    await tester.ensureVisible(browseTags);
+    await tester.pumpAndSettle();
+    await tester.tap(browseTags);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.widgetWithText(TextField, 'Search…'), 'marr');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Marriage'));
+    await tester.tap(find.text('Done'));
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(InputChip, 'Marriage'), findsOneWidget);
+
+    // Pick the existing category.
+    await tester.scrollUntilVisible(
+      find.text('Category / fandom'),
+      -300,
+      scrollable: form,
+    );
+    final browseCategory = find.descendant(
+      of: find.widgetWithText(TextFormField, 'Category / fandom'),
+      matching: find.byTooltip('Choose from existing'),
+    );
+    await tester.ensureVisible(browseCategory);
+    await tester.pumpAndSettle();
+    await tester.tap(browseCategory);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Naruto'));
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(TextFormField, 'Naruto'), findsOneWidget);
     await unmount(tester);
   });
 }
