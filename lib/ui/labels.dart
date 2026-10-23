@@ -59,5 +59,6 @@ extension WorkSortUi on WorkSort {
     WorkSort.added => l10n.sortAdded,
     WorkSort.title => l10n.sortTitle,
     WorkSort.rating => l10n.sortRating,
+    WorkSort.status => l10n.sortStatus,
   };
 }

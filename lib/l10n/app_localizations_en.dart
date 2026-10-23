@@ -714,4 +714,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get readerEndOfDownload => 'End of this download.';
+
+  @override
+  String get sortStatus => 'By reading status';
+
+  @override
+  String get filterStatus => 'Status';
 }

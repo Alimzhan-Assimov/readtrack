@@ -68,4 +68,23 @@ void main() {
     final sorted = await db.watchWorks(sort: WorkSort.title).first;
     expect(sorted.map((w) => w.work.title), ['Alpha', 'beta', 'Gamma']);
   });
+
+  test('sorting by status puts current reads first; status filter', () async {
+    Future<void> add(String title, ReadingStatus status) =>
+        db.saveWork(fic(title).copyWith(status: Value(status)));
+    await add('Done', ReadingStatus.finished);
+    await add('Now', ReadingStatus.reading);
+    await add('Dropped', ReadingStatus.dropped);
+    await add('Later', ReadingStatus.planned);
+
+    final sorted = await db.watchWorks(sort: WorkSort.status).first;
+    expect(sorted.map((w) => w.work.title), [
+      'Now',
+      'Later',
+      'Done',
+      'Dropped',
+    ]);
+    final reading = await db.watchWorks(status: ReadingStatus.reading).first;
+    expect(reading.map((w) => w.work.title), ['Now']);
+  });
 }
