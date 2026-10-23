@@ -18,6 +18,7 @@ class TagInput extends StatelessWidget {
     this.label,
     this.hint,
     this.pickerTitle,
+    this.isHidden,
   });
 
   final TextEditingController controller;
@@ -32,6 +33,9 @@ class TagInput extends StatelessWidget {
   final String? label;
   final String? hint;
   final String? pickerTitle;
+
+  /// Values that are kept but not shown (e.g. hidden 18+ tags).
+  final bool Function(String value)? isHidden;
 
   /// Adds the (comma-separated) tags in [raw] to [tags], skipping duplicates.
   static List<String> merge(List<String> tags, String raw) {
@@ -112,11 +116,19 @@ class TagInput extends StatelessWidget {
             child: Wrap(
               spacing: 8,
               runSpacing: 4,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 for (final tag in tags)
-                  InputChip(
-                    label: Text(tag),
-                    onDeleted: () => onChanged([...tags]..remove(tag)),
+                  if (!(isHidden?.call(tag) ?? false))
+                    InputChip(
+                      label: Text(tag),
+                      onDeleted: () => onChanged([...tags]..remove(tag)),
+                    ),
+                if (tags.where((t) => isHidden?.call(t) ?? false).length
+                    case final hidden when hidden > 0)
+                  Text(
+                    l10n.hiddenAdultTags(hidden),
+                    style: Theme.of(context).textTheme.labelMedium,
                   ),
               ],
             ),

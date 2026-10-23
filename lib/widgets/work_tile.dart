@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../data/database.dart';
 import '../l10n/l10n.dart';
+import '../ui/app_settings.dart';
 import '../ui/format.dart';
 import '../ui/labels.dart';
 import 'work_cover.dart';
@@ -31,6 +32,7 @@ class WorkTile extends StatelessWidget {
     final w = item.work;
     final subtitle = [?w.author, ?item.fandom?.name].join(' · ');
     final stats = workStats(w, context.l10n);
+    final tags = SettingsScope.visibleTags(context, item.tags);
     final total = w.chapterCount ?? 0;
     final current = w.currentChapter ?? 0;
 
@@ -73,17 +75,39 @@ class WorkTile extends StatelessWidget {
                           style: theme.textTheme.bodySmall,
                         ),
                       ),
-                    if (item.tags.isNotEmpty)
+                    if (item.pairings.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.favorite_border,
+                              size: 14,
+                              color: scheme.primary,
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                item.pairings.map((p) => p.name).join(', '),
+                                style: theme.textTheme.bodySmall,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    if (tags.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 8),
                         child: Wrap(
                           spacing: 4,
                           runSpacing: 4,
                           children: [
-                            for (final tag in item.tags.take(_maxTags))
+                            for (final tag in tags.take(_maxTags))
                               _SmallTag(tag.name),
-                            if (item.tags.length > _maxTags)
-                              _SmallTag('+${item.tags.length - _maxTags}'),
+                            if (tags.length > _maxTags)
+                              _SmallTag('+${tags.length - _maxTags}'),
                           ],
                         ),
                       ),

@@ -8,6 +8,8 @@ import '../data/default_tags.dart';
 import '../l10n/l10n.dart';
 import '../library/story_sync.dart';
 import '../sources/sources.dart';
+import '../data/adult_tags.dart';
+import '../ui/app_settings.dart';
 import '../ui/labels.dart';
 import '../ui/layout.dart';
 import '../widgets/suggest_field.dart';
@@ -42,6 +44,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
   final _summary = TextEditingController();
   final _notes = TextEditingController();
   final _tagInput = TextEditingController();
+  final _pairingInput = TextEditingController();
 
   late WorkType _type;
   late WorkFormat _format;
@@ -49,6 +52,11 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
   late bool _isComplete;
   int? _rating;
   late List<String> _tags;
+  late List<String> _pairings;
+  List<String> _pairingSuggestions = const [];
+
+  /// Lower-case names of tags marked as 18+, known or from the site.
+  Set<String> _adultTags = const {};
   List<String> _fandomSuggestions = const [];
   List<String> _authorSuggestions = const [];
   List<String> _tagSuggestions = kDefaultTags;
@@ -74,6 +82,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _summary,
     _notes,
     _tagInput,
+    _pairingInput,
   ];
 
   @override
@@ -87,6 +96,13 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _isComplete = w?.isComplete ?? false;
     _rating = w?.rating;
     _tags = [for (final t in existing?.tags ?? const <Tag>[]) t.name];
+    _pairings = [
+      for (final p in existing?.pairings ?? const <Pairing>[]) p.name,
+    ];
+    _adultTags = {
+      for (final t in existing?.tags ?? const <Tag>[])
+        if (t.isAdult) t.name.toLowerCase(),
+    };
     _title.text = w?.title ?? '';
     _author.text = w?.author ?? '';
     _fandom.text = existing?.fandom?.name ?? '';
@@ -106,6 +122,11 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _format = WorkFormat.online;
     _isComplete = info.isComplete ?? false;
     _tags = TagInput.merge(const [], info.tags.join(','));
+    _pairings = TagInput.merge(const [], info.pairings.join(','));
+    _adultTags = {
+      ..._adultTags,
+      for (final t in info.adultTags) t.toLowerCase(),
+    };
     _title.text = info.title;
     _author.text = info.author ?? '';
     _fandom.text = info.fandom ?? '';
@@ -140,8 +161,16 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     final authors = await _db.authorNames();
     final tags = await _db.tagNames();
     final frequent = await _db.frequentTags();
+    final allTags = await _db.allTags();
+    final pairings = await _db.pairingNames();
     if (!mounted) return;
     setState(() {
+      _pairingSuggestions = pairings;
+      _adultTags = {
+        ..._adultTags,
+        for (final t in allTags)
+          if (t.isAdult) t.name.toLowerCase(),
+      };
       _fandomSuggestions = fandoms;
       _authorSuggestions = authors;
       _frequentTags = frequent;
@@ -149,6 +178,11 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
         ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
     });
   }
+
+  /// Adult tags are hidden while the setting is on.
+  bool _isHiddenTag(String tag) =>
+      (SettingsScope.maybeOf(context)?.hideAdultTags ?? false) &&
+      (_adultTags.contains(tag.toLowerCase()) || looksAdult(tag));
 
   /// Lets the user pick one of [options] for the field [controller].
   Future<void> _pickInto(
@@ -200,6 +234,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     setState(() => _saving = true);
     // Include a tag that was typed but not confirmed yet.
     final tags = TagInput.merge(_tags, _tagInput.text);
+    final pairings = TagInput.merge(_pairings, _pairingInput.text);
     final w = widget.existing?.work;
     final data = WorksCompanion(
       id: w == null ? const Value.absent() : Value(w.id),
@@ -227,6 +262,8 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
       data,
       fandomName: _fandom.text,
       tagNames: tags,
+      pairingNames: pairings,
+      adultTags: widget.imported?.adultTags ?? const {},
     );
     if (widget.imported case final info?) {
       await _db.saveChapterList(id, chapterListing(info));
@@ -484,9 +521,26 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
       TagInput(
         controller: _tagInput,
         tags: _tags,
-        suggestions: _tagSuggestions,
-        frequent: _frequentTags,
+        suggestions: [
+          for (final t in _tagSuggestions)
+            if (!_isHiddenTag(t)) t,
+        ],
+        frequent: [
+          for (final t in _frequentTags)
+            if (!_isHiddenTag(t)) t,
+        ],
+        isHidden: _isHiddenTag,
         onChanged: (tags) => _change(() => _tags = tags),
+      ),
+      _Heading(l10n.sectionPairings),
+      TagInput(
+        controller: _pairingInput,
+        tags: _pairings,
+        suggestions: _pairingSuggestions,
+        label: l10n.addPairing,
+        hint: l10n.addPairingHint,
+        pickerTitle: l10n.pickPairings,
+        onChanged: (pairings) => _change(() => _pairings = pairings),
       ),
       _Heading(l10n.sectionRating),
       Row(

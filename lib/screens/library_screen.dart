@@ -6,10 +6,12 @@ import 'package:flutter/services.dart';
 import '../data/database.dart';
 import '../data/database_scope.dart';
 import '../l10n/l10n.dart';
+import '../ui/app_settings.dart';
 import '../ui/labels.dart';
 import '../ui/layout.dart';
 import '../widgets/work_tile.dart';
 import 'import_screen.dart';
+import 'settings_screen.dart';
 import 'work_detail_screen.dart';
 import 'work_edit_screen.dart';
 
@@ -32,6 +34,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
   WorkType? _type;
   Fandom? _fandom;
   Tag? _tag;
+  Pairing? _pairing;
   ReadingStatus? _status;
   WorkSort _sort = WorkSort.updated;
   int? _selectedId;
@@ -44,6 +47,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
       _type != null ||
       _fandom != null ||
       _tag != null ||
+      _pairing != null ||
       _status != null;
 
   @override
@@ -66,6 +70,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
       type: _type,
       fandomId: _fandom?.id,
       tagId: _tag?.id,
+      pairingId: _pairing?.id,
       status: _status,
       sort: _sort,
     );
@@ -193,6 +198,13 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 floating: true,
                 snap: true,
                 actions: [
+                  IconButton(
+                    icon: const Icon(Icons.settings_outlined),
+                    tooltip: l10n.settingsTitle,
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                    ),
+                  ),
                   PopupMenuButton<WorkSort>(
                     icon: const Icon(Icons.sort),
                     tooltip: l10n.sortTooltip,
@@ -294,6 +306,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     _type = null;
     _fandom = null;
     _tag = null;
+    _pairing = null;
     _status = null;
   });
 
@@ -327,9 +340,20 @@ class _LibraryScreenState extends State<LibraryScreen> {
             icon: Icons.sell_outlined,
             emptyLabel: l10n.filterTag,
             selected: _tag,
-            loadOptions: _db.usedTags,
+            loadOptions: () async {
+              final tags = await _db.usedTags();
+              return mounted ? SettingsScope.visibleTags(context, tags) : tags;
+            },
             nameOf: (t) => t.name,
             onSelected: (t) => _setFilter(() => _tag = t),
+          ),
+          _PickerChip<Pairing>(
+            icon: Icons.favorite_border,
+            emptyLabel: l10n.filterPairing,
+            selected: _pairing,
+            loadOptions: _db.usedPairings,
+            nameOf: (p) => p.name,
+            onSelected: (p) => _setFilter(() => _pairing = p),
           ),
           _PickerChip<ReadingStatus>(
             icon: Icons.bookmark_outline,
@@ -343,6 +367,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
           if (_type != null ||
               _fandom != null ||
               _tag != null ||
+              _pairing != null ||
               _status != null)
             ActionChip(
               avatar: const Icon(Icons.filter_alt_off_outlined, size: 18),

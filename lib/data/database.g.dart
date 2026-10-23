@@ -218,8 +218,23 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
   );
+  static const VerificationMeta _isAdultMeta = const VerificationMeta(
+    'isAdult',
+  );
   @override
-  List<GeneratedColumn> get $columns => [id, name];
+  late final GeneratedColumn<bool> isAdult = GeneratedColumn<bool>(
+    'is_adult',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_adult" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, name, isAdult];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -243,6 +258,12 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
+    if (data.containsKey('is_adult')) {
+      context.handle(
+        _isAdultMeta,
+        isAdult.isAcceptableOrUnknown(data['is_adult']!, _isAdultMeta),
+      );
+    }
     return context;
   }
 
@@ -260,6 +281,10 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
         DriftSqlType.string,
         data['${effectivePrefix}name'],
       )!,
+      isAdult: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_adult'],
+      )!,
     );
   }
 
@@ -272,17 +297,25 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
 class Tag extends DataClass implements Insertable<Tag> {
   final int id;
   final String name;
-  const Tag({required this.id, required this.name});
+
+  /// Adult content; hidden when the "hide 18+ tags" setting is on.
+  final bool isAdult;
+  const Tag({required this.id, required this.name, required this.isAdult});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['name'] = Variable<String>(name);
+    map['is_adult'] = Variable<bool>(isAdult);
     return map;
   }
 
   TagsCompanion toCompanion(bool nullToAbsent) {
-    return TagsCompanion(id: Value(id), name: Value(name));
+    return TagsCompanion(
+      id: Value(id),
+      name: Value(name),
+      isAdult: Value(isAdult),
+    );
   }
 
   factory Tag.fromJson(
@@ -293,6 +326,7 @@ class Tag extends DataClass implements Insertable<Tag> {
     return Tag(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
+      isAdult: serializer.fromJson<bool>(json['isAdult']),
     );
   }
   @override
@@ -301,15 +335,20 @@ class Tag extends DataClass implements Insertable<Tag> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
+      'isAdult': serializer.toJson<bool>(isAdult),
     };
   }
 
-  Tag copyWith({int? id, String? name}) =>
-      Tag(id: id ?? this.id, name: name ?? this.name);
+  Tag copyWith({int? id, String? name, bool? isAdult}) => Tag(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    isAdult: isAdult ?? this.isAdult,
+  );
   Tag copyWithCompanion(TagsCompanion data) {
     return Tag(
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
+      isAdult: data.isAdult.present ? data.isAdult.value : this.isAdult,
     );
   }
 
@@ -317,40 +356,59 @@ class Tag extends DataClass implements Insertable<Tag> {
   String toString() {
     return (StringBuffer('Tag(')
           ..write('id: $id, ')
-          ..write('name: $name')
+          ..write('name: $name, ')
+          ..write('isAdult: $isAdult')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name);
+  int get hashCode => Object.hash(id, name, isAdult);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is Tag && other.id == this.id && other.name == this.name);
+      (other is Tag &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.isAdult == this.isAdult);
 }
 
 class TagsCompanion extends UpdateCompanion<Tag> {
   final Value<int> id;
   final Value<String> name;
+  final Value<bool> isAdult;
   const TagsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
+    this.isAdult = const Value.absent(),
   });
-  TagsCompanion.insert({this.id = const Value.absent(), required String name})
-    : name = Value(name);
+  TagsCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.isAdult = const Value.absent(),
+  }) : name = Value(name);
   static Insertable<Tag> custom({
     Expression<int>? id,
     Expression<String>? name,
+    Expression<bool>? isAdult,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
+      if (isAdult != null) 'is_adult': isAdult,
     });
   }
 
-  TagsCompanion copyWith({Value<int>? id, Value<String>? name}) {
-    return TagsCompanion(id: id ?? this.id, name: name ?? this.name);
+  TagsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<bool>? isAdult,
+  }) {
+    return TagsCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      isAdult: isAdult ?? this.isAdult,
+    );
   }
 
   @override
@@ -362,6 +420,9 @@ class TagsCompanion extends UpdateCompanion<Tag> {
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
+    if (isAdult.present) {
+      map['is_adult'] = Variable<bool>(isAdult.value);
+    }
     return map;
   }
 
@@ -369,7 +430,8 @@ class TagsCompanion extends UpdateCompanion<Tag> {
   String toString() {
     return (StringBuffer('TagsCompanion(')
           ..write('id: $id, ')
-          ..write('name: $name')
+          ..write('name: $name, ')
+          ..write('isAdult: $isAdult')
           ..write(')'))
         .toString();
   }
@@ -2858,6 +2920,619 @@ class DownloadsCompanion extends UpdateCompanion<Download> {
   }
 }
 
+class $PairingsTable extends Pairings with TableInfo<$PairingsTable, Pairing> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PairingsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, name];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'pairings';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Pairing> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Pairing map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Pairing(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+    );
+  }
+
+  @override
+  $PairingsTable createAlias(String alias) {
+    return $PairingsTable(attachedDatabase, alias);
+  }
+}
+
+class Pairing extends DataClass implements Insertable<Pairing> {
+  final int id;
+  final String name;
+  const Pairing({required this.id, required this.name});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    return map;
+  }
+
+  PairingsCompanion toCompanion(bool nullToAbsent) {
+    return PairingsCompanion(id: Value(id), name: Value(name));
+  }
+
+  factory Pairing.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Pairing(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+    };
+  }
+
+  Pairing copyWith({int? id, String? name}) =>
+      Pairing(id: id ?? this.id, name: name ?? this.name);
+  Pairing copyWithCompanion(PairingsCompanion data) {
+    return Pairing(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Pairing(')
+          ..write('id: $id, ')
+          ..write('name: $name')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Pairing && other.id == this.id && other.name == this.name);
+}
+
+class PairingsCompanion extends UpdateCompanion<Pairing> {
+  final Value<int> id;
+  final Value<String> name;
+  const PairingsCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+  });
+  PairingsCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+  }) : name = Value(name);
+  static Insertable<Pairing> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+    });
+  }
+
+  PairingsCompanion copyWith({Value<int>? id, Value<String>? name}) {
+    return PairingsCompanion(id: id ?? this.id, name: name ?? this.name);
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PairingsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $WorkPairingsTable extends WorkPairings
+    with TableInfo<$WorkPairingsTable, WorkPairing> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $WorkPairingsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _workIdMeta = const VerificationMeta('workId');
+  @override
+  late final GeneratedColumn<int> workId = GeneratedColumn<int>(
+    'work_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES works (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _pairingIdMeta = const VerificationMeta(
+    'pairingId',
+  );
+  @override
+  late final GeneratedColumn<int> pairingId = GeneratedColumn<int>(
+    'pairing_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES pairings (id) ON DELETE CASCADE',
+    ),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [workId, pairingId];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'work_pairings';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<WorkPairing> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('work_id')) {
+      context.handle(
+        _workIdMeta,
+        workId.isAcceptableOrUnknown(data['work_id']!, _workIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_workIdMeta);
+    }
+    if (data.containsKey('pairing_id')) {
+      context.handle(
+        _pairingIdMeta,
+        pairingId.isAcceptableOrUnknown(data['pairing_id']!, _pairingIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_pairingIdMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {workId, pairingId};
+  @override
+  WorkPairing map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return WorkPairing(
+      workId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}work_id'],
+      )!,
+      pairingId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}pairing_id'],
+      )!,
+    );
+  }
+
+  @override
+  $WorkPairingsTable createAlias(String alias) {
+    return $WorkPairingsTable(attachedDatabase, alias);
+  }
+}
+
+class WorkPairing extends DataClass implements Insertable<WorkPairing> {
+  final int workId;
+  final int pairingId;
+  const WorkPairing({required this.workId, required this.pairingId});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['work_id'] = Variable<int>(workId);
+    map['pairing_id'] = Variable<int>(pairingId);
+    return map;
+  }
+
+  WorkPairingsCompanion toCompanion(bool nullToAbsent) {
+    return WorkPairingsCompanion(
+      workId: Value(workId),
+      pairingId: Value(pairingId),
+    );
+  }
+
+  factory WorkPairing.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return WorkPairing(
+      workId: serializer.fromJson<int>(json['workId']),
+      pairingId: serializer.fromJson<int>(json['pairingId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'workId': serializer.toJson<int>(workId),
+      'pairingId': serializer.toJson<int>(pairingId),
+    };
+  }
+
+  WorkPairing copyWith({int? workId, int? pairingId}) => WorkPairing(
+    workId: workId ?? this.workId,
+    pairingId: pairingId ?? this.pairingId,
+  );
+  WorkPairing copyWithCompanion(WorkPairingsCompanion data) {
+    return WorkPairing(
+      workId: data.workId.present ? data.workId.value : this.workId,
+      pairingId: data.pairingId.present ? data.pairingId.value : this.pairingId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WorkPairing(')
+          ..write('workId: $workId, ')
+          ..write('pairingId: $pairingId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(workId, pairingId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is WorkPairing &&
+          other.workId == this.workId &&
+          other.pairingId == this.pairingId);
+}
+
+class WorkPairingsCompanion extends UpdateCompanion<WorkPairing> {
+  final Value<int> workId;
+  final Value<int> pairingId;
+  final Value<int> rowid;
+  const WorkPairingsCompanion({
+    this.workId = const Value.absent(),
+    this.pairingId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  WorkPairingsCompanion.insert({
+    required int workId,
+    required int pairingId,
+    this.rowid = const Value.absent(),
+  }) : workId = Value(workId),
+       pairingId = Value(pairingId);
+  static Insertable<WorkPairing> custom({
+    Expression<int>? workId,
+    Expression<int>? pairingId,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (workId != null) 'work_id': workId,
+      if (pairingId != null) 'pairing_id': pairingId,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  WorkPairingsCompanion copyWith({
+    Value<int>? workId,
+    Value<int>? pairingId,
+    Value<int>? rowid,
+  }) {
+    return WorkPairingsCompanion(
+      workId: workId ?? this.workId,
+      pairingId: pairingId ?? this.pairingId,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (workId.present) {
+      map['work_id'] = Variable<int>(workId.value);
+    }
+    if (pairingId.present) {
+      map['pairing_id'] = Variable<int>(pairingId.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WorkPairingsCompanion(')
+          ..write('workId: $workId, ')
+          ..write('pairingId: $pairingId, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SettingsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _keyMeta = const VerificationMeta('key');
+  @override
+  late final GeneratedColumn<String> key = GeneratedColumn<String>(
+    'key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _valueMeta = const VerificationMeta('value');
+  @override
+  late final GeneratedColumn<String> value = GeneratedColumn<String>(
+    'value',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [key, value];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'settings';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Setting> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('key')) {
+      context.handle(
+        _keyMeta,
+        key.isAcceptableOrUnknown(data['key']!, _keyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_keyMeta);
+    }
+    if (data.containsKey('value')) {
+      context.handle(
+        _valueMeta,
+        value.isAcceptableOrUnknown(data['value']!, _valueMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_valueMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {key};
+  @override
+  Setting map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Setting(
+      key: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}key'],
+      )!,
+      value: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}value'],
+      )!,
+    );
+  }
+
+  @override
+  $SettingsTable createAlias(String alias) {
+    return $SettingsTable(attachedDatabase, alias);
+  }
+}
+
+class Setting extends DataClass implements Insertable<Setting> {
+  final String key;
+  final String value;
+  const Setting({required this.key, required this.value});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['key'] = Variable<String>(key);
+    map['value'] = Variable<String>(value);
+    return map;
+  }
+
+  SettingsCompanion toCompanion(bool nullToAbsent) {
+    return SettingsCompanion(key: Value(key), value: Value(value));
+  }
+
+  factory Setting.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Setting(
+      key: serializer.fromJson<String>(json['key']),
+      value: serializer.fromJson<String>(json['value']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'key': serializer.toJson<String>(key),
+      'value': serializer.toJson<String>(value),
+    };
+  }
+
+  Setting copyWith({String? key, String? value}) =>
+      Setting(key: key ?? this.key, value: value ?? this.value);
+  Setting copyWithCompanion(SettingsCompanion data) {
+    return Setting(
+      key: data.key.present ? data.key.value : this.key,
+      value: data.value.present ? data.value.value : this.value,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Setting(')
+          ..write('key: $key, ')
+          ..write('value: $value')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(key, value);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Setting && other.key == this.key && other.value == this.value);
+}
+
+class SettingsCompanion extends UpdateCompanion<Setting> {
+  final Value<String> key;
+  final Value<String> value;
+  final Value<int> rowid;
+  const SettingsCompanion({
+    this.key = const Value.absent(),
+    this.value = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SettingsCompanion.insert({
+    required String key,
+    required String value,
+    this.rowid = const Value.absent(),
+  }) : key = Value(key),
+       value = Value(value);
+  static Insertable<Setting> custom({
+    Expression<String>? key,
+    Expression<String>? value,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (key != null) 'key': key,
+      if (value != null) 'value': value,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SettingsCompanion copyWith({
+    Value<String>? key,
+    Value<String>? value,
+    Value<int>? rowid,
+  }) {
+    return SettingsCompanion(
+      key: key ?? this.key,
+      value: value ?? this.value,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (key.present) {
+      map['key'] = Variable<String>(key.value);
+    }
+    if (value.present) {
+      map['value'] = Variable<String>(value.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SettingsCompanion(')
+          ..write('key: $key, ')
+          ..write('value: $value, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2867,6 +3542,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $WorkTagsTable workTags = $WorkTagsTable(this);
   late final $ChaptersTable chapters = $ChaptersTable(this);
   late final $DownloadsTable downloads = $DownloadsTable(this);
+  late final $PairingsTable pairings = $PairingsTable(this);
+  late final $WorkPairingsTable workPairings = $WorkPairingsTable(this);
+  late final $SettingsTable settings = $SettingsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2878,6 +3556,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     workTags,
     chapters,
     downloads,
+    pairings,
+    workPairings,
+    settings,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -2915,6 +3596,20 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('downloads', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'works',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('work_pairings', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'pairings',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('work_pairings', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -3144,10 +3839,12 @@ typedef $$FandomsTableProcessedTableManager =
 typedef $$TagsTableCreateCompanionBuilder = TagsCompanion Function({
   Value<int> id,
   required String name,
+  Value<bool> isAdult,
 });
 typedef $$TagsTableUpdateCompanionBuilder = TagsCompanion Function({
   Value<int> id,
   Value<String> name,
+  Value<bool> isAdult,
 });
 
 final class $$TagsTableReferences
@@ -3189,6 +3886,11 @@ class $$TagsTableFilterComposer extends Composer<_$AppDatabase, $TagsTable> {
 
   ColumnFilters<String> get name => $composableBuilder(
     column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isAdult => $composableBuilder(
+    column: $table.isAdult,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3235,6 +3937,11 @@ class $$TagsTableOrderingComposer extends Composer<_$AppDatabase, $TagsTable> {
     column: $table.name,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get isAdult => $composableBuilder(
+    column: $table.isAdult,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$TagsTableAnnotationComposer
@@ -3251,6 +3958,9 @@ class $$TagsTableAnnotationComposer
 
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<bool> get isAdult =>
+      $composableBuilder(column: $table.isAdult, builder: (column) => column);
 
   Expression<T> workTagsRefs<T extends Object>(
     Expression<T> Function($$WorkTagsTableAnnotationComposer a) f,
@@ -3307,11 +4017,13 @@ class $$TagsTableTableManager
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> name = const Value.absent(),
-          }) => TagsCompanion(id: id, name: name),
+            Value<bool> isAdult = const Value.absent(),
+          }) => TagsCompanion(id: id, name: name, isAdult: isAdult),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             required String name,
-          }) => TagsCompanion.insert(id: id, name: name),
+            Value<bool> isAdult = const Value.absent(),
+          }) => TagsCompanion.insert(id: id, name: name, isAdult: isAdult),
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
@@ -3482,6 +4194,24 @@ final class $$WorksTableReferences
     ).filter((f) => f.workId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_downloadsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$WorkPairingsTable, List<WorkPairing>>
+  _workPairingsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.workPairings,
+    aliasName: 'works__id__work_pairings__work_id',
+  );
+
+  $$WorkPairingsTableProcessedTableManager get workPairingsRefs {
+    final manager = $$WorkPairingsTableTableManager(
+      $_db,
+      $_db.workPairings,
+    ).filter((f) => f.workId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_workPairingsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -3693,6 +4423,31 @@ class $$WorksTableFilterComposer extends Composer<_$AppDatabase, $WorksTable> {
           }) => $$DownloadsTableFilterComposer(
             $db: $db,
             $table: $db.downloads,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> workPairingsRefs(
+    Expression<bool> Function($$WorkPairingsTableFilterComposer f) f,
+  ) {
+    final $$WorkPairingsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workPairings,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkPairingsTableFilterComposer(
+            $db: $db,
+            $table: $db.workPairings,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4018,6 +4773,31 @@ class $$WorksTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> workPairingsRefs<T extends Object>(
+    Expression<T> Function($$WorkPairingsTableAnnotationComposer a) f,
+  ) {
+    final $$WorkPairingsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workPairings,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkPairingsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.workPairings,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$WorksTableTableManager
@@ -4038,6 +4818,7 @@ class $$WorksTableTableManager
             bool workTagsRefs,
             bool chaptersRefs,
             bool downloadsRefs,
+            bool workPairingsRefs,
           })
         > {
   $$WorksTableTableManager(_$AppDatabase db, $WorksTable table)
@@ -4161,6 +4942,7 @@ class $$WorksTableTableManager
                 workTagsRefs = false,
                 chaptersRefs = false,
                 downloadsRefs = false,
+                workPairingsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -4168,6 +4950,7 @@ class $$WorksTableTableManager
                     if (workTagsRefs) db.workTags,
                     if (chaptersRefs) db.chapters,
                     if (downloadsRefs) db.downloads,
+                    if (workPairingsRefs) db.workPairings,
                   ],
                   addJoins:
                       <
@@ -4252,6 +5035,27 @@ class $$WorksTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (workPairingsRefs)
+                        await $_getPrefetchedData<
+                          Work,
+                          $WorksTable,
+                          WorkPairing
+                        >(
+                          currentTable: table,
+                          referencedTable: $$WorksTableReferences
+                              ._workPairingsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WorksTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).workPairingsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.workId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -4277,6 +5081,7 @@ typedef $$WorksTableProcessedTableManager =
         bool workTagsRefs,
         bool chaptersRefs,
         bool downloadsRefs,
+        bool workPairingsRefs,
       })
     >;
 typedef $$WorkTagsTableCreateCompanionBuilder = WorkTagsCompanion Function({
@@ -5368,6 +6173,709 @@ typedef $$DownloadsTableProcessedTableManager =
       Download,
       PrefetchHooks Function({bool workId})
     >;
+typedef $$PairingsTableCreateCompanionBuilder = PairingsCompanion Function({
+  Value<int> id,
+  required String name,
+});
+typedef $$PairingsTableUpdateCompanionBuilder = PairingsCompanion Function({
+  Value<int> id,
+  Value<String> name,
+});
+
+final class $$PairingsTableReferences
+    extends BaseReferences<_$AppDatabase, $PairingsTable, Pairing> {
+  $$PairingsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$WorkPairingsTable, List<WorkPairing>>
+  _workPairingsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.workPairings,
+    aliasName: 'pairings__id__work_pairings__pairing_id',
+  );
+
+  $$WorkPairingsTableProcessedTableManager get workPairingsRefs {
+    final manager = $$WorkPairingsTableTableManager(
+      $_db,
+      $_db.workPairings,
+    ).filter((f) => f.pairingId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_workPairingsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$PairingsTableFilterComposer
+    extends Composer<_$AppDatabase, $PairingsTable> {
+  $$PairingsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> workPairingsRefs(
+    Expression<bool> Function($$WorkPairingsTableFilterComposer f) f,
+  ) {
+    final $$WorkPairingsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workPairings,
+      getReferencedColumn: (t) => t.pairingId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkPairingsTableFilterComposer(
+            $db: $db,
+            $table: $db.workPairings,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$PairingsTableOrderingComposer
+    extends Composer<_$AppDatabase, $PairingsTable> {
+  $$PairingsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PairingsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PairingsTable> {
+  $$PairingsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  Expression<T> workPairingsRefs<T extends Object>(
+    Expression<T> Function($$WorkPairingsTableAnnotationComposer a) f,
+  ) {
+    final $$WorkPairingsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workPairings,
+      getReferencedColumn: (t) => t.pairingId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkPairingsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.workPairings,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$PairingsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PairingsTable,
+          Pairing,
+          $$PairingsTableFilterComposer,
+          $$PairingsTableOrderingComposer,
+          $$PairingsTableAnnotationComposer,
+          $$PairingsTableCreateCompanionBuilder,
+          $$PairingsTableUpdateCompanionBuilder,
+          (Pairing, $$PairingsTableReferences),
+          Pairing,
+          PrefetchHooks Function({bool workPairingsRefs})
+        > {
+  $$PairingsTableTableManager(_$AppDatabase db, $PairingsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PairingsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PairingsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PairingsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> name = const Value.absent(),
+          }) => PairingsCompanion(id: id, name: name),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String name,
+          }) => PairingsCompanion.insert(id: id, name: name),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$PairingsTable, Pairing>(table),
+                  $$PairingsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({workPairingsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [if (workPairingsRefs) db.workPairings],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (workPairingsRefs)
+                    await $_getPrefetchedData<
+                      Pairing,
+                      $PairingsTable,
+                      WorkPairing
+                    >(
+                      currentTable: table,
+                      referencedTable: $$PairingsTableReferences
+                          ._workPairingsRefsTable(db),
+                      managerFromTypedResult: (p0) => $$PairingsTableReferences(
+                        db,
+                        table,
+                        p0,
+                      ).workPairingsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.pairingId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$PairingsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PairingsTable,
+      Pairing,
+      $$PairingsTableFilterComposer,
+      $$PairingsTableOrderingComposer,
+      $$PairingsTableAnnotationComposer,
+      $$PairingsTableCreateCompanionBuilder,
+      $$PairingsTableUpdateCompanionBuilder,
+      (Pairing, $$PairingsTableReferences),
+      Pairing,
+      PrefetchHooks Function({bool workPairingsRefs})
+    >;
+typedef $$WorkPairingsTableCreateCompanionBuilder =
+    WorkPairingsCompanion Function({
+      required int workId,
+      required int pairingId,
+      Value<int> rowid,
+    });
+typedef $$WorkPairingsTableUpdateCompanionBuilder =
+    WorkPairingsCompanion Function({
+      Value<int> workId,
+      Value<int> pairingId,
+      Value<int> rowid,
+    });
+
+final class $$WorkPairingsTableReferences
+    extends BaseReferences<_$AppDatabase, $WorkPairingsTable, WorkPairing> {
+  $$WorkPairingsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $WorksTable _workIdTable(_$AppDatabase db) =>
+      db.works.createAlias('work_pairings__work_id__works__id');
+
+  $$WorksTableProcessedTableManager get workId {
+    final $_column = $_itemColumn<int>('work_id')!;
+
+    final manager = $$WorksTableTableManager(
+      $_db,
+      $_db.works,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_workIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $PairingsTable _pairingIdTable(_$AppDatabase db) =>
+      db.pairings.createAlias('work_pairings__pairing_id__pairings__id');
+
+  $$PairingsTableProcessedTableManager get pairingId {
+    final $_column = $_itemColumn<int>('pairing_id')!;
+
+    final manager = $$PairingsTableTableManager(
+      $_db,
+      $_db.pairings,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_pairingIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$WorkPairingsTableFilterComposer
+    extends Composer<_$AppDatabase, $WorkPairingsTable> {
+  $$WorkPairingsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  $$WorksTableFilterComposer get workId {
+    final $$WorksTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workId,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableFilterComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$PairingsTableFilterComposer get pairingId {
+    final $$PairingsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.pairingId,
+      referencedTable: $db.pairings,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PairingsTableFilterComposer(
+            $db: $db,
+            $table: $db.pairings,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WorkPairingsTableOrderingComposer
+    extends Composer<_$AppDatabase, $WorkPairingsTable> {
+  $$WorkPairingsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  $$WorksTableOrderingComposer get workId {
+    final $$WorksTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workId,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableOrderingComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$PairingsTableOrderingComposer get pairingId {
+    final $$PairingsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.pairingId,
+      referencedTable: $db.pairings,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PairingsTableOrderingComposer(
+            $db: $db,
+            $table: $db.pairings,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WorkPairingsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $WorkPairingsTable> {
+  $$WorkPairingsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  $$WorksTableAnnotationComposer get workId {
+    final $$WorksTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workId,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableAnnotationComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$PairingsTableAnnotationComposer get pairingId {
+    final $$PairingsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.pairingId,
+      referencedTable: $db.pairings,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PairingsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.pairings,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WorkPairingsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $WorkPairingsTable,
+          WorkPairing,
+          $$WorkPairingsTableFilterComposer,
+          $$WorkPairingsTableOrderingComposer,
+          $$WorkPairingsTableAnnotationComposer,
+          $$WorkPairingsTableCreateCompanionBuilder,
+          $$WorkPairingsTableUpdateCompanionBuilder,
+          (WorkPairing, $$WorkPairingsTableReferences),
+          WorkPairing,
+          PrefetchHooks Function({bool workId, bool pairingId})
+        > {
+  $$WorkPairingsTableTableManager(_$AppDatabase db, $WorkPairingsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$WorkPairingsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WorkPairingsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$WorkPairingsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> workId = const Value.absent(),
+                Value<int> pairingId = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => WorkPairingsCompanion(
+                workId: workId,
+                pairingId: pairingId,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required int workId,
+                required int pairingId,
+                Value<int> rowid = const Value.absent(),
+              }) => WorkPairingsCompanion.insert(
+                workId: workId,
+                pairingId: pairingId,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$WorkPairingsTable, WorkPairing>(table),
+                  $$WorkPairingsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({workId = false, pairingId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (workId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.workId,
+                        referencedTable: $$WorkPairingsTableReferences
+                            ._workIdTable(db),
+                        referencedColumn: $$WorkPairingsTableReferences
+                            ._workIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+                    if (pairingId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.pairingId,
+                        referencedTable: $$WorkPairingsTableReferences
+                            ._pairingIdTable(db),
+                        referencedColumn: $$WorkPairingsTableReferences
+                            ._pairingIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$WorkPairingsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $WorkPairingsTable,
+      WorkPairing,
+      $$WorkPairingsTableFilterComposer,
+      $$WorkPairingsTableOrderingComposer,
+      $$WorkPairingsTableAnnotationComposer,
+      $$WorkPairingsTableCreateCompanionBuilder,
+      $$WorkPairingsTableUpdateCompanionBuilder,
+      (WorkPairing, $$WorkPairingsTableReferences),
+      WorkPairing,
+      PrefetchHooks Function({bool workId, bool pairingId})
+    >;
+typedef $$SettingsTableCreateCompanionBuilder = SettingsCompanion Function({
+  required String key,
+  required String value,
+  Value<int> rowid,
+});
+typedef $$SettingsTableUpdateCompanionBuilder = SettingsCompanion Function({
+  Value<String> key,
+  Value<String> value,
+  Value<int> rowid,
+});
+
+class $$SettingsTableFilterComposer
+    extends Composer<_$AppDatabase, $SettingsTable> {
+  $$SettingsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get key => $composableBuilder(
+    column: $table.key,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SettingsTableOrderingComposer
+    extends Composer<_$AppDatabase, $SettingsTable> {
+  $$SettingsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get key => $composableBuilder(
+    column: $table.key,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SettingsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SettingsTable> {
+  $$SettingsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get key =>
+      $composableBuilder(column: $table.key, builder: (column) => column);
+
+  GeneratedColumn<String> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => column);
+}
+
+class $$SettingsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SettingsTable,
+          Setting,
+          $$SettingsTableFilterComposer,
+          $$SettingsTableOrderingComposer,
+          $$SettingsTableAnnotationComposer,
+          $$SettingsTableCreateCompanionBuilder,
+          $$SettingsTableUpdateCompanionBuilder,
+          (Setting, BaseReferences<_$AppDatabase, $SettingsTable, Setting>),
+          Setting,
+          PrefetchHooks Function()
+        > {
+  $$SettingsTableTableManager(_$AppDatabase db, $SettingsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SettingsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SettingsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SettingsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> key = const Value.absent(),
+            Value<String> value = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) => SettingsCompanion(key: key, value: value, rowid: rowid),
+          createCompanionCallback: ({
+            required String key,
+            required String value,
+            Value<int> rowid = const Value.absent(),
+          }) => SettingsCompanion.insert(key: key, value: value, rowid: rowid),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$SettingsTable, Setting>(table),
+                  BaseReferences<_$AppDatabase, $SettingsTable, Setting>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SettingsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SettingsTable,
+      Setting,
+      $$SettingsTableFilterComposer,
+      $$SettingsTableOrderingComposer,
+      $$SettingsTableAnnotationComposer,
+      $$SettingsTableCreateCompanionBuilder,
+      $$SettingsTableUpdateCompanionBuilder,
+      (Setting, BaseReferences<_$AppDatabase, $SettingsTable, Setting>),
+      Setting,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -5383,4 +6891,10 @@ class $AppDatabaseManager {
       $$ChaptersTableTableManager(_db, _db.chapters);
   $$DownloadsTableTableManager get downloads =>
       $$DownloadsTableTableManager(_db, _db.downloads);
+  $$PairingsTableTableManager get pairings =>
+      $$PairingsTableTableManager(_db, _db.pairings);
+  $$WorkPairingsTableTableManager get workPairings =>
+      $$WorkPairingsTableTableManager(_db, _db.workPairings);
+  $$SettingsTableTableManager get settings =>
+      $$SettingsTableTableManager(_db, _db.settings);
 }

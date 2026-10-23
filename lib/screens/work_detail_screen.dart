@@ -9,6 +9,7 @@ import '../data/database_scope.dart';
 import '../l10n/l10n.dart';
 import '../library/library_scope.dart';
 import '../sources/sources.dart';
+import '../ui/app_settings.dart';
 import '../ui/format.dart';
 import '../ui/labels.dart';
 import '../ui/layout.dart';
@@ -232,15 +233,29 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
                   ],
                 ),
               ),
-            if (item.tags.isNotEmpty)
+            if (item.pairings.isNotEmpty)
+              _Section(
+                title: l10n.sectionPairings,
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: [
+                    for (final p in item.pairings)
+                      Chip(
+                        avatar: const Icon(Icons.favorite_border, size: 18),
+                        label: Text(p.name),
+                      ),
+                  ],
+                ),
+              ),
+            if (SettingsScope.visibleTags(context, item.tags) case final tags
+                when tags.isNotEmpty)
               _Section(
                 title: l10n.sectionTags,
                 child: Wrap(
                   spacing: 8,
                   runSpacing: 4,
-                  children: [
-                    for (final t in item.tags) Chip(label: Text(t.name)),
-                  ],
+                  children: [for (final t in tags) Chip(label: Text(t.name))],
                 ),
               ),
             if (w.isbn case final isbn?)

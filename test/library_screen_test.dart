@@ -8,6 +8,7 @@ import 'package:readtrack/data/database.dart';
 import 'package:readtrack/library/download_service.dart';
 import 'package:readtrack/library/storage.dart';
 import 'package:readtrack/main.dart';
+import 'package:readtrack/ui/app_settings.dart';
 import 'package:readtrack/widgets/tag_input.dart';
 
 void main() {
@@ -179,7 +180,7 @@ void main() {
 
     // Pick a suggested tag from the full list.
     final browseTags = find.descendant(
-      of: find.byType(TagInput),
+      of: find.byType(TagInput).first,
       matching: find.byTooltip('Choose from existing'),
     );
     await tester.ensureVisible(browseTags);
@@ -210,6 +211,44 @@ void main() {
     await tester.tap(find.text('Naruto'));
     await tester.pumpAndSettle();
     expect(find.widgetWithText(TextFormField, 'Naruto'), findsOneWidget);
+    await unmount(tester);
+  });
+
+  testWidgets('18+ tags can be hidden in the settings', (tester) async {
+    await tester.runAsync(() async {
+      final id = (await db.watchWorks().first).single.work.id;
+      final work = (await db.watchWork(id).first)!;
+      await db.saveWork(
+        work.work.toCompanion(false),
+        fandomName: 'Naruto',
+        tagNames: ['Action', 'Explicit Sex'],
+      );
+    });
+    final settings = AppSettings(db);
+    tester.view.physicalSize = const Size(400, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      ReadTrackApp(
+        db: db,
+        storage: storage,
+        downloads: DownloadService(db, storage),
+        settings: settings,
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Explicit Sex'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Settings'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Hide 18+ tags'));
+    await tester.pumpAndSettle();
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Explicit Sex'), findsNothing);
+    expect(find.text('Action'), findsOneWidget);
+    expect(await tester.runAsync(() => db.setting('hideAdultTags')), 'true');
     await unmount(tester);
   });
 }

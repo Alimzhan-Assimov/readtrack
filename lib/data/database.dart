@@ -5,6 +5,7 @@ import 'package:drift_flutter/drift_flutter.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import 'adult_tags.dart';
 import 'enums.dart';
 import 'fandom_names.dart';
 
@@ -21,6 +22,34 @@ class Fandoms extends Table {
 class Tags extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text().unique()();
+
+  /// Adult content; hidden when the "hide 18+ tags" setting is on.
+  BoolColumn get isAdult => boolean().withDefault(const Constant(false))();
+}
+
+/// A relationship such as "Naruto/Hinata", kept apart from tags.
+class Pairings extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text().unique()();
+}
+
+class WorkPairings extends Table {
+  IntColumn get workId =>
+      integer().references(Works, #id, onDelete: KeyAction.cascade)();
+  IntColumn get pairingId =>
+      integer().references(Pairings, #id, onDelete: KeyAction.cascade)();
+
+  @override
+  Set<Column> get primaryKey => {workId, pairingId};
+}
+
+/// App settings as key/value pairs.
+class Settings extends Table {
+  TextColumn get key => text()();
+  TextColumn get value => text()();
+
+  @override
+  Set<Column> get primaryKey => {key};
 }
 
 /// A book, fanfic, manga, etc.
@@ -112,28 +141,53 @@ class Downloads extends Table {
 typedef ChapterListing = ({int number, String title, String url, bool locked});
 
 class WorkWithDetails {
-  WorkWithDetails(this.work, this.fandom, this.tags);
+  WorkWithDetails(
+    this.work,
+    this.fandom,
+    this.tags, {
+    this.pairings = const [],
+  });
 
   final Work work;
   final Fandom? fandom;
   final List<Tag> tags;
+  final List<Pairing> pairings;
 }
 
 class DeletedWork {
-  DeletedWork(this.work, this.tagIds, this.chapters, this.downloads);
+  DeletedWork(
+    this.work,
+    this.tagIds,
+    this.chapters,
+    this.downloads, {
+    this.pairingIds = const [],
+  });
 
   final Work work;
   final List<int> tagIds;
+  final List<int> pairingIds;
   final List<Chapter> chapters;
   final List<Download> downloads;
 }
 
-@DriftDatabase(tables: [Fandoms, Tags, Works, WorkTags, Chapters, Downloads])
+@DriftDatabase(
+  tables: [
+    Fandoms,
+    Tags,
+    Works,
+    WorkTags,
+    Chapters,
+    Downloads,
+    Pairings,
+    WorkPairings,
+    Settings,
+  ],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -143,6 +197,20 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(works, works.readOffset);
         await m.addColumn(chapters, chapters.isLocked);
         await m.createTable(downloads);
+      }
+      if (from < 3) {
+        await m.addColumn(tags, tags.isAdult);
+        await m.createTable(pairings);
+        await m.createTable(workPairings);
+        await m.createTable(settings);
+        // Flag the adult tags that already exist.
+        for (final tag in await select(tags).get()) {
+          if (looksAdult(tag.name)) {
+            await (update(tags)..where((t) => t.id.equals(tag.id))).write(
+              const TagsCompanion(isAdult: Value(true)),
+            );
+          }
+        }
       }
     },
     beforeOpen: (details) async {
@@ -183,6 +251,7 @@ class AppDatabase extends _$AppDatabase {
     WorkType? type,
     int? fandomId,
     int? tagId,
+    int? pairingId,
     ReadingStatus? status,
     WorkSort sort = WorkSort.updated,
   }) {
@@ -199,6 +268,15 @@ class AppDatabase extends _$AppDatabase {
     if (type != null) query.where(works.type.equalsValue(type));
     if (fandomId != null) query.where(works.fandomId.equals(fandomId));
     if (status != null) query.where(works.status.equalsValue(status));
+    if (pairingId != null) {
+      query.where(
+        works.id.isInQuery(
+          selectOnly(workPairings)
+            ..addColumns([workPairings.workId])
+            ..where(workPairings.pairingId.equals(pairingId)),
+        ),
+      );
+    }
     if (tagId != null) {
       query.where(
         works.id.isInQuery(
@@ -270,12 +348,30 @@ class AppDatabase extends _$AppDatabase {
           .putIfAbsent(r.readTable(workTags).workId, () => [])
           .add(r.readTable(tags));
     }
+    final pairingRows = ids.isEmpty
+        ? const <TypedResult>[]
+        : await (select(workPairings).join([
+                  innerJoin(
+                    pairings,
+                    pairings.id.equalsExp(workPairings.pairingId),
+                  ),
+                ])
+                ..where(workPairings.workId.isIn(ids))
+                ..orderBy([OrderingTerm.asc(pairings.name)]))
+              .get();
+    final pairingsByWork = <int, List<Pairing>>{};
+    for (final r in pairingRows) {
+      pairingsByWork
+          .putIfAbsent(r.readTable(workPairings).workId, () => [])
+          .add(r.readTable(pairings));
+    }
     return [
       for (final r in rows)
         WorkWithDetails(
           r.readTable(works),
           r.readTableOrNull(fandoms),
           tagsByWork[r.readTable(works).id] ?? const [],
+          pairings: pairingsByWork[r.readTable(works).id] ?? const [],
         ),
     ];
   }
@@ -338,6 +434,10 @@ class AppDatabase extends _$AppDatabase {
     WorksCompanion data, {
     String? fandomName,
     List<String> tagNames = const [],
+    List<String> pairingNames = const [],
+
+    /// Tags the site marks as adult content (detected ones are added).
+    Set<String> adultTags = const {},
   }) {
     return transaction(() async {
       final row = data.copyWith(
@@ -352,11 +452,24 @@ class AppDatabase extends _$AppDatabase {
         id = await into(works).insert(row);
       }
       await (delete(workTags)..where((t) => t.workId.equals(id))).go();
+      final adult = {for (final t in adultTags) t.toLowerCase()};
       for (final name in tagNames) {
-        final tagId = await _tagIdFor(name);
+        final tagId = await _tagIdFor(
+          name,
+          adult: adult.contains(name.trim().toLowerCase()),
+        );
         if (tagId == null) continue;
         await into(workTags).insert(
           WorkTagsCompanion.insert(workId: id, tagId: tagId),
+          mode: InsertMode.insertOrIgnore,
+        );
+      }
+      await (delete(workPairings)..where((p) => p.workId.equals(id))).go();
+      for (final name in pairingNames) {
+        final pairingId = await _pairingIdFor(name);
+        if (pairingId == null) continue;
+        await into(workPairings).insert(
+          WorkPairingsCompanion.insert(workId: id, pairingId: pairingId),
           mode: InsertMode.insertOrIgnore,
         );
       }
@@ -382,6 +495,12 @@ class AppDatabase extends _$AppDatabase {
                 ..where(workTags.workId.equals(id)))
               .map((r) => r.read(workTags.tagId)!)
               .get();
+      final pairingIds =
+          await (selectOnly(workPairings)
+                ..addColumns([workPairings.pairingId])
+                ..where(workPairings.workId.equals(id)))
+              .map((r) => r.read(workPairings.pairingId)!)
+              .get();
       final savedChapters = await (select(
         chapters,
       )..where((c) => c.workId.equals(id))).get();
@@ -389,7 +508,13 @@ class AppDatabase extends _$AppDatabase {
         downloads,
       )..where((d) => d.workId.equals(id))).get();
       await (delete(works)..where((w) => w.id.equals(id))).go();
-      return DeletedWork(work, tagIds, savedChapters, savedDownloads);
+      return DeletedWork(
+        work,
+        tagIds,
+        savedChapters,
+        savedDownloads,
+        pairingIds: pairingIds,
+      );
     });
   }
 
@@ -400,6 +525,13 @@ class AppDatabase extends _$AppDatabase {
         b.insertAll(workTags, [
           for (final tagId in deleted.tagIds)
             WorkTagsCompanion.insert(workId: deleted.work.id, tagId: tagId),
+        ]);
+        b.insertAll(workPairings, [
+          for (final pairingId in deleted.pairingIds)
+            WorkPairingsCompanion.insert(
+              workId: deleted.work.id,
+              pairingId: pairingId,
+            ),
         ]);
         b.insertAll(chapters, deleted.chapters);
         b.insertAll(downloads, deleted.downloads);
@@ -561,13 +693,61 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
-  Future<int?> _tagIdFor(String name) async {
+  Future<int?> _tagIdFor(String name, {bool adult = false}) async {
     final n = name.trim();
     if (n.isEmpty) return null;
     final existing = await (select(
       tags,
     )..where((t) => t.name.lower().equals(n.toLowerCase()))).getSingleOrNull();
-    return existing?.id ??
-        await into(tags).insert(TagsCompanion.insert(name: n));
+    if (existing != null) {
+      if (adult && !existing.isAdult) await setTagAdult(existing.id, true);
+      return existing.id;
+    }
+    return into(tags).insert(
+      TagsCompanion.insert(name: n, isAdult: Value(adult || looksAdult(n))),
+    );
   }
+
+  Future<int?> _pairingIdFor(String name) async {
+    final n = name.trim();
+    if (n.isEmpty) return null;
+    final existing = await (select(
+      pairings,
+    )..where((p) => p.name.lower().equals(n.toLowerCase()))).getSingleOrNull();
+    return existing?.id ??
+        await into(pairings).insert(PairingsCompanion.insert(name: n));
+  }
+
+  Future<void> setTagAdult(int tagId, bool adult) =>
+      (update(tags)..where((t) => t.id.equals(tagId))).write(
+        TagsCompanion(isAdult: Value(adult)),
+      );
+
+  Future<List<Tag>> allTags() =>
+      (select(tags)..orderBy([(t) => OrderingTerm.asc(t.name)])).get();
+
+  Stream<List<Tag>> watchAllTags() =>
+      (select(tags)..orderBy([(t) => OrderingTerm.asc(t.name)])).watch();
+
+  /// Pairings that at least one work has.
+  Future<List<Pairing>> usedPairings() =>
+      (select(pairings)
+            ..where(
+              (p) => p.id.isInQuery(
+                selectOnly(workPairings)..addColumns([workPairings.pairingId]),
+              ),
+            )
+            ..orderBy([(p) => OrderingTerm.asc(p.name)]))
+          .get();
+
+  Future<List<String>> pairingNames() => (select(
+    pairings,
+  )..orderBy([(p) => OrderingTerm.asc(p.name)])).map((p) => p.name).get();
+
+  Future<String?> setting(String key) async => (await (select(
+    settings,
+  )..where((s) => s.key.equals(key))).getSingleOrNull())?.value;
+
+  Future<void> setSetting(String key, String value) => into(settings)
+      .insertOnConflictUpdate(SettingsCompanion.insert(key: key, value: value));
 }
