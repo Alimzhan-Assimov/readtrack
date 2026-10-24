@@ -329,6 +329,79 @@
     }
   },
   "deleteDownload": "Delete download",
+  "suggestTags": "Suggest tags",
+  "tagSuggestionWhy": "{reason}. Tap to add the tag.",
+  "@tagSuggestionWhy": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "tagReasonKeyword": "The summary mentions “{word}”",
+  "@tagReasonKeyword": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "tagsSuggested": "{count, plural, =0{No new tag suggestions} =1{1 tag suggested} other{{count} tags suggested}}",
+  "@tagsSuggested": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "findCharacters": "Find in the text",
+  "suggestedCharacter": "Found in the text. Tap to confirm.",
+  "dismissSuggestion": "Not in this story",
+  "noKnownCharacters": "No characters are known for this category yet. Add some, or look the franchise up on AniList.",
+  "noTextToSearch": "There is no downloaded text to search yet.",
+  "charactersFound": "{count, plural, =0{No more known characters found} =1{Found 1 character; confirm it with a tap} other{Found {count} characters; confirm them with a tap}}",
+  "@charactersFound": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aniListLookUp": "Look up on AniList",
+  "aniListTitle": "AniList",
+  "aniListHint": "Pick the matching one. Empty fields are filled in; tags, characters and links to sequels or prequels in your library are added.",
+  "aniListApplied": "Took AniList's details: {characters, plural, =0{no new characters} =1{1 new character} other{{characters} new characters}}, {relations, plural, =0{no links} =1{1 link} other{{relations} links}}",
+  "@aniListApplied": {
+    "placeholders": {
+      "characters": {
+        "type": "int"
+      },
+      "relations": {
+        "type": "int"
+      }
+    }
+  },
+  "categoriesTitle": "Categories",
+  "categoriesTileHint": "Rename or merge franchises",
+  "categoriesHint": "Merging a category into another moves its entries, crossovers and characters, and remembers its name, so stories imported later with that name land in the right place.",
+  "renameCategory": "Rename",
+  "mergeCategoryInto": "Merge into another category…",
+  "mergeCategoryTitle": "Merge “{name}” into",
+  "@mergeCategoryTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryAliases": "{count, plural, =1{1 other name} other{{count} other names}}",
+  "@categoryAliases": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "pageCurrent": "Page {current}",
   "@pageCurrent": {
     "placeholders": {

@@ -3,6 +3,2296 @@
 part of 'database.dart';
 
 // ignore_for_file: type=lint
+class $FandomsTable extends Fandoms with TableInfo<$FandomsTable, Fandom> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FandomsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, name];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'fandoms';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Fandom> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Fandom map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Fandom(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+    );
+  }
+
+  @override
+  $FandomsTable createAlias(String alias) {
+    return $FandomsTable(attachedDatabase, alias);
+  }
+}
+
+class Fandom extends DataClass implements Insertable<Fandom> {
+  final int id;
+  final String name;
+  const Fandom({required this.id, required this.name});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    return map;
+  }
+
+  FandomsCompanion toCompanion(bool nullToAbsent) {
+    return FandomsCompanion(id: Value(id), name: Value(name));
+  }
+
+  factory Fandom.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Fandom(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+    };
+  }
+
+  Fandom copyWith({int? id, String? name}) =>
+      Fandom(id: id ?? this.id, name: name ?? this.name);
+  Fandom copyWithCompanion(FandomsCompanion data) {
+    return Fandom(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Fandom(')
+          ..write('id: $id, ')
+          ..write('name: $name')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Fandom && other.id == this.id && other.name == this.name);
+}
+
+class FandomsCompanion extends UpdateCompanion<Fandom> {
+  final Value<int> id;
+  final Value<String> name;
+  const FandomsCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+  });
+  FandomsCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+  }) : name = Value(name);
+  static Insertable<Fandom> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+    });
+  }
+
+  FandomsCompanion copyWith({Value<int>? id, Value<String>? name}) {
+    return FandomsCompanion(id: id ?? this.id, name: name ?? this.name);
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FandomsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SeriesTable extends Series with TableInfo<$SeriesTable, SeriesItem> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SeriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, name];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'series';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SeriesItem> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SeriesItem map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SeriesItem(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+    );
+  }
+
+  @override
+  $SeriesTable createAlias(String alias) {
+    return $SeriesTable(attachedDatabase, alias);
+  }
+}
+
+class SeriesItem extends DataClass implements Insertable<SeriesItem> {
+  final int id;
+  final String name;
+  const SeriesItem({required this.id, required this.name});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    return map;
+  }
+
+  SeriesCompanion toCompanion(bool nullToAbsent) {
+    return SeriesCompanion(id: Value(id), name: Value(name));
+  }
+
+  factory SeriesItem.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SeriesItem(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+    };
+  }
+
+  SeriesItem copyWith({int? id, String? name}) =>
+      SeriesItem(id: id ?? this.id, name: name ?? this.name);
+  SeriesItem copyWithCompanion(SeriesCompanion data) {
+    return SeriesItem(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SeriesItem(')
+          ..write('id: $id, ')
+          ..write('name: $name')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SeriesItem && other.id == this.id && other.name == this.name);
+}
+
+class SeriesCompanion extends UpdateCompanion<SeriesItem> {
+  final Value<int> id;
+  final Value<String> name;
+  const SeriesCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+  });
+  SeriesCompanion.insert({this.id = const Value.absent(), required String name})
+    : name = Value(name);
+  static Insertable<SeriesItem> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+    });
+  }
+
+  SeriesCompanion copyWith({Value<int>? id, Value<String>? name}) {
+    return SeriesCompanion(id: id ?? this.id, name: name ?? this.name);
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SeriesCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $WorksTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<WorkType, String> type =
+      GeneratedColumn<String>(
+        'type',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<WorkType>($WorksTable.$convertertype);
+  @override
+  late final GeneratedColumnWithTypeConverter<WorkFormat, String> format =
+      GeneratedColumn<String>(
+        'format',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<WorkFormat>($WorksTable.$converterformat);
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _authorMeta = const VerificationMeta('author');
+  @override
+  late final GeneratedColumn<String> author = GeneratedColumn<String>(
+    'author',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _summaryMeta = const VerificationMeta(
+    'summary',
+  );
+  @override
+  late final GeneratedColumn<String> summary = GeneratedColumn<String>(
+    'summary',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isbnMeta = const VerificationMeta('isbn');
+  @override
+  late final GeneratedColumn<String> isbn = GeneratedColumn<String>(
+    'isbn',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sourceUrlMeta = const VerificationMeta(
+    'sourceUrl',
+  );
+  @override
+  late final GeneratedColumn<String> sourceUrl = GeneratedColumn<String>(
+    'source_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _coverUrlMeta = const VerificationMeta(
+    'coverUrl',
+  );
+  @override
+  late final GeneratedColumn<String> coverUrl = GeneratedColumn<String>(
+    'cover_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _coverPathMeta = const VerificationMeta(
+    'coverPath',
+  );
+  @override
+  late final GeneratedColumn<String> coverPath = GeneratedColumn<String>(
+    'cover_path',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _fandomIdMeta = const VerificationMeta(
+    'fandomId',
+  );
+  @override
+  late final GeneratedColumn<int> fandomId = GeneratedColumn<int>(
+    'fandom_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES fandoms (id) ON DELETE SET NULL',
+    ),
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<ReadingStatus, String> status =
+      GeneratedColumn<String>(
+        'status',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: Constant(ReadingStatus.planned.name),
+      ).withConverter<ReadingStatus>($WorksTable.$converterstatus);
+  static const VerificationMeta _isCompleteMeta = const VerificationMeta(
+    'isComplete',
+  );
+  @override
+  late final GeneratedColumn<bool> isComplete = GeneratedColumn<bool>(
+    'is_complete',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_complete" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _chapterCountMeta = const VerificationMeta(
+    'chapterCount',
+  );
+  @override
+  late final GeneratedColumn<int> chapterCount = GeneratedColumn<int>(
+    'chapter_count',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _currentChapterMeta = const VerificationMeta(
+    'currentChapter',
+  );
+  @override
+  late final GeneratedColumn<int> currentChapter = GeneratedColumn<int>(
+    'current_chapter',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _readOffsetMeta = const VerificationMeta(
+    'readOffset',
+  );
+  @override
+  late final GeneratedColumn<double> readOffset = GeneratedColumn<double>(
+    'read_offset',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _wordCountMeta = const VerificationMeta(
+    'wordCount',
+  );
+  @override
+  late final GeneratedColumn<int> wordCount = GeneratedColumn<int>(
+    'word_count',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _pageCountMeta = const VerificationMeta(
+    'pageCount',
+  );
+  @override
+  late final GeneratedColumn<int> pageCount = GeneratedColumn<int>(
+    'page_count',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _ratingMeta = const VerificationMeta('rating');
+  @override
+  late final GeneratedColumn<int> rating = GeneratedColumn<int>(
+    'rating',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _addedAtMeta = const VerificationMeta(
+    'addedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> addedAt = GeneratedColumn<DateTime>(
+    'added_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _checkedAtMeta = const VerificationMeta(
+    'checkedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> checkedAt = GeneratedColumn<DateTime>(
+    'checked_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _lastChapterAtMeta = const VerificationMeta(
+    'lastChapterAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastChapterAt =
+      GeneratedColumn<DateTime>(
+        'last_chapter_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _newChaptersMeta = const VerificationMeta(
+    'newChapters',
+  );
+  @override
+  late final GeneratedColumn<int> newChapters = GeneratedColumn<int>(
+    'new_chapters',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _finishedAtMeta = const VerificationMeta(
+    'finishedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> finishedAt = GeneratedColumn<DateTime>(
+    'finished_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _currentPageMeta = const VerificationMeta(
+    'currentPage',
+  );
+  @override
+  late final GeneratedColumn<int> currentPage = GeneratedColumn<int>(
+    'current_page',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _anilistIdMeta = const VerificationMeta(
+    'anilistId',
+  );
+  @override
+  late final GeneratedColumn<int> anilistId = GeneratedColumn<int>(
+    'anilist_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _ownsPhysicalCopyMeta = const VerificationMeta(
+    'ownsPhysicalCopy',
+  );
+  @override
+  late final GeneratedColumn<bool> ownsPhysicalCopy = GeneratedColumn<bool>(
+    'owns_physical_copy',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("owns_physical_copy" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _seriesIdMeta = const VerificationMeta(
+    'seriesId',
+  );
+  @override
+  late final GeneratedColumn<int> seriesId = GeneratedColumn<int>(
+    'series_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES series (id) ON DELETE SET NULL',
+    ),
+  );
+  static const VerificationMeta _seriesIndexMeta = const VerificationMeta(
+    'seriesIndex',
+  );
+  @override
+  late final GeneratedColumn<double> seriesIndex = GeneratedColumn<double>(
+    'series_index',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _wordsEstimatedMeta = const VerificationMeta(
+    'wordsEstimated',
+  );
+  @override
+  late final GeneratedColumn<bool> wordsEstimated = GeneratedColumn<bool>(
+    'words_estimated',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("words_estimated" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _pagesEstimatedMeta = const VerificationMeta(
+    'pagesEstimated',
+  );
+  @override
+  late final GeneratedColumn<bool> pagesEstimated = GeneratedColumn<bool>(
+    'pages_estimated',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("pages_estimated" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _characterCountMeta = const VerificationMeta(
+    'characterCount',
+  );
+  @override
+  late final GeneratedColumn<int> characterCount = GeneratedColumn<int>(
+    'character_count',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    type,
+    format,
+    title,
+    author,
+    summary,
+    isbn,
+    sourceUrl,
+    coverUrl,
+    coverPath,
+    fandomId,
+    status,
+    isComplete,
+    chapterCount,
+    currentChapter,
+    readOffset,
+    wordCount,
+    pageCount,
+    rating,
+    notes,
+    addedAt,
+    updatedAt,
+    checkedAt,
+    lastChapterAt,
+    newChapters,
+    deletedAt,
+    finishedAt,
+    currentPage,
+    anilistId,
+    ownsPhysicalCopy,
+    seriesId,
+    seriesIndex,
+    wordsEstimated,
+    pagesEstimated,
+    characterCount,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'works';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Work> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('author')) {
+      context.handle(
+        _authorMeta,
+        author.isAcceptableOrUnknown(data['author']!, _authorMeta),
+      );
+    }
+    if (data.containsKey('summary')) {
+      context.handle(
+        _summaryMeta,
+        summary.isAcceptableOrUnknown(data['summary']!, _summaryMeta),
+      );
+    }
+    if (data.containsKey('isbn')) {
+      context.handle(
+        _isbnMeta,
+        isbn.isAcceptableOrUnknown(data['isbn']!, _isbnMeta),
+      );
+    }
+    if (data.containsKey('source_url')) {
+      context.handle(
+        _sourceUrlMeta,
+        sourceUrl.isAcceptableOrUnknown(data['source_url']!, _sourceUrlMeta),
+      );
+    }
+    if (data.containsKey('cover_url')) {
+      context.handle(
+        _coverUrlMeta,
+        coverUrl.isAcceptableOrUnknown(data['cover_url']!, _coverUrlMeta),
+      );
+    }
+    if (data.containsKey('cover_path')) {
+      context.handle(
+        _coverPathMeta,
+        coverPath.isAcceptableOrUnknown(data['cover_path']!, _coverPathMeta),
+      );
+    }
+    if (data.containsKey('fandom_id')) {
+      context.handle(
+        _fandomIdMeta,
+        fandomId.isAcceptableOrUnknown(data['fandom_id']!, _fandomIdMeta),
+      );
+    }
+    if (data.containsKey('is_complete')) {
+      context.handle(
+        _isCompleteMeta,
+        isComplete.isAcceptableOrUnknown(data['is_complete']!, _isCompleteMeta),
+      );
+    }
+    if (data.containsKey('chapter_count')) {
+      context.handle(
+        _chapterCountMeta,
+        chapterCount.isAcceptableOrUnknown(
+          data['chapter_count']!,
+          _chapterCountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('current_chapter')) {
+      context.handle(
+        _currentChapterMeta,
+        currentChapter.isAcceptableOrUnknown(
+          data['current_chapter']!,
+          _currentChapterMeta,
+        ),
+      );
+    }
+    if (data.containsKey('read_offset')) {
+      context.handle(
+        _readOffsetMeta,
+        readOffset.isAcceptableOrUnknown(data['read_offset']!, _readOffsetMeta),
+      );
+    }
+    if (data.containsKey('word_count')) {
+      context.handle(
+        _wordCountMeta,
+        wordCount.isAcceptableOrUnknown(data['word_count']!, _wordCountMeta),
+      );
+    }
+    if (data.containsKey('page_count')) {
+      context.handle(
+        _pageCountMeta,
+        pageCount.isAcceptableOrUnknown(data['page_count']!, _pageCountMeta),
+      );
+    }
+    if (data.containsKey('rating')) {
+      context.handle(
+        _ratingMeta,
+        rating.isAcceptableOrUnknown(data['rating']!, _ratingMeta),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('added_at')) {
+      context.handle(
+        _addedAtMeta,
+        addedAt.isAcceptableOrUnknown(data['added_at']!, _addedAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    if (data.containsKey('checked_at')) {
+      context.handle(
+        _checkedAtMeta,
+        checkedAt.isAcceptableOrUnknown(data['checked_at']!, _checkedAtMeta),
+      );
+    }
+    if (data.containsKey('last_chapter_at')) {
+      context.handle(
+        _lastChapterAtMeta,
+        lastChapterAt.isAcceptableOrUnknown(
+          data['last_chapter_at']!,
+          _lastChapterAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('new_chapters')) {
+      context.handle(
+        _newChaptersMeta,
+        newChapters.isAcceptableOrUnknown(
+          data['new_chapters']!,
+          _newChaptersMeta,
+        ),
+      );
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    if (data.containsKey('finished_at')) {
+      context.handle(
+        _finishedAtMeta,
+        finishedAt.isAcceptableOrUnknown(data['finished_at']!, _finishedAtMeta),
+      );
+    }
+    if (data.containsKey('current_page')) {
+      context.handle(
+        _currentPageMeta,
+        currentPage.isAcceptableOrUnknown(
+          data['current_page']!,
+          _currentPageMeta,
+        ),
+      );
+    }
+    if (data.containsKey('anilist_id')) {
+      context.handle(
+        _anilistIdMeta,
+        anilistId.isAcceptableOrUnknown(data['anilist_id']!, _anilistIdMeta),
+      );
+    }
+    if (data.containsKey('owns_physical_copy')) {
+      context.handle(
+        _ownsPhysicalCopyMeta,
+        ownsPhysicalCopy.isAcceptableOrUnknown(
+          data['owns_physical_copy']!,
+          _ownsPhysicalCopyMeta,
+        ),
+      );
+    }
+    if (data.containsKey('series_id')) {
+      context.handle(
+        _seriesIdMeta,
+        seriesId.isAcceptableOrUnknown(data['series_id']!, _seriesIdMeta),
+      );
+    }
+    if (data.containsKey('series_index')) {
+      context.handle(
+        _seriesIndexMeta,
+        seriesIndex.isAcceptableOrUnknown(
+          data['series_index']!,
+          _seriesIndexMeta,
+        ),
+      );
+    }
+    if (data.containsKey('words_estimated')) {
+      context.handle(
+        _wordsEstimatedMeta,
+        wordsEstimated.isAcceptableOrUnknown(
+          data['words_estimated']!,
+          _wordsEstimatedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('pages_estimated')) {
+      context.handle(
+        _pagesEstimatedMeta,
+        pagesEstimated.isAcceptableOrUnknown(
+          data['pages_estimated']!,
+          _pagesEstimatedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('character_count')) {
+      context.handle(
+        _characterCountMeta,
+        characterCount.isAcceptableOrUnknown(
+          data['character_count']!,
+          _characterCountMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Work map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Work(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      type: $WorksTable.$convertertype.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}type'],
+        )!,
+      ),
+      format: $WorksTable.$converterformat.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}format'],
+        )!,
+      ),
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      author: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}author'],
+      ),
+      summary: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}summary'],
+      ),
+      isbn: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}isbn'],
+      ),
+      sourceUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_url'],
+      ),
+      coverUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cover_url'],
+      ),
+      coverPath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cover_path'],
+      ),
+      fandomId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}fandom_id'],
+      ),
+      status: $WorksTable.$converterstatus.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}status'],
+        )!,
+      ),
+      isComplete: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_complete'],
+      )!,
+      chapterCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}chapter_count'],
+      ),
+      currentChapter: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}current_chapter'],
+      ),
+      readOffset: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}read_offset'],
+      ),
+      wordCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}word_count'],
+      ),
+      pageCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}page_count'],
+      ),
+      rating: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}rating'],
+      ),
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      ),
+      addedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}added_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      checkedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}checked_at'],
+      ),
+      lastChapterAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_chapter_at'],
+      ),
+      newChapters: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}new_chapters'],
+      )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+      finishedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}finished_at'],
+      ),
+      currentPage: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}current_page'],
+      ),
+      anilistId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}anilist_id'],
+      ),
+      ownsPhysicalCopy: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}owns_physical_copy'],
+      )!,
+      seriesId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}series_id'],
+      ),
+      seriesIndex: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}series_index'],
+      ),
+      wordsEstimated: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}words_estimated'],
+      )!,
+      pagesEstimated: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}pages_estimated'],
+      )!,
+      characterCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}character_count'],
+      ),
+    );
+  }
+
+  @override
+  $WorksTable createAlias(String alias) {
+    return $WorksTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<WorkType, String, String> $convertertype =
+      const EnumNameConverter<WorkType>(WorkType.values);
+  static JsonTypeConverter2<WorkFormat, String, String> $converterformat =
+      const EnumNameConverter<WorkFormat>(WorkFormat.values);
+  static JsonTypeConverter2<ReadingStatus, String, String> $converterstatus =
+      const EnumNameConverter<ReadingStatus>(ReadingStatus.values);
+}
+
+class Work extends DataClass implements Insertable<Work> {
+  final int id;
+  final WorkType type;
+  final WorkFormat format;
+  final String title;
+  final String? author;
+  final String? summary;
+  final String? isbn;
+  final String? sourceUrl;
+  final String? coverUrl;
+
+  /// Downloaded cover, so it shows offline.
+  final String? coverPath;
+  final int? fandomId;
+  final ReadingStatus status;
+
+  /// Whether the author has finished the story.
+  final bool isComplete;
+  final int? chapterCount;
+  final int? currentChapter;
+
+  /// Scroll position within [currentChapter], from 0 (top) to 1 (end).
+  final double? readOffset;
+  final int? wordCount;
+  final int? pageCount;
+
+  /// 1 to 5 stars.
+  final int? rating;
+  final String? notes;
+  final DateTime addedAt;
+  final DateTime updatedAt;
+
+  /// When the site was last checked for new chapters.
+  final DateTime? checkedAt;
+
+  /// When the latest chapter came out: the site's date if it shows one,
+  /// otherwise when ReadTrack first saw it.
+  final DateTime? lastChapterAt;
+
+  /// Chapters found by update checks that the user hasn't looked at yet.
+  final int newChapters;
+
+  /// Set while the work is in the trash.
+  final DateTime? deletedAt;
+
+  /// When the status last became "finished" (kept by a trigger).
+  final DateTime? finishedAt;
+
+  /// Where the reader is in a paper book.
+  final int? currentPage;
+
+  /// The work's id on AniList, once looked up there.
+  final int? anilistId;
+
+  /// The user also has the book on paper (for digital or online entries).
+  final bool ownsPhysicalCopy;
+  final int? seriesId;
+
+  /// Position in the series; may be fractional (2.5 for a side story).
+  final double? seriesIndex;
+
+  /// Whether [wordCount] / [pageCount] were worked out by the app because
+  /// the site didn't give them; such values are updated as more is known.
+  final bool wordsEstimated;
+  final bool pagesEstimated;
+
+  /// Size in characters (with spaces), for sites that give only that.
+  final int? characterCount;
+  const Work({
+    required this.id,
+    required this.type,
+    required this.format,
+    required this.title,
+    this.author,
+    this.summary,
+    this.isbn,
+    this.sourceUrl,
+    this.coverUrl,
+    this.coverPath,
+    this.fandomId,
+    required this.status,
+    required this.isComplete,
+    this.chapterCount,
+    this.currentChapter,
+    this.readOffset,
+    this.wordCount,
+    this.pageCount,
+    this.rating,
+    this.notes,
+    required this.addedAt,
+    required this.updatedAt,
+    this.checkedAt,
+    this.lastChapterAt,
+    required this.newChapters,
+    this.deletedAt,
+    this.finishedAt,
+    this.currentPage,
+    this.anilistId,
+    required this.ownsPhysicalCopy,
+    this.seriesId,
+    this.seriesIndex,
+    required this.wordsEstimated,
+    required this.pagesEstimated,
+    this.characterCount,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    {
+      map['type'] = Variable<String>($WorksTable.$convertertype.toSql(type));
+    }
+    {
+      map['format'] = Variable<String>(
+        $WorksTable.$converterformat.toSql(format),
+      );
+    }
+    map['title'] = Variable<String>(title);
+    if (!nullToAbsent || author != null) {
+      map['author'] = Variable<String>(author);
+    }
+    if (!nullToAbsent || summary != null) {
+      map['summary'] = Variable<String>(summary);
+    }
+    if (!nullToAbsent || isbn != null) {
+      map['isbn'] = Variable<String>(isbn);
+    }
+    if (!nullToAbsent || sourceUrl != null) {
+      map['source_url'] = Variable<String>(sourceUrl);
+    }
+    if (!nullToAbsent || coverUrl != null) {
+      map['cover_url'] = Variable<String>(coverUrl);
+    }
+    if (!nullToAbsent || coverPath != null) {
+      map['cover_path'] = Variable<String>(coverPath);
+    }
+    if (!nullToAbsent || fandomId != null) {
+      map['fandom_id'] = Variable<int>(fandomId);
+    }
+    {
+      map['status'] = Variable<String>(
+        $WorksTable.$converterstatus.toSql(status),
+      );
+    }
+    map['is_complete'] = Variable<bool>(isComplete);
+    if (!nullToAbsent || chapterCount != null) {
+      map['chapter_count'] = Variable<int>(chapterCount);
+    }
+    if (!nullToAbsent || currentChapter != null) {
+      map['current_chapter'] = Variable<int>(currentChapter);
+    }
+    if (!nullToAbsent || readOffset != null) {
+      map['read_offset'] = Variable<double>(readOffset);
+    }
+    if (!nullToAbsent || wordCount != null) {
+      map['word_count'] = Variable<int>(wordCount);
+    }
+    if (!nullToAbsent || pageCount != null) {
+      map['page_count'] = Variable<int>(pageCount);
+    }
+    if (!nullToAbsent || rating != null) {
+      map['rating'] = Variable<int>(rating);
+    }
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    map['added_at'] = Variable<DateTime>(addedAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || checkedAt != null) {
+      map['checked_at'] = Variable<DateTime>(checkedAt);
+    }
+    if (!nullToAbsent || lastChapterAt != null) {
+      map['last_chapter_at'] = Variable<DateTime>(lastChapterAt);
+    }
+    map['new_chapters'] = Variable<int>(newChapters);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    if (!nullToAbsent || finishedAt != null) {
+      map['finished_at'] = Variable<DateTime>(finishedAt);
+    }
+    if (!nullToAbsent || currentPage != null) {
+      map['current_page'] = Variable<int>(currentPage);
+    }
+    if (!nullToAbsent || anilistId != null) {
+      map['anilist_id'] = Variable<int>(anilistId);
+    }
+    map['owns_physical_copy'] = Variable<bool>(ownsPhysicalCopy);
+    if (!nullToAbsent || seriesId != null) {
+      map['series_id'] = Variable<int>(seriesId);
+    }
+    if (!nullToAbsent || seriesIndex != null) {
+      map['series_index'] = Variable<double>(seriesIndex);
+    }
+    map['words_estimated'] = Variable<bool>(wordsEstimated);
+    map['pages_estimated'] = Variable<bool>(pagesEstimated);
+    if (!nullToAbsent || characterCount != null) {
+      map['character_count'] = Variable<int>(characterCount);
+    }
+    return map;
+  }
+
+  WorksCompanion toCompanion(bool nullToAbsent) {
+    return WorksCompanion(
+      id: Value(id),
+      type: Value(type),
+      format: Value(format),
+      title: Value(title),
+      author: author == null && nullToAbsent
+          ? const Value.absent()
+          : Value(author),
+      summary: summary == null && nullToAbsent
+          ? const Value.absent()
+          : Value(summary),
+      isbn: isbn == null && nullToAbsent ? const Value.absent() : Value(isbn),
+      sourceUrl: sourceUrl == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceUrl),
+      coverUrl: coverUrl == null && nullToAbsent
+          ? const Value.absent()
+          : Value(coverUrl),
+      coverPath: coverPath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(coverPath),
+      fandomId: fandomId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fandomId),
+      status: Value(status),
+      isComplete: Value(isComplete),
+      chapterCount: chapterCount == null && nullToAbsent
+          ? const Value.absent()
+          : Value(chapterCount),
+      currentChapter: currentChapter == null && nullToAbsent
+          ? const Value.absent()
+          : Value(currentChapter),
+      readOffset: readOffset == null && nullToAbsent
+          ? const Value.absent()
+          : Value(readOffset),
+      wordCount: wordCount == null && nullToAbsent
+          ? const Value.absent()
+          : Value(wordCount),
+      pageCount: pageCount == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pageCount),
+      rating: rating == null && nullToAbsent
+          ? const Value.absent()
+          : Value(rating),
+      notes: notes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(notes),
+      addedAt: Value(addedAt),
+      updatedAt: Value(updatedAt),
+      checkedAt: checkedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(checkedAt),
+      lastChapterAt: lastChapterAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastChapterAt),
+      newChapters: Value(newChapters),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+      finishedAt: finishedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(finishedAt),
+      currentPage: currentPage == null && nullToAbsent
+          ? const Value.absent()
+          : Value(currentPage),
+      anilistId: anilistId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(anilistId),
+      ownsPhysicalCopy: Value(ownsPhysicalCopy),
+      seriesId: seriesId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(seriesId),
+      seriesIndex: seriesIndex == null && nullToAbsent
+          ? const Value.absent()
+          : Value(seriesIndex),
+      wordsEstimated: Value(wordsEstimated),
+      pagesEstimated: Value(pagesEstimated),
+      characterCount: characterCount == null && nullToAbsent
+          ? const Value.absent()
+          : Value(characterCount),
+    );
+  }
+
+  factory Work.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Work(
+      id: serializer.fromJson<int>(json['id']),
+      type: $WorksTable.$convertertype.fromJson(
+        serializer.fromJson<String>(json['type']),
+      ),
+      format: $WorksTable.$converterformat.fromJson(
+        serializer.fromJson<String>(json['format']),
+      ),
+      title: serializer.fromJson<String>(json['title']),
+      author: serializer.fromJson<String?>(json['author']),
+      summary: serializer.fromJson<String?>(json['summary']),
+      isbn: serializer.fromJson<String?>(json['isbn']),
+      sourceUrl: serializer.fromJson<String?>(json['sourceUrl']),
+      coverUrl: serializer.fromJson<String?>(json['coverUrl']),
+      coverPath: serializer.fromJson<String?>(json['coverPath']),
+      fandomId: serializer.fromJson<int?>(json['fandomId']),
+      status: $WorksTable.$converterstatus.fromJson(
+        serializer.fromJson<String>(json['status']),
+      ),
+      isComplete: serializer.fromJson<bool>(json['isComplete']),
+      chapterCount: serializer.fromJson<int?>(json['chapterCount']),
+      currentChapter: serializer.fromJson<int?>(json['currentChapter']),
+      readOffset: serializer.fromJson<double?>(json['readOffset']),
+      wordCount: serializer.fromJson<int?>(json['wordCount']),
+      pageCount: serializer.fromJson<int?>(json['pageCount']),
+      rating: serializer.fromJson<int?>(json['rating']),
+      notes: serializer.fromJson<String?>(json['notes']),
+      addedAt: serializer.fromJson<DateTime>(json['addedAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      checkedAt: serializer.fromJson<DateTime?>(json['checkedAt']),
+      lastChapterAt: serializer.fromJson<DateTime?>(json['lastChapterAt']),
+      newChapters: serializer.fromJson<int>(json['newChapters']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      finishedAt: serializer.fromJson<DateTime?>(json['finishedAt']),
+      currentPage: serializer.fromJson<int?>(json['currentPage']),
+      anilistId: serializer.fromJson<int?>(json['anilistId']),
+      ownsPhysicalCopy: serializer.fromJson<bool>(json['ownsPhysicalCopy']),
+      seriesId: serializer.fromJson<int?>(json['seriesId']),
+      seriesIndex: serializer.fromJson<double?>(json['seriesIndex']),
+      wordsEstimated: serializer.fromJson<bool>(json['wordsEstimated']),
+      pagesEstimated: serializer.fromJson<bool>(json['pagesEstimated']),
+      characterCount: serializer.fromJson<int?>(json['characterCount']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'type': serializer.toJson<String>(
+        $WorksTable.$convertertype.toJson(type),
+      ),
+      'format': serializer.toJson<String>(
+        $WorksTable.$converterformat.toJson(format),
+      ),
+      'title': serializer.toJson<String>(title),
+      'author': serializer.toJson<String?>(author),
+      'summary': serializer.toJson<String?>(summary),
+      'isbn': serializer.toJson<String?>(isbn),
+      'sourceUrl': serializer.toJson<String?>(sourceUrl),
+      'coverUrl': serializer.toJson<String?>(coverUrl),
+      'coverPath': serializer.toJson<String?>(coverPath),
+      'fandomId': serializer.toJson<int?>(fandomId),
+      'status': serializer.toJson<String>(
+        $WorksTable.$converterstatus.toJson(status),
+      ),
+      'isComplete': serializer.toJson<bool>(isComplete),
+      'chapterCount': serializer.toJson<int?>(chapterCount),
+      'currentChapter': serializer.toJson<int?>(currentChapter),
+      'readOffset': serializer.toJson<double?>(readOffset),
+      'wordCount': serializer.toJson<int?>(wordCount),
+      'pageCount': serializer.toJson<int?>(pageCount),
+      'rating': serializer.toJson<int?>(rating),
+      'notes': serializer.toJson<String?>(notes),
+      'addedAt': serializer.toJson<DateTime>(addedAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'checkedAt': serializer.toJson<DateTime?>(checkedAt),
+      'lastChapterAt': serializer.toJson<DateTime?>(lastChapterAt),
+      'newChapters': serializer.toJson<int>(newChapters),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'finishedAt': serializer.toJson<DateTime?>(finishedAt),
+      'currentPage': serializer.toJson<int?>(currentPage),
+      'anilistId': serializer.toJson<int?>(anilistId),
+      'ownsPhysicalCopy': serializer.toJson<bool>(ownsPhysicalCopy),
+      'seriesId': serializer.toJson<int?>(seriesId),
+      'seriesIndex': serializer.toJson<double?>(seriesIndex),
+      'wordsEstimated': serializer.toJson<bool>(wordsEstimated),
+      'pagesEstimated': serializer.toJson<bool>(pagesEstimated),
+      'characterCount': serializer.toJson<int?>(characterCount),
+    };
+  }
+
+  Work copyWith({
+    int? id,
+    WorkType? type,
+    WorkFormat? format,
+    String? title,
+    Value<String?> author = const Value.absent(),
+    Value<String?> summary = const Value.absent(),
+    Value<String?> isbn = const Value.absent(),
+    Value<String?> sourceUrl = const Value.absent(),
+    Value<String?> coverUrl = const Value.absent(),
+    Value<String?> coverPath = const Value.absent(),
+    Value<int?> fandomId = const Value.absent(),
+    ReadingStatus? status,
+    bool? isComplete,
+    Value<int?> chapterCount = const Value.absent(),
+    Value<int?> currentChapter = const Value.absent(),
+    Value<double?> readOffset = const Value.absent(),
+    Value<int?> wordCount = const Value.absent(),
+    Value<int?> pageCount = const Value.absent(),
+    Value<int?> rating = const Value.absent(),
+    Value<String?> notes = const Value.absent(),
+    DateTime? addedAt,
+    DateTime? updatedAt,
+    Value<DateTime?> checkedAt = const Value.absent(),
+    Value<DateTime?> lastChapterAt = const Value.absent(),
+    int? newChapters,
+    Value<DateTime?> deletedAt = const Value.absent(),
+    Value<DateTime?> finishedAt = const Value.absent(),
+    Value<int?> currentPage = const Value.absent(),
+    Value<int?> anilistId = const Value.absent(),
+    bool? ownsPhysicalCopy,
+    Value<int?> seriesId = const Value.absent(),
+    Value<double?> seriesIndex = const Value.absent(),
+    bool? wordsEstimated,
+    bool? pagesEstimated,
+    Value<int?> characterCount = const Value.absent(),
+  }) => Work(
+    id: id ?? this.id,
+    type: type ?? this.type,
+    format: format ?? this.format,
+    title: title ?? this.title,
+    author: author.present ? author.value : this.author,
+    summary: summary.present ? summary.value : this.summary,
+    isbn: isbn.present ? isbn.value : this.isbn,
+    sourceUrl: sourceUrl.present ? sourceUrl.value : this.sourceUrl,
+    coverUrl: coverUrl.present ? coverUrl.value : this.coverUrl,
+    coverPath: coverPath.present ? coverPath.value : this.coverPath,
+    fandomId: fandomId.present ? fandomId.value : this.fandomId,
+    status: status ?? this.status,
+    isComplete: isComplete ?? this.isComplete,
+    chapterCount: chapterCount.present ? chapterCount.value : this.chapterCount,
+    currentChapter: currentChapter.present
+        ? currentChapter.value
+        : this.currentChapter,
+    readOffset: readOffset.present ? readOffset.value : this.readOffset,
+    wordCount: wordCount.present ? wordCount.value : this.wordCount,
+    pageCount: pageCount.present ? pageCount.value : this.pageCount,
+    rating: rating.present ? rating.value : this.rating,
+    notes: notes.present ? notes.value : this.notes,
+    addedAt: addedAt ?? this.addedAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    checkedAt: checkedAt.present ? checkedAt.value : this.checkedAt,
+    lastChapterAt: lastChapterAt.present
+        ? lastChapterAt.value
+        : this.lastChapterAt,
+    newChapters: newChapters ?? this.newChapters,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    finishedAt: finishedAt.present ? finishedAt.value : this.finishedAt,
+    currentPage: currentPage.present ? currentPage.value : this.currentPage,
+    anilistId: anilistId.present ? anilistId.value : this.anilistId,
+    ownsPhysicalCopy: ownsPhysicalCopy ?? this.ownsPhysicalCopy,
+    seriesId: seriesId.present ? seriesId.value : this.seriesId,
+    seriesIndex: seriesIndex.present ? seriesIndex.value : this.seriesIndex,
+    wordsEstimated: wordsEstimated ?? this.wordsEstimated,
+    pagesEstimated: pagesEstimated ?? this.pagesEstimated,
+    characterCount: characterCount.present
+        ? characterCount.value
+        : this.characterCount,
+  );
+  Work copyWithCompanion(WorksCompanion data) {
+    return Work(
+      id: data.id.present ? data.id.value : this.id,
+      type: data.type.present ? data.type.value : this.type,
+      format: data.format.present ? data.format.value : this.format,
+      title: data.title.present ? data.title.value : this.title,
+      author: data.author.present ? data.author.value : this.author,
+      summary: data.summary.present ? data.summary.value : this.summary,
+      isbn: data.isbn.present ? data.isbn.value : this.isbn,
+      sourceUrl: data.sourceUrl.present ? data.sourceUrl.value : this.sourceUrl,
+      coverUrl: data.coverUrl.present ? data.coverUrl.value : this.coverUrl,
+      coverPath: data.coverPath.present ? data.coverPath.value : this.coverPath,
+      fandomId: data.fandomId.present ? data.fandomId.value : this.fandomId,
+      status: data.status.present ? data.status.value : this.status,
+      isComplete: data.isComplete.present
+          ? data.isComplete.value
+          : this.isComplete,
+      chapterCount: data.chapterCount.present
+          ? data.chapterCount.value
+          : this.chapterCount,
+      currentChapter: data.currentChapter.present
+          ? data.currentChapter.value
+          : this.currentChapter,
+      readOffset: data.readOffset.present
+          ? data.readOffset.value
+          : this.readOffset,
+      wordCount: data.wordCount.present ? data.wordCount.value : this.wordCount,
+      pageCount: data.pageCount.present ? data.pageCount.value : this.pageCount,
+      rating: data.rating.present ? data.rating.value : this.rating,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      addedAt: data.addedAt.present ? data.addedAt.value : this.addedAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      checkedAt: data.checkedAt.present ? data.checkedAt.value : this.checkedAt,
+      lastChapterAt: data.lastChapterAt.present
+          ? data.lastChapterAt.value
+          : this.lastChapterAt,
+      newChapters: data.newChapters.present
+          ? data.newChapters.value
+          : this.newChapters,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      finishedAt: data.finishedAt.present
+          ? data.finishedAt.value
+          : this.finishedAt,
+      currentPage: data.currentPage.present
+          ? data.currentPage.value
+          : this.currentPage,
+      anilistId: data.anilistId.present ? data.anilistId.value : this.anilistId,
+      ownsPhysicalCopy: data.ownsPhysicalCopy.present
+          ? data.ownsPhysicalCopy.value
+          : this.ownsPhysicalCopy,
+      seriesId: data.seriesId.present ? data.seriesId.value : this.seriesId,
+      seriesIndex: data.seriesIndex.present
+          ? data.seriesIndex.value
+          : this.seriesIndex,
+      wordsEstimated: data.wordsEstimated.present
+          ? data.wordsEstimated.value
+          : this.wordsEstimated,
+      pagesEstimated: data.pagesEstimated.present
+          ? data.pagesEstimated.value
+          : this.pagesEstimated,
+      characterCount: data.characterCount.present
+          ? data.characterCount.value
+          : this.characterCount,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Work(')
+          ..write('id: $id, ')
+          ..write('type: $type, ')
+          ..write('format: $format, ')
+          ..write('title: $title, ')
+          ..write('author: $author, ')
+          ..write('summary: $summary, ')
+          ..write('isbn: $isbn, ')
+          ..write('sourceUrl: $sourceUrl, ')
+          ..write('coverUrl: $coverUrl, ')
+          ..write('coverPath: $coverPath, ')
+          ..write('fandomId: $fandomId, ')
+          ..write('status: $status, ')
+          ..write('isComplete: $isComplete, ')
+          ..write('chapterCount: $chapterCount, ')
+          ..write('currentChapter: $currentChapter, ')
+          ..write('readOffset: $readOffset, ')
+          ..write('wordCount: $wordCount, ')
+          ..write('pageCount: $pageCount, ')
+          ..write('rating: $rating, ')
+          ..write('notes: $notes, ')
+          ..write('addedAt: $addedAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('checkedAt: $checkedAt, ')
+          ..write('lastChapterAt: $lastChapterAt, ')
+          ..write('newChapters: $newChapters, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('finishedAt: $finishedAt, ')
+          ..write('currentPage: $currentPage, ')
+          ..write('anilistId: $anilistId, ')
+          ..write('ownsPhysicalCopy: $ownsPhysicalCopy, ')
+          ..write('seriesId: $seriesId, ')
+          ..write('seriesIndex: $seriesIndex, ')
+          ..write('wordsEstimated: $wordsEstimated, ')
+          ..write('pagesEstimated: $pagesEstimated, ')
+          ..write('characterCount: $characterCount')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+    id,
+    type,
+    format,
+    title,
+    author,
+    summary,
+    isbn,
+    sourceUrl,
+    coverUrl,
+    coverPath,
+    fandomId,
+    status,
+    isComplete,
+    chapterCount,
+    currentChapter,
+    readOffset,
+    wordCount,
+    pageCount,
+    rating,
+    notes,
+    addedAt,
+    updatedAt,
+    checkedAt,
+    lastChapterAt,
+    newChapters,
+    deletedAt,
+    finishedAt,
+    currentPage,
+    anilistId,
+    ownsPhysicalCopy,
+    seriesId,
+    seriesIndex,
+    wordsEstimated,
+    pagesEstimated,
+    characterCount,
+  ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Work &&
+          other.id == this.id &&
+          other.type == this.type &&
+          other.format == this.format &&
+          other.title == this.title &&
+          other.author == this.author &&
+          other.summary == this.summary &&
+          other.isbn == this.isbn &&
+          other.sourceUrl == this.sourceUrl &&
+          other.coverUrl == this.coverUrl &&
+          other.coverPath == this.coverPath &&
+          other.fandomId == this.fandomId &&
+          other.status == this.status &&
+          other.isComplete == this.isComplete &&
+          other.chapterCount == this.chapterCount &&
+          other.currentChapter == this.currentChapter &&
+          other.readOffset == this.readOffset &&
+          other.wordCount == this.wordCount &&
+          other.pageCount == this.pageCount &&
+          other.rating == this.rating &&
+          other.notes == this.notes &&
+          other.addedAt == this.addedAt &&
+          other.updatedAt == this.updatedAt &&
+          other.checkedAt == this.checkedAt &&
+          other.lastChapterAt == this.lastChapterAt &&
+          other.newChapters == this.newChapters &&
+          other.deletedAt == this.deletedAt &&
+          other.finishedAt == this.finishedAt &&
+          other.currentPage == this.currentPage &&
+          other.anilistId == this.anilistId &&
+          other.ownsPhysicalCopy == this.ownsPhysicalCopy &&
+          other.seriesId == this.seriesId &&
+          other.seriesIndex == this.seriesIndex &&
+          other.wordsEstimated == this.wordsEstimated &&
+          other.pagesEstimated == this.pagesEstimated &&
+          other.characterCount == this.characterCount);
+}
+
+class WorksCompanion extends UpdateCompanion<Work> {
+  final Value<int> id;
+  final Value<WorkType> type;
+  final Value<WorkFormat> format;
+  final Value<String> title;
+  final Value<String?> author;
+  final Value<String?> summary;
+  final Value<String?> isbn;
+  final Value<String?> sourceUrl;
+  final Value<String?> coverUrl;
+  final Value<String?> coverPath;
+  final Value<int?> fandomId;
+  final Value<ReadingStatus> status;
+  final Value<bool> isComplete;
+  final Value<int?> chapterCount;
+  final Value<int?> currentChapter;
+  final Value<double?> readOffset;
+  final Value<int?> wordCount;
+  final Value<int?> pageCount;
+  final Value<int?> rating;
+  final Value<String?> notes;
+  final Value<DateTime> addedAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> checkedAt;
+  final Value<DateTime?> lastChapterAt;
+  final Value<int> newChapters;
+  final Value<DateTime?> deletedAt;
+  final Value<DateTime?> finishedAt;
+  final Value<int?> currentPage;
+  final Value<int?> anilistId;
+  final Value<bool> ownsPhysicalCopy;
+  final Value<int?> seriesId;
+  final Value<double?> seriesIndex;
+  final Value<bool> wordsEstimated;
+  final Value<bool> pagesEstimated;
+  final Value<int?> characterCount;
+  const WorksCompanion({
+    this.id = const Value.absent(),
+    this.type = const Value.absent(),
+    this.format = const Value.absent(),
+    this.title = const Value.absent(),
+    this.author = const Value.absent(),
+    this.summary = const Value.absent(),
+    this.isbn = const Value.absent(),
+    this.sourceUrl = const Value.absent(),
+    this.coverUrl = const Value.absent(),
+    this.coverPath = const Value.absent(),
+    this.fandomId = const Value.absent(),
+    this.status = const Value.absent(),
+    this.isComplete = const Value.absent(),
+    this.chapterCount = const Value.absent(),
+    this.currentChapter = const Value.absent(),
+    this.readOffset = const Value.absent(),
+    this.wordCount = const Value.absent(),
+    this.pageCount = const Value.absent(),
+    this.rating = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.addedAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.checkedAt = const Value.absent(),
+    this.lastChapterAt = const Value.absent(),
+    this.newChapters = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.finishedAt = const Value.absent(),
+    this.currentPage = const Value.absent(),
+    this.anilistId = const Value.absent(),
+    this.ownsPhysicalCopy = const Value.absent(),
+    this.seriesId = const Value.absent(),
+    this.seriesIndex = const Value.absent(),
+    this.wordsEstimated = const Value.absent(),
+    this.pagesEstimated = const Value.absent(),
+    this.characterCount = const Value.absent(),
+  });
+  WorksCompanion.insert({
+    this.id = const Value.absent(),
+    required WorkType type,
+    required WorkFormat format,
+    required String title,
+    this.author = const Value.absent(),
+    this.summary = const Value.absent(),
+    this.isbn = const Value.absent(),
+    this.sourceUrl = const Value.absent(),
+    this.coverUrl = const Value.absent(),
+    this.coverPath = const Value.absent(),
+    this.fandomId = const Value.absent(),
+    this.status = const Value.absent(),
+    this.isComplete = const Value.absent(),
+    this.chapterCount = const Value.absent(),
+    this.currentChapter = const Value.absent(),
+    this.readOffset = const Value.absent(),
+    this.wordCount = const Value.absent(),
+    this.pageCount = const Value.absent(),
+    this.rating = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.addedAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.checkedAt = const Value.absent(),
+    this.lastChapterAt = const Value.absent(),
+    this.newChapters = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.finishedAt = const Value.absent(),
+    this.currentPage = const Value.absent(),
+    this.anilistId = const Value.absent(),
+    this.ownsPhysicalCopy = const Value.absent(),
+    this.seriesId = const Value.absent(),
+    this.seriesIndex = const Value.absent(),
+    this.wordsEstimated = const Value.absent(),
+    this.pagesEstimated = const Value.absent(),
+    this.characterCount = const Value.absent(),
+  }) : type = Value(type),
+       format = Value(format),
+       title = Value(title);
+  static Insertable<Work> custom({
+    Expression<int>? id,
+    Expression<String>? type,
+    Expression<String>? format,
+    Expression<String>? title,
+    Expression<String>? author,
+    Expression<String>? summary,
+    Expression<String>? isbn,
+    Expression<String>? sourceUrl,
+    Expression<String>? coverUrl,
+    Expression<String>? coverPath,
+    Expression<int>? fandomId,
+    Expression<String>? status,
+    Expression<bool>? isComplete,
+    Expression<int>? chapterCount,
+    Expression<int>? currentChapter,
+    Expression<double>? readOffset,
+    Expression<int>? wordCount,
+    Expression<int>? pageCount,
+    Expression<int>? rating,
+    Expression<String>? notes,
+    Expression<DateTime>? addedAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? checkedAt,
+    Expression<DateTime>? lastChapterAt,
+    Expression<int>? newChapters,
+    Expression<DateTime>? deletedAt,
+    Expression<DateTime>? finishedAt,
+    Expression<int>? currentPage,
+    Expression<int>? anilistId,
+    Expression<bool>? ownsPhysicalCopy,
+    Expression<int>? seriesId,
+    Expression<double>? seriesIndex,
+    Expression<bool>? wordsEstimated,
+    Expression<bool>? pagesEstimated,
+    Expression<int>? characterCount,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (type != null) 'type': type,
+      if (format != null) 'format': format,
+      if (title != null) 'title': title,
+      if (author != null) 'author': author,
+      if (summary != null) 'summary': summary,
+      if (isbn != null) 'isbn': isbn,
+      if (sourceUrl != null) 'source_url': sourceUrl,
+      if (coverUrl != null) 'cover_url': coverUrl,
+      if (coverPath != null) 'cover_path': coverPath,
+      if (fandomId != null) 'fandom_id': fandomId,
+      if (status != null) 'status': status,
+      if (isComplete != null) 'is_complete': isComplete,
+      if (chapterCount != null) 'chapter_count': chapterCount,
+      if (currentChapter != null) 'current_chapter': currentChapter,
+      if (readOffset != null) 'read_offset': readOffset,
+      if (wordCount != null) 'word_count': wordCount,
+      if (pageCount != null) 'page_count': pageCount,
+      if (rating != null) 'rating': rating,
+      if (notes != null) 'notes': notes,
+      if (addedAt != null) 'added_at': addedAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (checkedAt != null) 'checked_at': checkedAt,
+      if (lastChapterAt != null) 'last_chapter_at': lastChapterAt,
+      if (newChapters != null) 'new_chapters': newChapters,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (finishedAt != null) 'finished_at': finishedAt,
+      if (currentPage != null) 'current_page': currentPage,
+      if (anilistId != null) 'anilist_id': anilistId,
+      if (ownsPhysicalCopy != null) 'owns_physical_copy': ownsPhysicalCopy,
+      if (seriesId != null) 'series_id': seriesId,
+      if (seriesIndex != null) 'series_index': seriesIndex,
+      if (wordsEstimated != null) 'words_estimated': wordsEstimated,
+      if (pagesEstimated != null) 'pages_estimated': pagesEstimated,
+      if (characterCount != null) 'character_count': characterCount,
+    });
+  }
+
+  WorksCompanion copyWith({
+    Value<int>? id,
+    Value<WorkType>? type,
+    Value<WorkFormat>? format,
+    Value<String>? title,
+    Value<String?>? author,
+    Value<String?>? summary,
+    Value<String?>? isbn,
+    Value<String?>? sourceUrl,
+    Value<String?>? coverUrl,
+    Value<String?>? coverPath,
+    Value<int?>? fandomId,
+    Value<ReadingStatus>? status,
+    Value<bool>? isComplete,
+    Value<int?>? chapterCount,
+    Value<int?>? currentChapter,
+    Value<double?>? readOffset,
+    Value<int?>? wordCount,
+    Value<int?>? pageCount,
+    Value<int?>? rating,
+    Value<String?>? notes,
+    Value<DateTime>? addedAt,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? checkedAt,
+    Value<DateTime?>? lastChapterAt,
+    Value<int>? newChapters,
+    Value<DateTime?>? deletedAt,
+    Value<DateTime?>? finishedAt,
+    Value<int?>? currentPage,
+    Value<int?>? anilistId,
+    Value<bool>? ownsPhysicalCopy,
+    Value<int?>? seriesId,
+    Value<double?>? seriesIndex,
+    Value<bool>? wordsEstimated,
+    Value<bool>? pagesEstimated,
+    Value<int?>? characterCount,
+  }) {
+    return WorksCompanion(
+      id: id ?? this.id,
+      type: type ?? this.type,
+      format: format ?? this.format,
+      title: title ?? this.title,
+      author: author ?? this.author,
+      summary: summary ?? this.summary,
+      isbn: isbn ?? this.isbn,
+      sourceUrl: sourceUrl ?? this.sourceUrl,
+      coverUrl: coverUrl ?? this.coverUrl,
+      coverPath: coverPath ?? this.coverPath,
+      fandomId: fandomId ?? this.fandomId,
+      status: status ?? this.status,
+      isComplete: isComplete ?? this.isComplete,
+      chapterCount: chapterCount ?? this.chapterCount,
+      currentChapter: currentChapter ?? this.currentChapter,
+      readOffset: readOffset ?? this.readOffset,
+      wordCount: wordCount ?? this.wordCount,
+      pageCount: pageCount ?? this.pageCount,
+      rating: rating ?? this.rating,
+      notes: notes ?? this.notes,
+      addedAt: addedAt ?? this.addedAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      checkedAt: checkedAt ?? this.checkedAt,
+      lastChapterAt: lastChapterAt ?? this.lastChapterAt,
+      newChapters: newChapters ?? this.newChapters,
+      deletedAt: deletedAt ?? this.deletedAt,
+      finishedAt: finishedAt ?? this.finishedAt,
+      currentPage: currentPage ?? this.currentPage,
+      anilistId: anilistId ?? this.anilistId,
+      ownsPhysicalCopy: ownsPhysicalCopy ?? this.ownsPhysicalCopy,
+      seriesId: seriesId ?? this.seriesId,
+      seriesIndex: seriesIndex ?? this.seriesIndex,
+      wordsEstimated: wordsEstimated ?? this.wordsEstimated,
+      pagesEstimated: pagesEstimated ?? this.pagesEstimated,
+      characterCount: characterCount ?? this.characterCount,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(
+        $WorksTable.$convertertype.toSql(type.value),
+      );
+    }
+    if (format.present) {
+      map['format'] = Variable<String>(
+        $WorksTable.$converterformat.toSql(format.value),
+      );
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (author.present) {
+      map['author'] = Variable<String>(author.value);
+    }
+    if (summary.present) {
+      map['summary'] = Variable<String>(summary.value);
+    }
+    if (isbn.present) {
+      map['isbn'] = Variable<String>(isbn.value);
+    }
+    if (sourceUrl.present) {
+      map['source_url'] = Variable<String>(sourceUrl.value);
+    }
+    if (coverUrl.present) {
+      map['cover_url'] = Variable<String>(coverUrl.value);
+    }
+    if (coverPath.present) {
+      map['cover_path'] = Variable<String>(coverPath.value);
+    }
+    if (fandomId.present) {
+      map['fandom_id'] = Variable<int>(fandomId.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(
+        $WorksTable.$converterstatus.toSql(status.value),
+      );
+    }
+    if (isComplete.present) {
+      map['is_complete'] = Variable<bool>(isComplete.value);
+    }
+    if (chapterCount.present) {
+      map['chapter_count'] = Variable<int>(chapterCount.value);
+    }
+    if (currentChapter.present) {
+      map['current_chapter'] = Variable<int>(currentChapter.value);
+    }
+    if (readOffset.present) {
+      map['read_offset'] = Variable<double>(readOffset.value);
+    }
+    if (wordCount.present) {
+      map['word_count'] = Variable<int>(wordCount.value);
+    }
+    if (pageCount.present) {
+      map['page_count'] = Variable<int>(pageCount.value);
+    }
+    if (rating.present) {
+      map['rating'] = Variable<int>(rating.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (addedAt.present) {
+      map['added_at'] = Variable<DateTime>(addedAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (checkedAt.present) {
+      map['checked_at'] = Variable<DateTime>(checkedAt.value);
+    }
+    if (lastChapterAt.present) {
+      map['last_chapter_at'] = Variable<DateTime>(lastChapterAt.value);
+    }
+    if (newChapters.present) {
+      map['new_chapters'] = Variable<int>(newChapters.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (finishedAt.present) {
+      map['finished_at'] = Variable<DateTime>(finishedAt.value);
+    }
+    if (currentPage.present) {
+      map['current_page'] = Variable<int>(currentPage.value);
+    }
+    if (anilistId.present) {
+      map['anilist_id'] = Variable<int>(anilistId.value);
+    }
+    if (ownsPhysicalCopy.present) {
+      map['owns_physical_copy'] = Variable<bool>(ownsPhysicalCopy.value);
+    }
+    if (seriesId.present) {
+      map['series_id'] = Variable<int>(seriesId.value);
+    }
+    if (seriesIndex.present) {
+      map['series_index'] = Variable<double>(seriesIndex.value);
+    }
+    if (wordsEstimated.present) {
+      map['words_estimated'] = Variable<bool>(wordsEstimated.value);
+    }
+    if (pagesEstimated.present) {
+      map['pages_estimated'] = Variable<bool>(pagesEstimated.value);
+    }
+    if (characterCount.present) {
+      map['character_count'] = Variable<int>(characterCount.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WorksCompanion(')
+          ..write('id: $id, ')
+          ..write('type: $type, ')
+          ..write('format: $format, ')
+          ..write('title: $title, ')
+          ..write('author: $author, ')
+          ..write('summary: $summary, ')
+          ..write('isbn: $isbn, ')
+          ..write('sourceUrl: $sourceUrl, ')
+          ..write('coverUrl: $coverUrl, ')
+          ..write('coverPath: $coverPath, ')
+          ..write('fandomId: $fandomId, ')
+          ..write('status: $status, ')
+          ..write('isComplete: $isComplete, ')
+          ..write('chapterCount: $chapterCount, ')
+          ..write('currentChapter: $currentChapter, ')
+          ..write('readOffset: $readOffset, ')
+          ..write('wordCount: $wordCount, ')
+          ..write('pageCount: $pageCount, ')
+          ..write('rating: $rating, ')
+          ..write('notes: $notes, ')
+          ..write('addedAt: $addedAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('checkedAt: $checkedAt, ')
+          ..write('lastChapterAt: $lastChapterAt, ')
+          ..write('newChapters: $newChapters, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('finishedAt: $finishedAt, ')
+          ..write('currentPage: $currentPage, ')
+          ..write('anilistId: $anilistId, ')
+          ..write('ownsPhysicalCopy: $ownsPhysicalCopy, ')
+          ..write('seriesId: $seriesId, ')
+          ..write('seriesIndex: $seriesIndex, ')
+          ..write('wordsEstimated: $wordsEstimated, ')
+          ..write('pagesEstimated: $pagesEstimated, ')
+          ..write('characterCount: $characterCount')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -250,6 +2540,596 @@ class TagsCompanion extends UpdateCompanion<Tag> {
   }
 }
 
+class $TagSuggestionsTable extends TagSuggestions
+    with TableInfo<$TagSuggestionsTable, TagSuggestion> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TagSuggestionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _workIdMeta = const VerificationMeta('workId');
+  @override
+  late final GeneratedColumn<int> workId = GeneratedColumn<int>(
+    'work_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES works (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _tagIdMeta = const VerificationMeta('tagId');
+  @override
+  late final GeneratedColumn<int> tagId = GeneratedColumn<int>(
+    'tag_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES tags (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _reasonMeta = const VerificationMeta('reason');
+  @override
+  late final GeneratedColumn<String> reason = GeneratedColumn<String>(
+    'reason',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sourceMeta = const VerificationMeta('source');
+  @override
+  late final GeneratedColumn<String> source = GeneratedColumn<String>(
+    'source',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('keywords'),
+  );
+  static const VerificationMeta _dismissedMeta = const VerificationMeta(
+    'dismissed',
+  );
+  @override
+  late final GeneratedColumn<bool> dismissed = GeneratedColumn<bool>(
+    'dismissed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("dismissed" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    workId,
+    tagId,
+    reason,
+    source,
+    dismissed,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'tag_suggestions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TagSuggestion> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('work_id')) {
+      context.handle(
+        _workIdMeta,
+        workId.isAcceptableOrUnknown(data['work_id']!, _workIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_workIdMeta);
+    }
+    if (data.containsKey('tag_id')) {
+      context.handle(
+        _tagIdMeta,
+        tagId.isAcceptableOrUnknown(data['tag_id']!, _tagIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_tagIdMeta);
+    }
+    if (data.containsKey('reason')) {
+      context.handle(
+        _reasonMeta,
+        reason.isAcceptableOrUnknown(data['reason']!, _reasonMeta),
+      );
+    }
+    if (data.containsKey('source')) {
+      context.handle(
+        _sourceMeta,
+        source.isAcceptableOrUnknown(data['source']!, _sourceMeta),
+      );
+    }
+    if (data.containsKey('dismissed')) {
+      context.handle(
+        _dismissedMeta,
+        dismissed.isAcceptableOrUnknown(data['dismissed']!, _dismissedMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {workId, tagId};
+  @override
+  TagSuggestion map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TagSuggestion(
+      workId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}work_id'],
+      )!,
+      tagId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}tag_id'],
+      )!,
+      reason: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reason'],
+      ),
+      source: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source'],
+      )!,
+      dismissed: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}dismissed'],
+      )!,
+    );
+  }
+
+  @override
+  $TagSuggestionsTable createAlias(String alias) {
+    return $TagSuggestionsTable(attachedDatabase, alias);
+  }
+}
+
+class TagSuggestion extends DataClass implements Insertable<TagSuggestion> {
+  final int workId;
+  final int tagId;
+
+  /// e.g. "The summary mentions “reborn”".
+  final String? reason;
+
+  /// "keywords", or the AI provider's name.
+  final String source;
+  final bool dismissed;
+  const TagSuggestion({
+    required this.workId,
+    required this.tagId,
+    this.reason,
+    required this.source,
+    required this.dismissed,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['work_id'] = Variable<int>(workId);
+    map['tag_id'] = Variable<int>(tagId);
+    if (!nullToAbsent || reason != null) {
+      map['reason'] = Variable<String>(reason);
+    }
+    map['source'] = Variable<String>(source);
+    map['dismissed'] = Variable<bool>(dismissed);
+    return map;
+  }
+
+  TagSuggestionsCompanion toCompanion(bool nullToAbsent) {
+    return TagSuggestionsCompanion(
+      workId: Value(workId),
+      tagId: Value(tagId),
+      reason: reason == null && nullToAbsent
+          ? const Value.absent()
+          : Value(reason),
+      source: Value(source),
+      dismissed: Value(dismissed),
+    );
+  }
+
+  factory TagSuggestion.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TagSuggestion(
+      workId: serializer.fromJson<int>(json['workId']),
+      tagId: serializer.fromJson<int>(json['tagId']),
+      reason: serializer.fromJson<String?>(json['reason']),
+      source: serializer.fromJson<String>(json['source']),
+      dismissed: serializer.fromJson<bool>(json['dismissed']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'workId': serializer.toJson<int>(workId),
+      'tagId': serializer.toJson<int>(tagId),
+      'reason': serializer.toJson<String?>(reason),
+      'source': serializer.toJson<String>(source),
+      'dismissed': serializer.toJson<bool>(dismissed),
+    };
+  }
+
+  TagSuggestion copyWith({
+    int? workId,
+    int? tagId,
+    Value<String?> reason = const Value.absent(),
+    String? source,
+    bool? dismissed,
+  }) => TagSuggestion(
+    workId: workId ?? this.workId,
+    tagId: tagId ?? this.tagId,
+    reason: reason.present ? reason.value : this.reason,
+    source: source ?? this.source,
+    dismissed: dismissed ?? this.dismissed,
+  );
+  TagSuggestion copyWithCompanion(TagSuggestionsCompanion data) {
+    return TagSuggestion(
+      workId: data.workId.present ? data.workId.value : this.workId,
+      tagId: data.tagId.present ? data.tagId.value : this.tagId,
+      reason: data.reason.present ? data.reason.value : this.reason,
+      source: data.source.present ? data.source.value : this.source,
+      dismissed: data.dismissed.present ? data.dismissed.value : this.dismissed,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TagSuggestion(')
+          ..write('workId: $workId, ')
+          ..write('tagId: $tagId, ')
+          ..write('reason: $reason, ')
+          ..write('source: $source, ')
+          ..write('dismissed: $dismissed')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(workId, tagId, reason, source, dismissed);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TagSuggestion &&
+          other.workId == this.workId &&
+          other.tagId == this.tagId &&
+          other.reason == this.reason &&
+          other.source == this.source &&
+          other.dismissed == this.dismissed);
+}
+
+class TagSuggestionsCompanion extends UpdateCompanion<TagSuggestion> {
+  final Value<int> workId;
+  final Value<int> tagId;
+  final Value<String?> reason;
+  final Value<String> source;
+  final Value<bool> dismissed;
+  final Value<int> rowid;
+  const TagSuggestionsCompanion({
+    this.workId = const Value.absent(),
+    this.tagId = const Value.absent(),
+    this.reason = const Value.absent(),
+    this.source = const Value.absent(),
+    this.dismissed = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TagSuggestionsCompanion.insert({
+    required int workId,
+    required int tagId,
+    this.reason = const Value.absent(),
+    this.source = const Value.absent(),
+    this.dismissed = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : workId = Value(workId),
+       tagId = Value(tagId);
+  static Insertable<TagSuggestion> custom({
+    Expression<int>? workId,
+    Expression<int>? tagId,
+    Expression<String>? reason,
+    Expression<String>? source,
+    Expression<bool>? dismissed,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (workId != null) 'work_id': workId,
+      if (tagId != null) 'tag_id': tagId,
+      if (reason != null) 'reason': reason,
+      if (source != null) 'source': source,
+      if (dismissed != null) 'dismissed': dismissed,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TagSuggestionsCompanion copyWith({
+    Value<int>? workId,
+    Value<int>? tagId,
+    Value<String?>? reason,
+    Value<String>? source,
+    Value<bool>? dismissed,
+    Value<int>? rowid,
+  }) {
+    return TagSuggestionsCompanion(
+      workId: workId ?? this.workId,
+      tagId: tagId ?? this.tagId,
+      reason: reason ?? this.reason,
+      source: source ?? this.source,
+      dismissed: dismissed ?? this.dismissed,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (workId.present) {
+      map['work_id'] = Variable<int>(workId.value);
+    }
+    if (tagId.present) {
+      map['tag_id'] = Variable<int>(tagId.value);
+    }
+    if (reason.present) {
+      map['reason'] = Variable<String>(reason.value);
+    }
+    if (source.present) {
+      map['source'] = Variable<String>(source.value);
+    }
+    if (dismissed.present) {
+      map['dismissed'] = Variable<bool>(dismissed.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TagSuggestionsCompanion(')
+          ..write('workId: $workId, ')
+          ..write('tagId: $tagId, ')
+          ..write('reason: $reason, ')
+          ..write('source: $source, ')
+          ..write('dismissed: $dismissed, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $FandomAliasesTable extends FandomAliases
+    with TableInfo<$FandomAliasesTable, FandomAliase> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FandomAliasesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _aliasKeyMeta = const VerificationMeta(
+    'aliasKey',
+  );
+  @override
+  late final GeneratedColumn<String> aliasKey = GeneratedColumn<String>(
+    'alias_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fandomIdMeta = const VerificationMeta(
+    'fandomId',
+  );
+  @override
+  late final GeneratedColumn<int> fandomId = GeneratedColumn<int>(
+    'fandom_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES fandoms (id) ON DELETE CASCADE',
+    ),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [aliasKey, fandomId];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'fandom_aliases';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<FandomAliase> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('alias_key')) {
+      context.handle(
+        _aliasKeyMeta,
+        aliasKey.isAcceptableOrUnknown(data['alias_key']!, _aliasKeyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_aliasKeyMeta);
+    }
+    if (data.containsKey('fandom_id')) {
+      context.handle(
+        _fandomIdMeta,
+        fandomId.isAcceptableOrUnknown(data['fandom_id']!, _fandomIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_fandomIdMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {aliasKey};
+  @override
+  FandomAliase map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FandomAliase(
+      aliasKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}alias_key'],
+      )!,
+      fandomId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}fandom_id'],
+      )!,
+    );
+  }
+
+  @override
+  $FandomAliasesTable createAlias(String alias) {
+    return $FandomAliasesTable(attachedDatabase, alias);
+  }
+}
+
+class FandomAliase extends DataClass implements Insertable<FandomAliase> {
+  /// [fandomKey] of the other name.
+  final String aliasKey;
+  final int fandomId;
+  const FandomAliase({required this.aliasKey, required this.fandomId});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['alias_key'] = Variable<String>(aliasKey);
+    map['fandom_id'] = Variable<int>(fandomId);
+    return map;
+  }
+
+  FandomAliasesCompanion toCompanion(bool nullToAbsent) {
+    return FandomAliasesCompanion(
+      aliasKey: Value(aliasKey),
+      fandomId: Value(fandomId),
+    );
+  }
+
+  factory FandomAliase.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FandomAliase(
+      aliasKey: serializer.fromJson<String>(json['aliasKey']),
+      fandomId: serializer.fromJson<int>(json['fandomId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'aliasKey': serializer.toJson<String>(aliasKey),
+      'fandomId': serializer.toJson<int>(fandomId),
+    };
+  }
+
+  FandomAliase copyWith({String? aliasKey, int? fandomId}) => FandomAliase(
+    aliasKey: aliasKey ?? this.aliasKey,
+    fandomId: fandomId ?? this.fandomId,
+  );
+  FandomAliase copyWithCompanion(FandomAliasesCompanion data) {
+    return FandomAliase(
+      aliasKey: data.aliasKey.present ? data.aliasKey.value : this.aliasKey,
+      fandomId: data.fandomId.present ? data.fandomId.value : this.fandomId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FandomAliase(')
+          ..write('aliasKey: $aliasKey, ')
+          ..write('fandomId: $fandomId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(aliasKey, fandomId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is FandomAliase &&
+          other.aliasKey == this.aliasKey &&
+          other.fandomId == this.fandomId);
+}
+
+class FandomAliasesCompanion extends UpdateCompanion<FandomAliase> {
+  final Value<String> aliasKey;
+  final Value<int> fandomId;
+  final Value<int> rowid;
+  const FandomAliasesCompanion({
+    this.aliasKey = const Value.absent(),
+    this.fandomId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  FandomAliasesCompanion.insert({
+    required String aliasKey,
+    required int fandomId,
+    this.rowid = const Value.absent(),
+  }) : aliasKey = Value(aliasKey),
+       fandomId = Value(fandomId);
+  static Insertable<FandomAliase> custom({
+    Expression<String>? aliasKey,
+    Expression<int>? fandomId,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (aliasKey != null) 'alias_key': aliasKey,
+      if (fandomId != null) 'fandom_id': fandomId,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  FandomAliasesCompanion copyWith({
+    Value<String>? aliasKey,
+    Value<int>? fandomId,
+    Value<int>? rowid,
+  }) {
+    return FandomAliasesCompanion(
+      aliasKey: aliasKey ?? this.aliasKey,
+      fandomId: fandomId ?? this.fandomId,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (aliasKey.present) {
+      map['alias_key'] = Variable<String>(aliasKey.value);
+    }
+    if (fandomId.present) {
+      map['fandom_id'] = Variable<int>(fandomId.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FandomAliasesCompanion(')
+          ..write('aliasKey: $aliasKey, ')
+          ..write('fandomId: $fandomId, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $TagSynonymsTable extends TagSynonyms
     with TableInfo<$TagSynonymsTable, TagSynonym> {
   @override
@@ -459,193 +3339,6 @@ class TagSynonymsCompanion extends UpdateCompanion<TagSynonym> {
           ..write('synonym: $synonym, ')
           ..write('tagId: $tagId, ')
           ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class $FandomsTable extends Fandoms with TableInfo<$FandomsTable, Fandom> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $FandomsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-    'id',
-    aliasedName,
-    false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
-  );
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
-  @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-    'name',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
-  );
-  @override
-  List<GeneratedColumn> get $columns => [id, name];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'fandoms';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<Fandom> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('name')) {
-      context.handle(
-        _nameMeta,
-        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_nameMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  Fandom map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Fandom(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}id'],
-      )!,
-      name: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}name'],
-      )!,
-    );
-  }
-
-  @override
-  $FandomsTable createAlias(String alias) {
-    return $FandomsTable(attachedDatabase, alias);
-  }
-}
-
-class Fandom extends DataClass implements Insertable<Fandom> {
-  final int id;
-  final String name;
-  const Fandom({required this.id, required this.name});
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['name'] = Variable<String>(name);
-    return map;
-  }
-
-  FandomsCompanion toCompanion(bool nullToAbsent) {
-    return FandomsCompanion(id: Value(id), name: Value(name));
-  }
-
-  factory Fandom.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Fandom(
-      id: serializer.fromJson<int>(json['id']),
-      name: serializer.fromJson<String>(json['name']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
-      'name': serializer.toJson<String>(name),
-    };
-  }
-
-  Fandom copyWith({int? id, String? name}) =>
-      Fandom(id: id ?? this.id, name: name ?? this.name);
-  Fandom copyWithCompanion(FandomsCompanion data) {
-    return Fandom(
-      id: data.id.present ? data.id.value : this.id,
-      name: data.name.present ? data.name.value : this.name,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('Fandom(')
-          ..write('id: $id, ')
-          ..write('name: $name')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(id, name);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is Fandom && other.id == this.id && other.name == this.name);
-}
-
-class FandomsCompanion extends UpdateCompanion<Fandom> {
-  final Value<int> id;
-  final Value<String> name;
-  const FandomsCompanion({
-    this.id = const Value.absent(),
-    this.name = const Value.absent(),
-  });
-  FandomsCompanion.insert({
-    this.id = const Value.absent(),
-    required String name,
-  }) : name = Value(name);
-  static Insertable<Fandom> custom({
-    Expression<int>? id,
-    Expression<String>? name,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (name != null) 'name': name,
-    });
-  }
-
-  FandomsCompanion copyWith({Value<int>? id, Value<String>? name}) {
-    return FandomsCompanion(id: id ?? this.id, name: name ?? this.name);
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
-    if (name.present) {
-      map['name'] = Variable<String>(name.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('FandomsCompanion(')
-          ..write('id: $id, ')
-          ..write('name: $name')
           ..write(')'))
         .toString();
   }
@@ -1175,2058 +3868,6 @@ class CharacterAliasesCompanion extends UpdateCompanion<CharacterAliase> {
           ..write('characterId: $characterId, ')
           ..write('alias: $alias, ')
           ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class $SeriesTable extends Series with TableInfo<$SeriesTable, SeriesItem> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $SeriesTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-    'id',
-    aliasedName,
-    false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
-  );
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
-  @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-    'name',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
-  );
-  @override
-  List<GeneratedColumn> get $columns => [id, name];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'series';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<SeriesItem> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('name')) {
-      context.handle(
-        _nameMeta,
-        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_nameMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  SeriesItem map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return SeriesItem(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}id'],
-      )!,
-      name: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}name'],
-      )!,
-    );
-  }
-
-  @override
-  $SeriesTable createAlias(String alias) {
-    return $SeriesTable(attachedDatabase, alias);
-  }
-}
-
-class SeriesItem extends DataClass implements Insertable<SeriesItem> {
-  final int id;
-  final String name;
-  const SeriesItem({required this.id, required this.name});
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['name'] = Variable<String>(name);
-    return map;
-  }
-
-  SeriesCompanion toCompanion(bool nullToAbsent) {
-    return SeriesCompanion(id: Value(id), name: Value(name));
-  }
-
-  factory SeriesItem.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return SeriesItem(
-      id: serializer.fromJson<int>(json['id']),
-      name: serializer.fromJson<String>(json['name']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
-      'name': serializer.toJson<String>(name),
-    };
-  }
-
-  SeriesItem copyWith({int? id, String? name}) =>
-      SeriesItem(id: id ?? this.id, name: name ?? this.name);
-  SeriesItem copyWithCompanion(SeriesCompanion data) {
-    return SeriesItem(
-      id: data.id.present ? data.id.value : this.id,
-      name: data.name.present ? data.name.value : this.name,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('SeriesItem(')
-          ..write('id: $id, ')
-          ..write('name: $name')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(id, name);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is SeriesItem && other.id == this.id && other.name == this.name);
-}
-
-class SeriesCompanion extends UpdateCompanion<SeriesItem> {
-  final Value<int> id;
-  final Value<String> name;
-  const SeriesCompanion({
-    this.id = const Value.absent(),
-    this.name = const Value.absent(),
-  });
-  SeriesCompanion.insert({this.id = const Value.absent(), required String name})
-    : name = Value(name);
-  static Insertable<SeriesItem> custom({
-    Expression<int>? id,
-    Expression<String>? name,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (name != null) 'name': name,
-    });
-  }
-
-  SeriesCompanion copyWith({Value<int>? id, Value<String>? name}) {
-    return SeriesCompanion(id: id ?? this.id, name: name ?? this.name);
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
-    if (name.present) {
-      map['name'] = Variable<String>(name.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('SeriesCompanion(')
-          ..write('id: $id, ')
-          ..write('name: $name')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $WorksTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-    'id',
-    aliasedName,
-    false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
-  );
-  @override
-  late final GeneratedColumnWithTypeConverter<WorkType, String> type =
-      GeneratedColumn<String>(
-        'type',
-        aliasedName,
-        false,
-        type: DriftSqlType.string,
-        requiredDuringInsert: true,
-      ).withConverter<WorkType>($WorksTable.$convertertype);
-  @override
-  late final GeneratedColumnWithTypeConverter<WorkFormat, String> format =
-      GeneratedColumn<String>(
-        'format',
-        aliasedName,
-        false,
-        type: DriftSqlType.string,
-        requiredDuringInsert: true,
-      ).withConverter<WorkFormat>($WorksTable.$converterformat);
-  static const VerificationMeta _titleMeta = const VerificationMeta('title');
-  @override
-  late final GeneratedColumn<String> title = GeneratedColumn<String>(
-    'title',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _authorMeta = const VerificationMeta('author');
-  @override
-  late final GeneratedColumn<String> author = GeneratedColumn<String>(
-    'author',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _summaryMeta = const VerificationMeta(
-    'summary',
-  );
-  @override
-  late final GeneratedColumn<String> summary = GeneratedColumn<String>(
-    'summary',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _isbnMeta = const VerificationMeta('isbn');
-  @override
-  late final GeneratedColumn<String> isbn = GeneratedColumn<String>(
-    'isbn',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _sourceUrlMeta = const VerificationMeta(
-    'sourceUrl',
-  );
-  @override
-  late final GeneratedColumn<String> sourceUrl = GeneratedColumn<String>(
-    'source_url',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _coverUrlMeta = const VerificationMeta(
-    'coverUrl',
-  );
-  @override
-  late final GeneratedColumn<String> coverUrl = GeneratedColumn<String>(
-    'cover_url',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _coverPathMeta = const VerificationMeta(
-    'coverPath',
-  );
-  @override
-  late final GeneratedColumn<String> coverPath = GeneratedColumn<String>(
-    'cover_path',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _fandomIdMeta = const VerificationMeta(
-    'fandomId',
-  );
-  @override
-  late final GeneratedColumn<int> fandomId = GeneratedColumn<int>(
-    'fandom_id',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES fandoms (id) ON DELETE SET NULL',
-    ),
-  );
-  @override
-  late final GeneratedColumnWithTypeConverter<ReadingStatus, String> status =
-      GeneratedColumn<String>(
-        'status',
-        aliasedName,
-        false,
-        type: DriftSqlType.string,
-        requiredDuringInsert: false,
-        defaultValue: Constant(ReadingStatus.planned.name),
-      ).withConverter<ReadingStatus>($WorksTable.$converterstatus);
-  static const VerificationMeta _isCompleteMeta = const VerificationMeta(
-    'isComplete',
-  );
-  @override
-  late final GeneratedColumn<bool> isComplete = GeneratedColumn<bool>(
-    'is_complete',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("is_complete" IN (0, 1))',
-    ),
-    defaultValue: const Constant(false),
-  );
-  static const VerificationMeta _chapterCountMeta = const VerificationMeta(
-    'chapterCount',
-  );
-  @override
-  late final GeneratedColumn<int> chapterCount = GeneratedColumn<int>(
-    'chapter_count',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _currentChapterMeta = const VerificationMeta(
-    'currentChapter',
-  );
-  @override
-  late final GeneratedColumn<int> currentChapter = GeneratedColumn<int>(
-    'current_chapter',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _readOffsetMeta = const VerificationMeta(
-    'readOffset',
-  );
-  @override
-  late final GeneratedColumn<double> readOffset = GeneratedColumn<double>(
-    'read_offset',
-    aliasedName,
-    true,
-    type: DriftSqlType.double,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _wordCountMeta = const VerificationMeta(
-    'wordCount',
-  );
-  @override
-  late final GeneratedColumn<int> wordCount = GeneratedColumn<int>(
-    'word_count',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _pageCountMeta = const VerificationMeta(
-    'pageCount',
-  );
-  @override
-  late final GeneratedColumn<int> pageCount = GeneratedColumn<int>(
-    'page_count',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _ratingMeta = const VerificationMeta('rating');
-  @override
-  late final GeneratedColumn<int> rating = GeneratedColumn<int>(
-    'rating',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
-  @override
-  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
-    'notes',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _addedAtMeta = const VerificationMeta(
-    'addedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> addedAt = GeneratedColumn<DateTime>(
-    'added_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
-  );
-  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
-    'updatedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
-    'updated_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
-  );
-  static const VerificationMeta _checkedAtMeta = const VerificationMeta(
-    'checkedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> checkedAt = GeneratedColumn<DateTime>(
-    'checked_at',
-    aliasedName,
-    true,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _lastChapterAtMeta = const VerificationMeta(
-    'lastChapterAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> lastChapterAt =
-      GeneratedColumn<DateTime>(
-        'last_chapter_at',
-        aliasedName,
-        true,
-        type: DriftSqlType.dateTime,
-        requiredDuringInsert: false,
-      );
-  static const VerificationMeta _newChaptersMeta = const VerificationMeta(
-    'newChapters',
-  );
-  @override
-  late final GeneratedColumn<int> newChapters = GeneratedColumn<int>(
-    'new_chapters',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(0),
-  );
-  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
-    'deletedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
-    'deleted_at',
-    aliasedName,
-    true,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _finishedAtMeta = const VerificationMeta(
-    'finishedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> finishedAt = GeneratedColumn<DateTime>(
-    'finished_at',
-    aliasedName,
-    true,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _currentPageMeta = const VerificationMeta(
-    'currentPage',
-  );
-  @override
-  late final GeneratedColumn<int> currentPage = GeneratedColumn<int>(
-    'current_page',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _ownsPhysicalCopyMeta = const VerificationMeta(
-    'ownsPhysicalCopy',
-  );
-  @override
-  late final GeneratedColumn<bool> ownsPhysicalCopy = GeneratedColumn<bool>(
-    'owns_physical_copy',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("owns_physical_copy" IN (0, 1))',
-    ),
-    defaultValue: const Constant(false),
-  );
-  static const VerificationMeta _seriesIdMeta = const VerificationMeta(
-    'seriesId',
-  );
-  @override
-  late final GeneratedColumn<int> seriesId = GeneratedColumn<int>(
-    'series_id',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES series (id) ON DELETE SET NULL',
-    ),
-  );
-  static const VerificationMeta _seriesIndexMeta = const VerificationMeta(
-    'seriesIndex',
-  );
-  @override
-  late final GeneratedColumn<double> seriesIndex = GeneratedColumn<double>(
-    'series_index',
-    aliasedName,
-    true,
-    type: DriftSqlType.double,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _wordsEstimatedMeta = const VerificationMeta(
-    'wordsEstimated',
-  );
-  @override
-  late final GeneratedColumn<bool> wordsEstimated = GeneratedColumn<bool>(
-    'words_estimated',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("words_estimated" IN (0, 1))',
-    ),
-    defaultValue: const Constant(false),
-  );
-  static const VerificationMeta _pagesEstimatedMeta = const VerificationMeta(
-    'pagesEstimated',
-  );
-  @override
-  late final GeneratedColumn<bool> pagesEstimated = GeneratedColumn<bool>(
-    'pages_estimated',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("pages_estimated" IN (0, 1))',
-    ),
-    defaultValue: const Constant(false),
-  );
-  static const VerificationMeta _characterCountMeta = const VerificationMeta(
-    'characterCount',
-  );
-  @override
-  late final GeneratedColumn<int> characterCount = GeneratedColumn<int>(
-    'character_count',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    type,
-    format,
-    title,
-    author,
-    summary,
-    isbn,
-    sourceUrl,
-    coverUrl,
-    coverPath,
-    fandomId,
-    status,
-    isComplete,
-    chapterCount,
-    currentChapter,
-    readOffset,
-    wordCount,
-    pageCount,
-    rating,
-    notes,
-    addedAt,
-    updatedAt,
-    checkedAt,
-    lastChapterAt,
-    newChapters,
-    deletedAt,
-    finishedAt,
-    currentPage,
-    ownsPhysicalCopy,
-    seriesId,
-    seriesIndex,
-    wordsEstimated,
-    pagesEstimated,
-    characterCount,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'works';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<Work> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('title')) {
-      context.handle(
-        _titleMeta,
-        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_titleMeta);
-    }
-    if (data.containsKey('author')) {
-      context.handle(
-        _authorMeta,
-        author.isAcceptableOrUnknown(data['author']!, _authorMeta),
-      );
-    }
-    if (data.containsKey('summary')) {
-      context.handle(
-        _summaryMeta,
-        summary.isAcceptableOrUnknown(data['summary']!, _summaryMeta),
-      );
-    }
-    if (data.containsKey('isbn')) {
-      context.handle(
-        _isbnMeta,
-        isbn.isAcceptableOrUnknown(data['isbn']!, _isbnMeta),
-      );
-    }
-    if (data.containsKey('source_url')) {
-      context.handle(
-        _sourceUrlMeta,
-        sourceUrl.isAcceptableOrUnknown(data['source_url']!, _sourceUrlMeta),
-      );
-    }
-    if (data.containsKey('cover_url')) {
-      context.handle(
-        _coverUrlMeta,
-        coverUrl.isAcceptableOrUnknown(data['cover_url']!, _coverUrlMeta),
-      );
-    }
-    if (data.containsKey('cover_path')) {
-      context.handle(
-        _coverPathMeta,
-        coverPath.isAcceptableOrUnknown(data['cover_path']!, _coverPathMeta),
-      );
-    }
-    if (data.containsKey('fandom_id')) {
-      context.handle(
-        _fandomIdMeta,
-        fandomId.isAcceptableOrUnknown(data['fandom_id']!, _fandomIdMeta),
-      );
-    }
-    if (data.containsKey('is_complete')) {
-      context.handle(
-        _isCompleteMeta,
-        isComplete.isAcceptableOrUnknown(data['is_complete']!, _isCompleteMeta),
-      );
-    }
-    if (data.containsKey('chapter_count')) {
-      context.handle(
-        _chapterCountMeta,
-        chapterCount.isAcceptableOrUnknown(
-          data['chapter_count']!,
-          _chapterCountMeta,
-        ),
-      );
-    }
-    if (data.containsKey('current_chapter')) {
-      context.handle(
-        _currentChapterMeta,
-        currentChapter.isAcceptableOrUnknown(
-          data['current_chapter']!,
-          _currentChapterMeta,
-        ),
-      );
-    }
-    if (data.containsKey('read_offset')) {
-      context.handle(
-        _readOffsetMeta,
-        readOffset.isAcceptableOrUnknown(data['read_offset']!, _readOffsetMeta),
-      );
-    }
-    if (data.containsKey('word_count')) {
-      context.handle(
-        _wordCountMeta,
-        wordCount.isAcceptableOrUnknown(data['word_count']!, _wordCountMeta),
-      );
-    }
-    if (data.containsKey('page_count')) {
-      context.handle(
-        _pageCountMeta,
-        pageCount.isAcceptableOrUnknown(data['page_count']!, _pageCountMeta),
-      );
-    }
-    if (data.containsKey('rating')) {
-      context.handle(
-        _ratingMeta,
-        rating.isAcceptableOrUnknown(data['rating']!, _ratingMeta),
-      );
-    }
-    if (data.containsKey('notes')) {
-      context.handle(
-        _notesMeta,
-        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
-      );
-    }
-    if (data.containsKey('added_at')) {
-      context.handle(
-        _addedAtMeta,
-        addedAt.isAcceptableOrUnknown(data['added_at']!, _addedAtMeta),
-      );
-    }
-    if (data.containsKey('updated_at')) {
-      context.handle(
-        _updatedAtMeta,
-        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
-      );
-    }
-    if (data.containsKey('checked_at')) {
-      context.handle(
-        _checkedAtMeta,
-        checkedAt.isAcceptableOrUnknown(data['checked_at']!, _checkedAtMeta),
-      );
-    }
-    if (data.containsKey('last_chapter_at')) {
-      context.handle(
-        _lastChapterAtMeta,
-        lastChapterAt.isAcceptableOrUnknown(
-          data['last_chapter_at']!,
-          _lastChapterAtMeta,
-        ),
-      );
-    }
-    if (data.containsKey('new_chapters')) {
-      context.handle(
-        _newChaptersMeta,
-        newChapters.isAcceptableOrUnknown(
-          data['new_chapters']!,
-          _newChaptersMeta,
-        ),
-      );
-    }
-    if (data.containsKey('deleted_at')) {
-      context.handle(
-        _deletedAtMeta,
-        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
-      );
-    }
-    if (data.containsKey('finished_at')) {
-      context.handle(
-        _finishedAtMeta,
-        finishedAt.isAcceptableOrUnknown(data['finished_at']!, _finishedAtMeta),
-      );
-    }
-    if (data.containsKey('current_page')) {
-      context.handle(
-        _currentPageMeta,
-        currentPage.isAcceptableOrUnknown(
-          data['current_page']!,
-          _currentPageMeta,
-        ),
-      );
-    }
-    if (data.containsKey('owns_physical_copy')) {
-      context.handle(
-        _ownsPhysicalCopyMeta,
-        ownsPhysicalCopy.isAcceptableOrUnknown(
-          data['owns_physical_copy']!,
-          _ownsPhysicalCopyMeta,
-        ),
-      );
-    }
-    if (data.containsKey('series_id')) {
-      context.handle(
-        _seriesIdMeta,
-        seriesId.isAcceptableOrUnknown(data['series_id']!, _seriesIdMeta),
-      );
-    }
-    if (data.containsKey('series_index')) {
-      context.handle(
-        _seriesIndexMeta,
-        seriesIndex.isAcceptableOrUnknown(
-          data['series_index']!,
-          _seriesIndexMeta,
-        ),
-      );
-    }
-    if (data.containsKey('words_estimated')) {
-      context.handle(
-        _wordsEstimatedMeta,
-        wordsEstimated.isAcceptableOrUnknown(
-          data['words_estimated']!,
-          _wordsEstimatedMeta,
-        ),
-      );
-    }
-    if (data.containsKey('pages_estimated')) {
-      context.handle(
-        _pagesEstimatedMeta,
-        pagesEstimated.isAcceptableOrUnknown(
-          data['pages_estimated']!,
-          _pagesEstimatedMeta,
-        ),
-      );
-    }
-    if (data.containsKey('character_count')) {
-      context.handle(
-        _characterCountMeta,
-        characterCount.isAcceptableOrUnknown(
-          data['character_count']!,
-          _characterCountMeta,
-        ),
-      );
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  Work map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Work(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}id'],
-      )!,
-      type: $WorksTable.$convertertype.fromSql(
-        attachedDatabase.typeMapping.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}type'],
-        )!,
-      ),
-      format: $WorksTable.$converterformat.fromSql(
-        attachedDatabase.typeMapping.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}format'],
-        )!,
-      ),
-      title: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}title'],
-      )!,
-      author: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}author'],
-      ),
-      summary: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}summary'],
-      ),
-      isbn: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}isbn'],
-      ),
-      sourceUrl: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}source_url'],
-      ),
-      coverUrl: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}cover_url'],
-      ),
-      coverPath: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}cover_path'],
-      ),
-      fandomId: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}fandom_id'],
-      ),
-      status: $WorksTable.$converterstatus.fromSql(
-        attachedDatabase.typeMapping.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}status'],
-        )!,
-      ),
-      isComplete: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}is_complete'],
-      )!,
-      chapterCount: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}chapter_count'],
-      ),
-      currentChapter: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}current_chapter'],
-      ),
-      readOffset: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}read_offset'],
-      ),
-      wordCount: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}word_count'],
-      ),
-      pageCount: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}page_count'],
-      ),
-      rating: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}rating'],
-      ),
-      notes: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}notes'],
-      ),
-      addedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}added_at'],
-      )!,
-      updatedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}updated_at'],
-      )!,
-      checkedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}checked_at'],
-      ),
-      lastChapterAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}last_chapter_at'],
-      ),
-      newChapters: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}new_chapters'],
-      )!,
-      deletedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}deleted_at'],
-      ),
-      finishedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}finished_at'],
-      ),
-      currentPage: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}current_page'],
-      ),
-      ownsPhysicalCopy: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}owns_physical_copy'],
-      )!,
-      seriesId: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}series_id'],
-      ),
-      seriesIndex: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}series_index'],
-      ),
-      wordsEstimated: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}words_estimated'],
-      )!,
-      pagesEstimated: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}pages_estimated'],
-      )!,
-      characterCount: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}character_count'],
-      ),
-    );
-  }
-
-  @override
-  $WorksTable createAlias(String alias) {
-    return $WorksTable(attachedDatabase, alias);
-  }
-
-  static JsonTypeConverter2<WorkType, String, String> $convertertype =
-      const EnumNameConverter<WorkType>(WorkType.values);
-  static JsonTypeConverter2<WorkFormat, String, String> $converterformat =
-      const EnumNameConverter<WorkFormat>(WorkFormat.values);
-  static JsonTypeConverter2<ReadingStatus, String, String> $converterstatus =
-      const EnumNameConverter<ReadingStatus>(ReadingStatus.values);
-}
-
-class Work extends DataClass implements Insertable<Work> {
-  final int id;
-  final WorkType type;
-  final WorkFormat format;
-  final String title;
-  final String? author;
-  final String? summary;
-  final String? isbn;
-  final String? sourceUrl;
-  final String? coverUrl;
-
-  /// Downloaded cover, so it shows offline.
-  final String? coverPath;
-  final int? fandomId;
-  final ReadingStatus status;
-
-  /// Whether the author has finished the story.
-  final bool isComplete;
-  final int? chapterCount;
-  final int? currentChapter;
-
-  /// Scroll position within [currentChapter], from 0 (top) to 1 (end).
-  final double? readOffset;
-  final int? wordCount;
-  final int? pageCount;
-
-  /// 1 to 5 stars.
-  final int? rating;
-  final String? notes;
-  final DateTime addedAt;
-  final DateTime updatedAt;
-
-  /// When the site was last checked for new chapters.
-  final DateTime? checkedAt;
-
-  /// When the latest chapter came out: the site's date if it shows one,
-  /// otherwise when ReadTrack first saw it.
-  final DateTime? lastChapterAt;
-
-  /// Chapters found by update checks that the user hasn't looked at yet.
-  final int newChapters;
-
-  /// Set while the work is in the trash.
-  final DateTime? deletedAt;
-
-  /// When the status last became "finished" (kept by a trigger).
-  final DateTime? finishedAt;
-
-  /// Where the reader is in a paper book.
-  final int? currentPage;
-
-  /// The user also has the book on paper (for digital or online entries).
-  final bool ownsPhysicalCopy;
-  final int? seriesId;
-
-  /// Position in the series; may be fractional (2.5 for a side story).
-  final double? seriesIndex;
-
-  /// Whether [wordCount] / [pageCount] were worked out by the app because
-  /// the site didn't give them; such values are updated as more is known.
-  final bool wordsEstimated;
-  final bool pagesEstimated;
-
-  /// Size in characters (with spaces), for sites that give only that.
-  final int? characterCount;
-  const Work({
-    required this.id,
-    required this.type,
-    required this.format,
-    required this.title,
-    this.author,
-    this.summary,
-    this.isbn,
-    this.sourceUrl,
-    this.coverUrl,
-    this.coverPath,
-    this.fandomId,
-    required this.status,
-    required this.isComplete,
-    this.chapterCount,
-    this.currentChapter,
-    this.readOffset,
-    this.wordCount,
-    this.pageCount,
-    this.rating,
-    this.notes,
-    required this.addedAt,
-    required this.updatedAt,
-    this.checkedAt,
-    this.lastChapterAt,
-    required this.newChapters,
-    this.deletedAt,
-    this.finishedAt,
-    this.currentPage,
-    required this.ownsPhysicalCopy,
-    this.seriesId,
-    this.seriesIndex,
-    required this.wordsEstimated,
-    required this.pagesEstimated,
-    this.characterCount,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    {
-      map['type'] = Variable<String>($WorksTable.$convertertype.toSql(type));
-    }
-    {
-      map['format'] = Variable<String>(
-        $WorksTable.$converterformat.toSql(format),
-      );
-    }
-    map['title'] = Variable<String>(title);
-    if (!nullToAbsent || author != null) {
-      map['author'] = Variable<String>(author);
-    }
-    if (!nullToAbsent || summary != null) {
-      map['summary'] = Variable<String>(summary);
-    }
-    if (!nullToAbsent || isbn != null) {
-      map['isbn'] = Variable<String>(isbn);
-    }
-    if (!nullToAbsent || sourceUrl != null) {
-      map['source_url'] = Variable<String>(sourceUrl);
-    }
-    if (!nullToAbsent || coverUrl != null) {
-      map['cover_url'] = Variable<String>(coverUrl);
-    }
-    if (!nullToAbsent || coverPath != null) {
-      map['cover_path'] = Variable<String>(coverPath);
-    }
-    if (!nullToAbsent || fandomId != null) {
-      map['fandom_id'] = Variable<int>(fandomId);
-    }
-    {
-      map['status'] = Variable<String>(
-        $WorksTable.$converterstatus.toSql(status),
-      );
-    }
-    map['is_complete'] = Variable<bool>(isComplete);
-    if (!nullToAbsent || chapterCount != null) {
-      map['chapter_count'] = Variable<int>(chapterCount);
-    }
-    if (!nullToAbsent || currentChapter != null) {
-      map['current_chapter'] = Variable<int>(currentChapter);
-    }
-    if (!nullToAbsent || readOffset != null) {
-      map['read_offset'] = Variable<double>(readOffset);
-    }
-    if (!nullToAbsent || wordCount != null) {
-      map['word_count'] = Variable<int>(wordCount);
-    }
-    if (!nullToAbsent || pageCount != null) {
-      map['page_count'] = Variable<int>(pageCount);
-    }
-    if (!nullToAbsent || rating != null) {
-      map['rating'] = Variable<int>(rating);
-    }
-    if (!nullToAbsent || notes != null) {
-      map['notes'] = Variable<String>(notes);
-    }
-    map['added_at'] = Variable<DateTime>(addedAt);
-    map['updated_at'] = Variable<DateTime>(updatedAt);
-    if (!nullToAbsent || checkedAt != null) {
-      map['checked_at'] = Variable<DateTime>(checkedAt);
-    }
-    if (!nullToAbsent || lastChapterAt != null) {
-      map['last_chapter_at'] = Variable<DateTime>(lastChapterAt);
-    }
-    map['new_chapters'] = Variable<int>(newChapters);
-    if (!nullToAbsent || deletedAt != null) {
-      map['deleted_at'] = Variable<DateTime>(deletedAt);
-    }
-    if (!nullToAbsent || finishedAt != null) {
-      map['finished_at'] = Variable<DateTime>(finishedAt);
-    }
-    if (!nullToAbsent || currentPage != null) {
-      map['current_page'] = Variable<int>(currentPage);
-    }
-    map['owns_physical_copy'] = Variable<bool>(ownsPhysicalCopy);
-    if (!nullToAbsent || seriesId != null) {
-      map['series_id'] = Variable<int>(seriesId);
-    }
-    if (!nullToAbsent || seriesIndex != null) {
-      map['series_index'] = Variable<double>(seriesIndex);
-    }
-    map['words_estimated'] = Variable<bool>(wordsEstimated);
-    map['pages_estimated'] = Variable<bool>(pagesEstimated);
-    if (!nullToAbsent || characterCount != null) {
-      map['character_count'] = Variable<int>(characterCount);
-    }
-    return map;
-  }
-
-  WorksCompanion toCompanion(bool nullToAbsent) {
-    return WorksCompanion(
-      id: Value(id),
-      type: Value(type),
-      format: Value(format),
-      title: Value(title),
-      author: author == null && nullToAbsent
-          ? const Value.absent()
-          : Value(author),
-      summary: summary == null && nullToAbsent
-          ? const Value.absent()
-          : Value(summary),
-      isbn: isbn == null && nullToAbsent ? const Value.absent() : Value(isbn),
-      sourceUrl: sourceUrl == null && nullToAbsent
-          ? const Value.absent()
-          : Value(sourceUrl),
-      coverUrl: coverUrl == null && nullToAbsent
-          ? const Value.absent()
-          : Value(coverUrl),
-      coverPath: coverPath == null && nullToAbsent
-          ? const Value.absent()
-          : Value(coverPath),
-      fandomId: fandomId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(fandomId),
-      status: Value(status),
-      isComplete: Value(isComplete),
-      chapterCount: chapterCount == null && nullToAbsent
-          ? const Value.absent()
-          : Value(chapterCount),
-      currentChapter: currentChapter == null && nullToAbsent
-          ? const Value.absent()
-          : Value(currentChapter),
-      readOffset: readOffset == null && nullToAbsent
-          ? const Value.absent()
-          : Value(readOffset),
-      wordCount: wordCount == null && nullToAbsent
-          ? const Value.absent()
-          : Value(wordCount),
-      pageCount: pageCount == null && nullToAbsent
-          ? const Value.absent()
-          : Value(pageCount),
-      rating: rating == null && nullToAbsent
-          ? const Value.absent()
-          : Value(rating),
-      notes: notes == null && nullToAbsent
-          ? const Value.absent()
-          : Value(notes),
-      addedAt: Value(addedAt),
-      updatedAt: Value(updatedAt),
-      checkedAt: checkedAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(checkedAt),
-      lastChapterAt: lastChapterAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(lastChapterAt),
-      newChapters: Value(newChapters),
-      deletedAt: deletedAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(deletedAt),
-      finishedAt: finishedAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(finishedAt),
-      currentPage: currentPage == null && nullToAbsent
-          ? const Value.absent()
-          : Value(currentPage),
-      ownsPhysicalCopy: Value(ownsPhysicalCopy),
-      seriesId: seriesId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(seriesId),
-      seriesIndex: seriesIndex == null && nullToAbsent
-          ? const Value.absent()
-          : Value(seriesIndex),
-      wordsEstimated: Value(wordsEstimated),
-      pagesEstimated: Value(pagesEstimated),
-      characterCount: characterCount == null && nullToAbsent
-          ? const Value.absent()
-          : Value(characterCount),
-    );
-  }
-
-  factory Work.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Work(
-      id: serializer.fromJson<int>(json['id']),
-      type: $WorksTable.$convertertype.fromJson(
-        serializer.fromJson<String>(json['type']),
-      ),
-      format: $WorksTable.$converterformat.fromJson(
-        serializer.fromJson<String>(json['format']),
-      ),
-      title: serializer.fromJson<String>(json['title']),
-      author: serializer.fromJson<String?>(json['author']),
-      summary: serializer.fromJson<String?>(json['summary']),
-      isbn: serializer.fromJson<String?>(json['isbn']),
-      sourceUrl: serializer.fromJson<String?>(json['sourceUrl']),
-      coverUrl: serializer.fromJson<String?>(json['coverUrl']),
-      coverPath: serializer.fromJson<String?>(json['coverPath']),
-      fandomId: serializer.fromJson<int?>(json['fandomId']),
-      status: $WorksTable.$converterstatus.fromJson(
-        serializer.fromJson<String>(json['status']),
-      ),
-      isComplete: serializer.fromJson<bool>(json['isComplete']),
-      chapterCount: serializer.fromJson<int?>(json['chapterCount']),
-      currentChapter: serializer.fromJson<int?>(json['currentChapter']),
-      readOffset: serializer.fromJson<double?>(json['readOffset']),
-      wordCount: serializer.fromJson<int?>(json['wordCount']),
-      pageCount: serializer.fromJson<int?>(json['pageCount']),
-      rating: serializer.fromJson<int?>(json['rating']),
-      notes: serializer.fromJson<String?>(json['notes']),
-      addedAt: serializer.fromJson<DateTime>(json['addedAt']),
-      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      checkedAt: serializer.fromJson<DateTime?>(json['checkedAt']),
-      lastChapterAt: serializer.fromJson<DateTime?>(json['lastChapterAt']),
-      newChapters: serializer.fromJson<int>(json['newChapters']),
-      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
-      finishedAt: serializer.fromJson<DateTime?>(json['finishedAt']),
-      currentPage: serializer.fromJson<int?>(json['currentPage']),
-      ownsPhysicalCopy: serializer.fromJson<bool>(json['ownsPhysicalCopy']),
-      seriesId: serializer.fromJson<int?>(json['seriesId']),
-      seriesIndex: serializer.fromJson<double?>(json['seriesIndex']),
-      wordsEstimated: serializer.fromJson<bool>(json['wordsEstimated']),
-      pagesEstimated: serializer.fromJson<bool>(json['pagesEstimated']),
-      characterCount: serializer.fromJson<int?>(json['characterCount']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
-      'type': serializer.toJson<String>(
-        $WorksTable.$convertertype.toJson(type),
-      ),
-      'format': serializer.toJson<String>(
-        $WorksTable.$converterformat.toJson(format),
-      ),
-      'title': serializer.toJson<String>(title),
-      'author': serializer.toJson<String?>(author),
-      'summary': serializer.toJson<String?>(summary),
-      'isbn': serializer.toJson<String?>(isbn),
-      'sourceUrl': serializer.toJson<String?>(sourceUrl),
-      'coverUrl': serializer.toJson<String?>(coverUrl),
-      'coverPath': serializer.toJson<String?>(coverPath),
-      'fandomId': serializer.toJson<int?>(fandomId),
-      'status': serializer.toJson<String>(
-        $WorksTable.$converterstatus.toJson(status),
-      ),
-      'isComplete': serializer.toJson<bool>(isComplete),
-      'chapterCount': serializer.toJson<int?>(chapterCount),
-      'currentChapter': serializer.toJson<int?>(currentChapter),
-      'readOffset': serializer.toJson<double?>(readOffset),
-      'wordCount': serializer.toJson<int?>(wordCount),
-      'pageCount': serializer.toJson<int?>(pageCount),
-      'rating': serializer.toJson<int?>(rating),
-      'notes': serializer.toJson<String?>(notes),
-      'addedAt': serializer.toJson<DateTime>(addedAt),
-      'updatedAt': serializer.toJson<DateTime>(updatedAt),
-      'checkedAt': serializer.toJson<DateTime?>(checkedAt),
-      'lastChapterAt': serializer.toJson<DateTime?>(lastChapterAt),
-      'newChapters': serializer.toJson<int>(newChapters),
-      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
-      'finishedAt': serializer.toJson<DateTime?>(finishedAt),
-      'currentPage': serializer.toJson<int?>(currentPage),
-      'ownsPhysicalCopy': serializer.toJson<bool>(ownsPhysicalCopy),
-      'seriesId': serializer.toJson<int?>(seriesId),
-      'seriesIndex': serializer.toJson<double?>(seriesIndex),
-      'wordsEstimated': serializer.toJson<bool>(wordsEstimated),
-      'pagesEstimated': serializer.toJson<bool>(pagesEstimated),
-      'characterCount': serializer.toJson<int?>(characterCount),
-    };
-  }
-
-  Work copyWith({
-    int? id,
-    WorkType? type,
-    WorkFormat? format,
-    String? title,
-    Value<String?> author = const Value.absent(),
-    Value<String?> summary = const Value.absent(),
-    Value<String?> isbn = const Value.absent(),
-    Value<String?> sourceUrl = const Value.absent(),
-    Value<String?> coverUrl = const Value.absent(),
-    Value<String?> coverPath = const Value.absent(),
-    Value<int?> fandomId = const Value.absent(),
-    ReadingStatus? status,
-    bool? isComplete,
-    Value<int?> chapterCount = const Value.absent(),
-    Value<int?> currentChapter = const Value.absent(),
-    Value<double?> readOffset = const Value.absent(),
-    Value<int?> wordCount = const Value.absent(),
-    Value<int?> pageCount = const Value.absent(),
-    Value<int?> rating = const Value.absent(),
-    Value<String?> notes = const Value.absent(),
-    DateTime? addedAt,
-    DateTime? updatedAt,
-    Value<DateTime?> checkedAt = const Value.absent(),
-    Value<DateTime?> lastChapterAt = const Value.absent(),
-    int? newChapters,
-    Value<DateTime?> deletedAt = const Value.absent(),
-    Value<DateTime?> finishedAt = const Value.absent(),
-    Value<int?> currentPage = const Value.absent(),
-    bool? ownsPhysicalCopy,
-    Value<int?> seriesId = const Value.absent(),
-    Value<double?> seriesIndex = const Value.absent(),
-    bool? wordsEstimated,
-    bool? pagesEstimated,
-    Value<int?> characterCount = const Value.absent(),
-  }) => Work(
-    id: id ?? this.id,
-    type: type ?? this.type,
-    format: format ?? this.format,
-    title: title ?? this.title,
-    author: author.present ? author.value : this.author,
-    summary: summary.present ? summary.value : this.summary,
-    isbn: isbn.present ? isbn.value : this.isbn,
-    sourceUrl: sourceUrl.present ? sourceUrl.value : this.sourceUrl,
-    coverUrl: coverUrl.present ? coverUrl.value : this.coverUrl,
-    coverPath: coverPath.present ? coverPath.value : this.coverPath,
-    fandomId: fandomId.present ? fandomId.value : this.fandomId,
-    status: status ?? this.status,
-    isComplete: isComplete ?? this.isComplete,
-    chapterCount: chapterCount.present ? chapterCount.value : this.chapterCount,
-    currentChapter: currentChapter.present
-        ? currentChapter.value
-        : this.currentChapter,
-    readOffset: readOffset.present ? readOffset.value : this.readOffset,
-    wordCount: wordCount.present ? wordCount.value : this.wordCount,
-    pageCount: pageCount.present ? pageCount.value : this.pageCount,
-    rating: rating.present ? rating.value : this.rating,
-    notes: notes.present ? notes.value : this.notes,
-    addedAt: addedAt ?? this.addedAt,
-    updatedAt: updatedAt ?? this.updatedAt,
-    checkedAt: checkedAt.present ? checkedAt.value : this.checkedAt,
-    lastChapterAt: lastChapterAt.present
-        ? lastChapterAt.value
-        : this.lastChapterAt,
-    newChapters: newChapters ?? this.newChapters,
-    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
-    finishedAt: finishedAt.present ? finishedAt.value : this.finishedAt,
-    currentPage: currentPage.present ? currentPage.value : this.currentPage,
-    ownsPhysicalCopy: ownsPhysicalCopy ?? this.ownsPhysicalCopy,
-    seriesId: seriesId.present ? seriesId.value : this.seriesId,
-    seriesIndex: seriesIndex.present ? seriesIndex.value : this.seriesIndex,
-    wordsEstimated: wordsEstimated ?? this.wordsEstimated,
-    pagesEstimated: pagesEstimated ?? this.pagesEstimated,
-    characterCount: characterCount.present
-        ? characterCount.value
-        : this.characterCount,
-  );
-  Work copyWithCompanion(WorksCompanion data) {
-    return Work(
-      id: data.id.present ? data.id.value : this.id,
-      type: data.type.present ? data.type.value : this.type,
-      format: data.format.present ? data.format.value : this.format,
-      title: data.title.present ? data.title.value : this.title,
-      author: data.author.present ? data.author.value : this.author,
-      summary: data.summary.present ? data.summary.value : this.summary,
-      isbn: data.isbn.present ? data.isbn.value : this.isbn,
-      sourceUrl: data.sourceUrl.present ? data.sourceUrl.value : this.sourceUrl,
-      coverUrl: data.coverUrl.present ? data.coverUrl.value : this.coverUrl,
-      coverPath: data.coverPath.present ? data.coverPath.value : this.coverPath,
-      fandomId: data.fandomId.present ? data.fandomId.value : this.fandomId,
-      status: data.status.present ? data.status.value : this.status,
-      isComplete: data.isComplete.present
-          ? data.isComplete.value
-          : this.isComplete,
-      chapterCount: data.chapterCount.present
-          ? data.chapterCount.value
-          : this.chapterCount,
-      currentChapter: data.currentChapter.present
-          ? data.currentChapter.value
-          : this.currentChapter,
-      readOffset: data.readOffset.present
-          ? data.readOffset.value
-          : this.readOffset,
-      wordCount: data.wordCount.present ? data.wordCount.value : this.wordCount,
-      pageCount: data.pageCount.present ? data.pageCount.value : this.pageCount,
-      rating: data.rating.present ? data.rating.value : this.rating,
-      notes: data.notes.present ? data.notes.value : this.notes,
-      addedAt: data.addedAt.present ? data.addedAt.value : this.addedAt,
-      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      checkedAt: data.checkedAt.present ? data.checkedAt.value : this.checkedAt,
-      lastChapterAt: data.lastChapterAt.present
-          ? data.lastChapterAt.value
-          : this.lastChapterAt,
-      newChapters: data.newChapters.present
-          ? data.newChapters.value
-          : this.newChapters,
-      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
-      finishedAt: data.finishedAt.present
-          ? data.finishedAt.value
-          : this.finishedAt,
-      currentPage: data.currentPage.present
-          ? data.currentPage.value
-          : this.currentPage,
-      ownsPhysicalCopy: data.ownsPhysicalCopy.present
-          ? data.ownsPhysicalCopy.value
-          : this.ownsPhysicalCopy,
-      seriesId: data.seriesId.present ? data.seriesId.value : this.seriesId,
-      seriesIndex: data.seriesIndex.present
-          ? data.seriesIndex.value
-          : this.seriesIndex,
-      wordsEstimated: data.wordsEstimated.present
-          ? data.wordsEstimated.value
-          : this.wordsEstimated,
-      pagesEstimated: data.pagesEstimated.present
-          ? data.pagesEstimated.value
-          : this.pagesEstimated,
-      characterCount: data.characterCount.present
-          ? data.characterCount.value
-          : this.characterCount,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('Work(')
-          ..write('id: $id, ')
-          ..write('type: $type, ')
-          ..write('format: $format, ')
-          ..write('title: $title, ')
-          ..write('author: $author, ')
-          ..write('summary: $summary, ')
-          ..write('isbn: $isbn, ')
-          ..write('sourceUrl: $sourceUrl, ')
-          ..write('coverUrl: $coverUrl, ')
-          ..write('coverPath: $coverPath, ')
-          ..write('fandomId: $fandomId, ')
-          ..write('status: $status, ')
-          ..write('isComplete: $isComplete, ')
-          ..write('chapterCount: $chapterCount, ')
-          ..write('currentChapter: $currentChapter, ')
-          ..write('readOffset: $readOffset, ')
-          ..write('wordCount: $wordCount, ')
-          ..write('pageCount: $pageCount, ')
-          ..write('rating: $rating, ')
-          ..write('notes: $notes, ')
-          ..write('addedAt: $addedAt, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('checkedAt: $checkedAt, ')
-          ..write('lastChapterAt: $lastChapterAt, ')
-          ..write('newChapters: $newChapters, ')
-          ..write('deletedAt: $deletedAt, ')
-          ..write('finishedAt: $finishedAt, ')
-          ..write('currentPage: $currentPage, ')
-          ..write('ownsPhysicalCopy: $ownsPhysicalCopy, ')
-          ..write('seriesId: $seriesId, ')
-          ..write('seriesIndex: $seriesIndex, ')
-          ..write('wordsEstimated: $wordsEstimated, ')
-          ..write('pagesEstimated: $pagesEstimated, ')
-          ..write('characterCount: $characterCount')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hashAll([
-    id,
-    type,
-    format,
-    title,
-    author,
-    summary,
-    isbn,
-    sourceUrl,
-    coverUrl,
-    coverPath,
-    fandomId,
-    status,
-    isComplete,
-    chapterCount,
-    currentChapter,
-    readOffset,
-    wordCount,
-    pageCount,
-    rating,
-    notes,
-    addedAt,
-    updatedAt,
-    checkedAt,
-    lastChapterAt,
-    newChapters,
-    deletedAt,
-    finishedAt,
-    currentPage,
-    ownsPhysicalCopy,
-    seriesId,
-    seriesIndex,
-    wordsEstimated,
-    pagesEstimated,
-    characterCount,
-  ]);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is Work &&
-          other.id == this.id &&
-          other.type == this.type &&
-          other.format == this.format &&
-          other.title == this.title &&
-          other.author == this.author &&
-          other.summary == this.summary &&
-          other.isbn == this.isbn &&
-          other.sourceUrl == this.sourceUrl &&
-          other.coverUrl == this.coverUrl &&
-          other.coverPath == this.coverPath &&
-          other.fandomId == this.fandomId &&
-          other.status == this.status &&
-          other.isComplete == this.isComplete &&
-          other.chapterCount == this.chapterCount &&
-          other.currentChapter == this.currentChapter &&
-          other.readOffset == this.readOffset &&
-          other.wordCount == this.wordCount &&
-          other.pageCount == this.pageCount &&
-          other.rating == this.rating &&
-          other.notes == this.notes &&
-          other.addedAt == this.addedAt &&
-          other.updatedAt == this.updatedAt &&
-          other.checkedAt == this.checkedAt &&
-          other.lastChapterAt == this.lastChapterAt &&
-          other.newChapters == this.newChapters &&
-          other.deletedAt == this.deletedAt &&
-          other.finishedAt == this.finishedAt &&
-          other.currentPage == this.currentPage &&
-          other.ownsPhysicalCopy == this.ownsPhysicalCopy &&
-          other.seriesId == this.seriesId &&
-          other.seriesIndex == this.seriesIndex &&
-          other.wordsEstimated == this.wordsEstimated &&
-          other.pagesEstimated == this.pagesEstimated &&
-          other.characterCount == this.characterCount);
-}
-
-class WorksCompanion extends UpdateCompanion<Work> {
-  final Value<int> id;
-  final Value<WorkType> type;
-  final Value<WorkFormat> format;
-  final Value<String> title;
-  final Value<String?> author;
-  final Value<String?> summary;
-  final Value<String?> isbn;
-  final Value<String?> sourceUrl;
-  final Value<String?> coverUrl;
-  final Value<String?> coverPath;
-  final Value<int?> fandomId;
-  final Value<ReadingStatus> status;
-  final Value<bool> isComplete;
-  final Value<int?> chapterCount;
-  final Value<int?> currentChapter;
-  final Value<double?> readOffset;
-  final Value<int?> wordCount;
-  final Value<int?> pageCount;
-  final Value<int?> rating;
-  final Value<String?> notes;
-  final Value<DateTime> addedAt;
-  final Value<DateTime> updatedAt;
-  final Value<DateTime?> checkedAt;
-  final Value<DateTime?> lastChapterAt;
-  final Value<int> newChapters;
-  final Value<DateTime?> deletedAt;
-  final Value<DateTime?> finishedAt;
-  final Value<int?> currentPage;
-  final Value<bool> ownsPhysicalCopy;
-  final Value<int?> seriesId;
-  final Value<double?> seriesIndex;
-  final Value<bool> wordsEstimated;
-  final Value<bool> pagesEstimated;
-  final Value<int?> characterCount;
-  const WorksCompanion({
-    this.id = const Value.absent(),
-    this.type = const Value.absent(),
-    this.format = const Value.absent(),
-    this.title = const Value.absent(),
-    this.author = const Value.absent(),
-    this.summary = const Value.absent(),
-    this.isbn = const Value.absent(),
-    this.sourceUrl = const Value.absent(),
-    this.coverUrl = const Value.absent(),
-    this.coverPath = const Value.absent(),
-    this.fandomId = const Value.absent(),
-    this.status = const Value.absent(),
-    this.isComplete = const Value.absent(),
-    this.chapterCount = const Value.absent(),
-    this.currentChapter = const Value.absent(),
-    this.readOffset = const Value.absent(),
-    this.wordCount = const Value.absent(),
-    this.pageCount = const Value.absent(),
-    this.rating = const Value.absent(),
-    this.notes = const Value.absent(),
-    this.addedAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.checkedAt = const Value.absent(),
-    this.lastChapterAt = const Value.absent(),
-    this.newChapters = const Value.absent(),
-    this.deletedAt = const Value.absent(),
-    this.finishedAt = const Value.absent(),
-    this.currentPage = const Value.absent(),
-    this.ownsPhysicalCopy = const Value.absent(),
-    this.seriesId = const Value.absent(),
-    this.seriesIndex = const Value.absent(),
-    this.wordsEstimated = const Value.absent(),
-    this.pagesEstimated = const Value.absent(),
-    this.characterCount = const Value.absent(),
-  });
-  WorksCompanion.insert({
-    this.id = const Value.absent(),
-    required WorkType type,
-    required WorkFormat format,
-    required String title,
-    this.author = const Value.absent(),
-    this.summary = const Value.absent(),
-    this.isbn = const Value.absent(),
-    this.sourceUrl = const Value.absent(),
-    this.coverUrl = const Value.absent(),
-    this.coverPath = const Value.absent(),
-    this.fandomId = const Value.absent(),
-    this.status = const Value.absent(),
-    this.isComplete = const Value.absent(),
-    this.chapterCount = const Value.absent(),
-    this.currentChapter = const Value.absent(),
-    this.readOffset = const Value.absent(),
-    this.wordCount = const Value.absent(),
-    this.pageCount = const Value.absent(),
-    this.rating = const Value.absent(),
-    this.notes = const Value.absent(),
-    this.addedAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.checkedAt = const Value.absent(),
-    this.lastChapterAt = const Value.absent(),
-    this.newChapters = const Value.absent(),
-    this.deletedAt = const Value.absent(),
-    this.finishedAt = const Value.absent(),
-    this.currentPage = const Value.absent(),
-    this.ownsPhysicalCopy = const Value.absent(),
-    this.seriesId = const Value.absent(),
-    this.seriesIndex = const Value.absent(),
-    this.wordsEstimated = const Value.absent(),
-    this.pagesEstimated = const Value.absent(),
-    this.characterCount = const Value.absent(),
-  }) : type = Value(type),
-       format = Value(format),
-       title = Value(title);
-  static Insertable<Work> custom({
-    Expression<int>? id,
-    Expression<String>? type,
-    Expression<String>? format,
-    Expression<String>? title,
-    Expression<String>? author,
-    Expression<String>? summary,
-    Expression<String>? isbn,
-    Expression<String>? sourceUrl,
-    Expression<String>? coverUrl,
-    Expression<String>? coverPath,
-    Expression<int>? fandomId,
-    Expression<String>? status,
-    Expression<bool>? isComplete,
-    Expression<int>? chapterCount,
-    Expression<int>? currentChapter,
-    Expression<double>? readOffset,
-    Expression<int>? wordCount,
-    Expression<int>? pageCount,
-    Expression<int>? rating,
-    Expression<String>? notes,
-    Expression<DateTime>? addedAt,
-    Expression<DateTime>? updatedAt,
-    Expression<DateTime>? checkedAt,
-    Expression<DateTime>? lastChapterAt,
-    Expression<int>? newChapters,
-    Expression<DateTime>? deletedAt,
-    Expression<DateTime>? finishedAt,
-    Expression<int>? currentPage,
-    Expression<bool>? ownsPhysicalCopy,
-    Expression<int>? seriesId,
-    Expression<double>? seriesIndex,
-    Expression<bool>? wordsEstimated,
-    Expression<bool>? pagesEstimated,
-    Expression<int>? characterCount,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (type != null) 'type': type,
-      if (format != null) 'format': format,
-      if (title != null) 'title': title,
-      if (author != null) 'author': author,
-      if (summary != null) 'summary': summary,
-      if (isbn != null) 'isbn': isbn,
-      if (sourceUrl != null) 'source_url': sourceUrl,
-      if (coverUrl != null) 'cover_url': coverUrl,
-      if (coverPath != null) 'cover_path': coverPath,
-      if (fandomId != null) 'fandom_id': fandomId,
-      if (status != null) 'status': status,
-      if (isComplete != null) 'is_complete': isComplete,
-      if (chapterCount != null) 'chapter_count': chapterCount,
-      if (currentChapter != null) 'current_chapter': currentChapter,
-      if (readOffset != null) 'read_offset': readOffset,
-      if (wordCount != null) 'word_count': wordCount,
-      if (pageCount != null) 'page_count': pageCount,
-      if (rating != null) 'rating': rating,
-      if (notes != null) 'notes': notes,
-      if (addedAt != null) 'added_at': addedAt,
-      if (updatedAt != null) 'updated_at': updatedAt,
-      if (checkedAt != null) 'checked_at': checkedAt,
-      if (lastChapterAt != null) 'last_chapter_at': lastChapterAt,
-      if (newChapters != null) 'new_chapters': newChapters,
-      if (deletedAt != null) 'deleted_at': deletedAt,
-      if (finishedAt != null) 'finished_at': finishedAt,
-      if (currentPage != null) 'current_page': currentPage,
-      if (ownsPhysicalCopy != null) 'owns_physical_copy': ownsPhysicalCopy,
-      if (seriesId != null) 'series_id': seriesId,
-      if (seriesIndex != null) 'series_index': seriesIndex,
-      if (wordsEstimated != null) 'words_estimated': wordsEstimated,
-      if (pagesEstimated != null) 'pages_estimated': pagesEstimated,
-      if (characterCount != null) 'character_count': characterCount,
-    });
-  }
-
-  WorksCompanion copyWith({
-    Value<int>? id,
-    Value<WorkType>? type,
-    Value<WorkFormat>? format,
-    Value<String>? title,
-    Value<String?>? author,
-    Value<String?>? summary,
-    Value<String?>? isbn,
-    Value<String?>? sourceUrl,
-    Value<String?>? coverUrl,
-    Value<String?>? coverPath,
-    Value<int?>? fandomId,
-    Value<ReadingStatus>? status,
-    Value<bool>? isComplete,
-    Value<int?>? chapterCount,
-    Value<int?>? currentChapter,
-    Value<double?>? readOffset,
-    Value<int?>? wordCount,
-    Value<int?>? pageCount,
-    Value<int?>? rating,
-    Value<String?>? notes,
-    Value<DateTime>? addedAt,
-    Value<DateTime>? updatedAt,
-    Value<DateTime?>? checkedAt,
-    Value<DateTime?>? lastChapterAt,
-    Value<int>? newChapters,
-    Value<DateTime?>? deletedAt,
-    Value<DateTime?>? finishedAt,
-    Value<int?>? currentPage,
-    Value<bool>? ownsPhysicalCopy,
-    Value<int?>? seriesId,
-    Value<double?>? seriesIndex,
-    Value<bool>? wordsEstimated,
-    Value<bool>? pagesEstimated,
-    Value<int?>? characterCount,
-  }) {
-    return WorksCompanion(
-      id: id ?? this.id,
-      type: type ?? this.type,
-      format: format ?? this.format,
-      title: title ?? this.title,
-      author: author ?? this.author,
-      summary: summary ?? this.summary,
-      isbn: isbn ?? this.isbn,
-      sourceUrl: sourceUrl ?? this.sourceUrl,
-      coverUrl: coverUrl ?? this.coverUrl,
-      coverPath: coverPath ?? this.coverPath,
-      fandomId: fandomId ?? this.fandomId,
-      status: status ?? this.status,
-      isComplete: isComplete ?? this.isComplete,
-      chapterCount: chapterCount ?? this.chapterCount,
-      currentChapter: currentChapter ?? this.currentChapter,
-      readOffset: readOffset ?? this.readOffset,
-      wordCount: wordCount ?? this.wordCount,
-      pageCount: pageCount ?? this.pageCount,
-      rating: rating ?? this.rating,
-      notes: notes ?? this.notes,
-      addedAt: addedAt ?? this.addedAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      checkedAt: checkedAt ?? this.checkedAt,
-      lastChapterAt: lastChapterAt ?? this.lastChapterAt,
-      newChapters: newChapters ?? this.newChapters,
-      deletedAt: deletedAt ?? this.deletedAt,
-      finishedAt: finishedAt ?? this.finishedAt,
-      currentPage: currentPage ?? this.currentPage,
-      ownsPhysicalCopy: ownsPhysicalCopy ?? this.ownsPhysicalCopy,
-      seriesId: seriesId ?? this.seriesId,
-      seriesIndex: seriesIndex ?? this.seriesIndex,
-      wordsEstimated: wordsEstimated ?? this.wordsEstimated,
-      pagesEstimated: pagesEstimated ?? this.pagesEstimated,
-      characterCount: characterCount ?? this.characterCount,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
-    if (type.present) {
-      map['type'] = Variable<String>(
-        $WorksTable.$convertertype.toSql(type.value),
-      );
-    }
-    if (format.present) {
-      map['format'] = Variable<String>(
-        $WorksTable.$converterformat.toSql(format.value),
-      );
-    }
-    if (title.present) {
-      map['title'] = Variable<String>(title.value);
-    }
-    if (author.present) {
-      map['author'] = Variable<String>(author.value);
-    }
-    if (summary.present) {
-      map['summary'] = Variable<String>(summary.value);
-    }
-    if (isbn.present) {
-      map['isbn'] = Variable<String>(isbn.value);
-    }
-    if (sourceUrl.present) {
-      map['source_url'] = Variable<String>(sourceUrl.value);
-    }
-    if (coverUrl.present) {
-      map['cover_url'] = Variable<String>(coverUrl.value);
-    }
-    if (coverPath.present) {
-      map['cover_path'] = Variable<String>(coverPath.value);
-    }
-    if (fandomId.present) {
-      map['fandom_id'] = Variable<int>(fandomId.value);
-    }
-    if (status.present) {
-      map['status'] = Variable<String>(
-        $WorksTable.$converterstatus.toSql(status.value),
-      );
-    }
-    if (isComplete.present) {
-      map['is_complete'] = Variable<bool>(isComplete.value);
-    }
-    if (chapterCount.present) {
-      map['chapter_count'] = Variable<int>(chapterCount.value);
-    }
-    if (currentChapter.present) {
-      map['current_chapter'] = Variable<int>(currentChapter.value);
-    }
-    if (readOffset.present) {
-      map['read_offset'] = Variable<double>(readOffset.value);
-    }
-    if (wordCount.present) {
-      map['word_count'] = Variable<int>(wordCount.value);
-    }
-    if (pageCount.present) {
-      map['page_count'] = Variable<int>(pageCount.value);
-    }
-    if (rating.present) {
-      map['rating'] = Variable<int>(rating.value);
-    }
-    if (notes.present) {
-      map['notes'] = Variable<String>(notes.value);
-    }
-    if (addedAt.present) {
-      map['added_at'] = Variable<DateTime>(addedAt.value);
-    }
-    if (updatedAt.present) {
-      map['updated_at'] = Variable<DateTime>(updatedAt.value);
-    }
-    if (checkedAt.present) {
-      map['checked_at'] = Variable<DateTime>(checkedAt.value);
-    }
-    if (lastChapterAt.present) {
-      map['last_chapter_at'] = Variable<DateTime>(lastChapterAt.value);
-    }
-    if (newChapters.present) {
-      map['new_chapters'] = Variable<int>(newChapters.value);
-    }
-    if (deletedAt.present) {
-      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
-    }
-    if (finishedAt.present) {
-      map['finished_at'] = Variable<DateTime>(finishedAt.value);
-    }
-    if (currentPage.present) {
-      map['current_page'] = Variable<int>(currentPage.value);
-    }
-    if (ownsPhysicalCopy.present) {
-      map['owns_physical_copy'] = Variable<bool>(ownsPhysicalCopy.value);
-    }
-    if (seriesId.present) {
-      map['series_id'] = Variable<int>(seriesId.value);
-    }
-    if (seriesIndex.present) {
-      map['series_index'] = Variable<double>(seriesIndex.value);
-    }
-    if (wordsEstimated.present) {
-      map['words_estimated'] = Variable<bool>(wordsEstimated.value);
-    }
-    if (pagesEstimated.present) {
-      map['pages_estimated'] = Variable<bool>(pagesEstimated.value);
-    }
-    if (characterCount.present) {
-      map['character_count'] = Variable<int>(characterCount.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('WorksCompanion(')
-          ..write('id: $id, ')
-          ..write('type: $type, ')
-          ..write('format: $format, ')
-          ..write('title: $title, ')
-          ..write('author: $author, ')
-          ..write('summary: $summary, ')
-          ..write('isbn: $isbn, ')
-          ..write('sourceUrl: $sourceUrl, ')
-          ..write('coverUrl: $coverUrl, ')
-          ..write('coverPath: $coverPath, ')
-          ..write('fandomId: $fandomId, ')
-          ..write('status: $status, ')
-          ..write('isComplete: $isComplete, ')
-          ..write('chapterCount: $chapterCount, ')
-          ..write('currentChapter: $currentChapter, ')
-          ..write('readOffset: $readOffset, ')
-          ..write('wordCount: $wordCount, ')
-          ..write('pageCount: $pageCount, ')
-          ..write('rating: $rating, ')
-          ..write('notes: $notes, ')
-          ..write('addedAt: $addedAt, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('checkedAt: $checkedAt, ')
-          ..write('lastChapterAt: $lastChapterAt, ')
-          ..write('newChapters: $newChapters, ')
-          ..write('deletedAt: $deletedAt, ')
-          ..write('finishedAt: $finishedAt, ')
-          ..write('currentPage: $currentPage, ')
-          ..write('ownsPhysicalCopy: $ownsPhysicalCopy, ')
-          ..write('seriesId: $seriesId, ')
-          ..write('seriesIndex: $seriesIndex, ')
-          ..write('wordsEstimated: $wordsEstimated, ')
-          ..write('pagesEstimated: $pagesEstimated, ')
-          ..write('characterCount: $characterCount')
           ..write(')'))
         .toString();
   }
@@ -6871,15 +7512,17 @@ class AnnotationsCompanion extends UpdateCompanion<Annotation> {
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
-  late final $TagsTable tags = $TagsTable(this);
-  late final $TagSynonymsTable tagSynonyms = $TagSynonymsTable(this);
   late final $FandomsTable fandoms = $FandomsTable(this);
+  late final $SeriesTable series = $SeriesTable(this);
+  late final $WorksTable works = $WorksTable(this);
+  late final $TagsTable tags = $TagsTable(this);
+  late final $TagSuggestionsTable tagSuggestions = $TagSuggestionsTable(this);
+  late final $FandomAliasesTable fandomAliases = $FandomAliasesTable(this);
+  late final $TagSynonymsTable tagSynonyms = $TagSynonymsTable(this);
   late final $CharactersTable characters = $CharactersTable(this);
   late final $CharacterAliasesTable characterAliases = $CharacterAliasesTable(
     this,
   );
-  late final $SeriesTable series = $SeriesTable(this);
-  late final $WorksTable works = $WorksTable(this);
   late final $WorkCharactersTable workCharacters = $WorkCharactersTable(this);
   late final $WorkFandomsTable workFandoms = $WorkFandomsTable(this);
   late final $WorkRelationsTable workRelations = $WorkRelationsTable(this);
@@ -6896,13 +7539,15 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
-    tags,
-    tagSynonyms,
     fandoms,
-    characters,
-    characterAliases,
     series,
     works,
+    tags,
+    tagSuggestions,
+    fandomAliases,
+    tagSynonyms,
+    characters,
+    characterAliases,
     workCharacters,
     workFandoms,
     workRelations,
@@ -6917,6 +7562,41 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'fandoms',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('works', kind: UpdateKind.update)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'series',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('works', kind: UpdateKind.update)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'works',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('tag_suggestions', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'tags',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('tag_suggestions', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'fandoms',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('fandom_aliases', kind: UpdateKind.delete)],
+    ),
     WritePropagation(
       on: TableUpdateQuery.onTableName(
         'tags',
@@ -6937,20 +7617,6 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('character_aliases', kind: UpdateKind.delete)],
-    ),
-    WritePropagation(
-      on: TableUpdateQuery.onTableName(
-        'fandoms',
-        limitUpdateKind: UpdateKind.delete,
-      ),
-      result: [TableUpdate('works', kind: UpdateKind.update)],
-    ),
-    WritePropagation(
-      on: TableUpdateQuery.onTableName(
-        'series',
-        limitUpdateKind: UpdateKind.delete,
-      ),
-      result: [TableUpdate('works', kind: UpdateKind.update)],
     ),
     WritePropagation(
       on: TableUpdateQuery.onTableName(
@@ -7053,6 +7719,2567 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   ]);
 }
 
+typedef $$FandomsTableCreateCompanionBuilder = FandomsCompanion Function({
+  Value<int> id,
+  required String name,
+});
+typedef $$FandomsTableUpdateCompanionBuilder = FandomsCompanion Function({
+  Value<int> id,
+  Value<String> name,
+});
+
+final class $$FandomsTableReferences
+    extends BaseReferences<_$AppDatabase, $FandomsTable, Fandom> {
+  $$FandomsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$WorksTable, List<Work>> _worksRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.works,
+    aliasName: 'fandoms__id__works__fandom_id',
+  );
+
+  $$WorksTableProcessedTableManager get worksRefs {
+    final manager = $$WorksTableTableManager(
+      $_db,
+      $_db.works,
+    ).filter((f) => f.fandomId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_worksRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$FandomAliasesTable, List<FandomAliase>>
+  _fandomAliasesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.fandomAliases,
+    aliasName: 'fandoms__id__fandom_aliases__fandom_id',
+  );
+
+  $$FandomAliasesTableProcessedTableManager get fandomAliasesRefs {
+    final manager = $$FandomAliasesTableTableManager(
+      $_db,
+      $_db.fandomAliases,
+    ).filter((f) => f.fandomId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_fandomAliasesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$CharactersTable, List<Character>>
+  _charactersRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.characters,
+    aliasName: 'fandoms__id__characters__fandom_id',
+  );
+
+  $$CharactersTableProcessedTableManager get charactersRefs {
+    final manager = $$CharactersTableTableManager(
+      $_db,
+      $_db.characters,
+    ).filter((f) => f.fandomId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_charactersRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$WorkFandomsTable, List<WorkFandom>>
+  _workFandomsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.workFandoms,
+    aliasName: 'fandoms__id__work_fandoms__fandom_id',
+  );
+
+  $$WorkFandomsTableProcessedTableManager get workFandomsRefs {
+    final manager = $$WorkFandomsTableTableManager(
+      $_db,
+      $_db.workFandoms,
+    ).filter((f) => f.fandomId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_workFandomsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$FandomsTableFilterComposer
+    extends Composer<_$AppDatabase, $FandomsTable> {
+  $$FandomsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> worksRefs(
+    Expression<bool> Function($$WorksTableFilterComposer f) f,
+  ) {
+    final $$WorksTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.fandomId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableFilterComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> fandomAliasesRefs(
+    Expression<bool> Function($$FandomAliasesTableFilterComposer f) f,
+  ) {
+    final $$FandomAliasesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.fandomAliases,
+      getReferencedColumn: (t) => t.fandomId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FandomAliasesTableFilterComposer(
+            $db: $db,
+            $table: $db.fandomAliases,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> charactersRefs(
+    Expression<bool> Function($$CharactersTableFilterComposer f) f,
+  ) {
+    final $$CharactersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.characters,
+      getReferencedColumn: (t) => t.fandomId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharactersTableFilterComposer(
+            $db: $db,
+            $table: $db.characters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> workFandomsRefs(
+    Expression<bool> Function($$WorkFandomsTableFilterComposer f) f,
+  ) {
+    final $$WorkFandomsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workFandoms,
+      getReferencedColumn: (t) => t.fandomId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkFandomsTableFilterComposer(
+            $db: $db,
+            $table: $db.workFandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$FandomsTableOrderingComposer
+    extends Composer<_$AppDatabase, $FandomsTable> {
+  $$FandomsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$FandomsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $FandomsTable> {
+  $$FandomsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  Expression<T> worksRefs<T extends Object>(
+    Expression<T> Function($$WorksTableAnnotationComposer a) f,
+  ) {
+    final $$WorksTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.fandomId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableAnnotationComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> fandomAliasesRefs<T extends Object>(
+    Expression<T> Function($$FandomAliasesTableAnnotationComposer a) f,
+  ) {
+    final $$FandomAliasesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.fandomAliases,
+      getReferencedColumn: (t) => t.fandomId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FandomAliasesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.fandomAliases,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> charactersRefs<T extends Object>(
+    Expression<T> Function($$CharactersTableAnnotationComposer a) f,
+  ) {
+    final $$CharactersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.characters,
+      getReferencedColumn: (t) => t.fandomId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharactersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.characters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> workFandomsRefs<T extends Object>(
+    Expression<T> Function($$WorkFandomsTableAnnotationComposer a) f,
+  ) {
+    final $$WorkFandomsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workFandoms,
+      getReferencedColumn: (t) => t.fandomId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkFandomsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.workFandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$FandomsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $FandomsTable,
+          Fandom,
+          $$FandomsTableFilterComposer,
+          $$FandomsTableOrderingComposer,
+          $$FandomsTableAnnotationComposer,
+          $$FandomsTableCreateCompanionBuilder,
+          $$FandomsTableUpdateCompanionBuilder,
+          (Fandom, $$FandomsTableReferences),
+          Fandom,
+          PrefetchHooks Function({
+            bool worksRefs,
+            bool fandomAliasesRefs,
+            bool charactersRefs,
+            bool workFandomsRefs,
+          })
+        > {
+  $$FandomsTableTableManager(_$AppDatabase db, $FandomsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FandomsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FandomsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FandomsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> name = const Value.absent(),
+          }) => FandomsCompanion(id: id, name: name),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String name,
+          }) => FandomsCompanion.insert(id: id, name: name),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$FandomsTable, Fandom>(table),
+                  $$FandomsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({
+                worksRefs = false,
+                fandomAliasesRefs = false,
+                charactersRefs = false,
+                workFandomsRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (worksRefs) db.works,
+                    if (fandomAliasesRefs) db.fandomAliases,
+                    if (charactersRefs) db.characters,
+                    if (workFandomsRefs) db.workFandoms,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (worksRefs)
+                        await $_getPrefetchedData<Fandom, $FandomsTable, Work>(
+                          currentTable: table,
+                          referencedTable: $$FandomsTableReferences
+                              ._worksRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$FandomsTableReferences(db, table, p0).worksRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.fandomId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (fandomAliasesRefs)
+                        await $_getPrefetchedData<
+                          Fandom,
+                          $FandomsTable,
+                          FandomAliase
+                        >(
+                          currentTable: table,
+                          referencedTable: $$FandomsTableReferences
+                              ._fandomAliasesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$FandomsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).fandomAliasesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.fandomId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (charactersRefs)
+                        await $_getPrefetchedData<
+                          Fandom,
+                          $FandomsTable,
+                          Character
+                        >(
+                          currentTable: table,
+                          referencedTable: $$FandomsTableReferences
+                              ._charactersRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$FandomsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).charactersRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.fandomId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (workFandomsRefs)
+                        await $_getPrefetchedData<
+                          Fandom,
+                          $FandomsTable,
+                          WorkFandom
+                        >(
+                          currentTable: table,
+                          referencedTable: $$FandomsTableReferences
+                              ._workFandomsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$FandomsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).workFandomsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.fandomId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$FandomsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $FandomsTable,
+      Fandom,
+      $$FandomsTableFilterComposer,
+      $$FandomsTableOrderingComposer,
+      $$FandomsTableAnnotationComposer,
+      $$FandomsTableCreateCompanionBuilder,
+      $$FandomsTableUpdateCompanionBuilder,
+      (Fandom, $$FandomsTableReferences),
+      Fandom,
+      PrefetchHooks Function({
+        bool worksRefs,
+        bool fandomAliasesRefs,
+        bool charactersRefs,
+        bool workFandomsRefs,
+      })
+    >;
+typedef $$SeriesTableCreateCompanionBuilder = SeriesCompanion Function({
+  Value<int> id,
+  required String name,
+});
+typedef $$SeriesTableUpdateCompanionBuilder = SeriesCompanion Function({
+  Value<int> id,
+  Value<String> name,
+});
+
+final class $$SeriesTableReferences
+    extends BaseReferences<_$AppDatabase, $SeriesTable, SeriesItem> {
+  $$SeriesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$WorksTable, List<Work>> _worksRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.works,
+    aliasName: 'series__id__works__series_id',
+  );
+
+  $$WorksTableProcessedTableManager get worksRefs {
+    final manager = $$WorksTableTableManager(
+      $_db,
+      $_db.works,
+    ).filter((f) => f.seriesId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_worksRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$SeriesTableFilterComposer
+    extends Composer<_$AppDatabase, $SeriesTable> {
+  $$SeriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> worksRefs(
+    Expression<bool> Function($$WorksTableFilterComposer f) f,
+  ) {
+    final $$WorksTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.seriesId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableFilterComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$SeriesTableOrderingComposer
+    extends Composer<_$AppDatabase, $SeriesTable> {
+  $$SeriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SeriesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SeriesTable> {
+  $$SeriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  Expression<T> worksRefs<T extends Object>(
+    Expression<T> Function($$WorksTableAnnotationComposer a) f,
+  ) {
+    final $$WorksTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.seriesId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableAnnotationComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$SeriesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SeriesTable,
+          SeriesItem,
+          $$SeriesTableFilterComposer,
+          $$SeriesTableOrderingComposer,
+          $$SeriesTableAnnotationComposer,
+          $$SeriesTableCreateCompanionBuilder,
+          $$SeriesTableUpdateCompanionBuilder,
+          (SeriesItem, $$SeriesTableReferences),
+          SeriesItem,
+          PrefetchHooks Function({bool worksRefs})
+        > {
+  $$SeriesTableTableManager(_$AppDatabase db, $SeriesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SeriesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SeriesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SeriesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> name = const Value.absent(),
+          }) => SeriesCompanion(id: id, name: name),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String name,
+          }) => SeriesCompanion.insert(id: id, name: name),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$SeriesTable, SeriesItem>(table),
+                  $$SeriesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({worksRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [if (worksRefs) db.works],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (worksRefs)
+                    await $_getPrefetchedData<SeriesItem, $SeriesTable, Work>(
+                      currentTable: table,
+                      referencedTable: $$SeriesTableReferences._worksRefsTable(
+                        db,
+                      ),
+                      managerFromTypedResult: (p0) =>
+                          $$SeriesTableReferences(db, table, p0).worksRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.seriesId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$SeriesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SeriesTable,
+      SeriesItem,
+      $$SeriesTableFilterComposer,
+      $$SeriesTableOrderingComposer,
+      $$SeriesTableAnnotationComposer,
+      $$SeriesTableCreateCompanionBuilder,
+      $$SeriesTableUpdateCompanionBuilder,
+      (SeriesItem, $$SeriesTableReferences),
+      SeriesItem,
+      PrefetchHooks Function({bool worksRefs})
+    >;
+typedef $$WorksTableCreateCompanionBuilder = WorksCompanion Function({
+  Value<int> id,
+  required WorkType type,
+  required WorkFormat format,
+  required String title,
+  Value<String?> author,
+  Value<String?> summary,
+  Value<String?> isbn,
+  Value<String?> sourceUrl,
+  Value<String?> coverUrl,
+  Value<String?> coverPath,
+  Value<int?> fandomId,
+  Value<ReadingStatus> status,
+  Value<bool> isComplete,
+  Value<int?> chapterCount,
+  Value<int?> currentChapter,
+  Value<double?> readOffset,
+  Value<int?> wordCount,
+  Value<int?> pageCount,
+  Value<int?> rating,
+  Value<String?> notes,
+  Value<DateTime> addedAt,
+  Value<DateTime> updatedAt,
+  Value<DateTime?> checkedAt,
+  Value<DateTime?> lastChapterAt,
+  Value<int> newChapters,
+  Value<DateTime?> deletedAt,
+  Value<DateTime?> finishedAt,
+  Value<int?> currentPage,
+  Value<int?> anilistId,
+  Value<bool> ownsPhysicalCopy,
+  Value<int?> seriesId,
+  Value<double?> seriesIndex,
+  Value<bool> wordsEstimated,
+  Value<bool> pagesEstimated,
+  Value<int?> characterCount,
+});
+typedef $$WorksTableUpdateCompanionBuilder = WorksCompanion Function({
+  Value<int> id,
+  Value<WorkType> type,
+  Value<WorkFormat> format,
+  Value<String> title,
+  Value<String?> author,
+  Value<String?> summary,
+  Value<String?> isbn,
+  Value<String?> sourceUrl,
+  Value<String?> coverUrl,
+  Value<String?> coverPath,
+  Value<int?> fandomId,
+  Value<ReadingStatus> status,
+  Value<bool> isComplete,
+  Value<int?> chapterCount,
+  Value<int?> currentChapter,
+  Value<double?> readOffset,
+  Value<int?> wordCount,
+  Value<int?> pageCount,
+  Value<int?> rating,
+  Value<String?> notes,
+  Value<DateTime> addedAt,
+  Value<DateTime> updatedAt,
+  Value<DateTime?> checkedAt,
+  Value<DateTime?> lastChapterAt,
+  Value<int> newChapters,
+  Value<DateTime?> deletedAt,
+  Value<DateTime?> finishedAt,
+  Value<int?> currentPage,
+  Value<int?> anilistId,
+  Value<bool> ownsPhysicalCopy,
+  Value<int?> seriesId,
+  Value<double?> seriesIndex,
+  Value<bool> wordsEstimated,
+  Value<bool> pagesEstimated,
+  Value<int?> characterCount,
+});
+
+final class $$WorksTableReferences
+    extends BaseReferences<_$AppDatabase, $WorksTable, Work> {
+  $$WorksTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $FandomsTable _fandomIdTable(_$AppDatabase db) =>
+      db.fandoms.createAlias('works__fandom_id__fandoms__id');
+
+  $$FandomsTableProcessedTableManager? get fandomId {
+    final $_column = $_itemColumn<int>('fandom_id');
+    if ($_column == null) return null;
+    final manager = $$FandomsTableTableManager(
+      $_db,
+      $_db.fandoms,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_fandomIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $SeriesTable _seriesIdTable(_$AppDatabase db) =>
+      db.series.createAlias('works__series_id__series__id');
+
+  $$SeriesTableProcessedTableManager? get seriesId {
+    final $_column = $_itemColumn<int>('series_id');
+    if ($_column == null) return null;
+    final manager = $$SeriesTableTableManager(
+      $_db,
+      $_db.series,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_seriesIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$TagSuggestionsTable, List<TagSuggestion>>
+  _tagSuggestionsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.tagSuggestions,
+    aliasName: 'works__id__tag_suggestions__work_id',
+  );
+
+  $$TagSuggestionsTableProcessedTableManager get tagSuggestionsRefs {
+    final manager = $$TagSuggestionsTableTableManager(
+      $_db,
+      $_db.tagSuggestions,
+    ).filter((f) => f.workId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_tagSuggestionsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$WorkCharactersTable, List<WorkCharacter>>
+  _workCharactersRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.workCharacters,
+    aliasName: 'works__id__work_characters__work_id',
+  );
+
+  $$WorkCharactersTableProcessedTableManager get workCharactersRefs {
+    final manager = $$WorkCharactersTableTableManager(
+      $_db,
+      $_db.workCharacters,
+    ).filter((f) => f.workId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_workCharactersRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$WorkFandomsTable, List<WorkFandom>>
+  _workFandomsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.workFandoms,
+    aliasName: 'works__id__work_fandoms__work_id',
+  );
+
+  $$WorkFandomsTableProcessedTableManager get workFandomsRefs {
+    final manager = $$WorkFandomsTableTableManager(
+      $_db,
+      $_db.workFandoms,
+    ).filter((f) => f.workId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_workFandomsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$ReadingDaysTable, List<ReadingDay>>
+  _readingDaysRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.readingDays,
+    aliasName: 'works__id__reading_days__work_id',
+  );
+
+  $$ReadingDaysTableProcessedTableManager get readingDaysRefs {
+    final manager = $$ReadingDaysTableTableManager(
+      $_db,
+      $_db.readingDays,
+    ).filter((f) => f.workId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_readingDaysRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$WorkTagsTable, List<WorkTag>> _workTagsRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.workTags,
+    aliasName: 'works__id__work_tags__work_id',
+  );
+
+  $$WorkTagsTableProcessedTableManager get workTagsRefs {
+    final manager = $$WorkTagsTableTableManager(
+      $_db,
+      $_db.workTags,
+    ).filter((f) => f.workId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_workTagsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$ChaptersTable, List<Chapter>> _chaptersRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.chapters,
+    aliasName: 'works__id__chapters__work_id',
+  );
+
+  $$ChaptersTableProcessedTableManager get chaptersRefs {
+    final manager = $$ChaptersTableTableManager(
+      $_db,
+      $_db.chapters,
+    ).filter((f) => f.workId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_chaptersRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$DownloadsTable, List<Download>>
+  _downloadsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.downloads,
+    aliasName: 'works__id__downloads__work_id',
+  );
+
+  $$DownloadsTableProcessedTableManager get downloadsRefs {
+    final manager = $$DownloadsTableTableManager(
+      $_db,
+      $_db.downloads,
+    ).filter((f) => f.workId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_downloadsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$WorkPairingsTable, List<WorkPairing>>
+  _workPairingsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.workPairings,
+    aliasName: 'works__id__work_pairings__work_id',
+  );
+
+  $$WorkPairingsTableProcessedTableManager get workPairingsRefs {
+    final manager = $$WorkPairingsTableTableManager(
+      $_db,
+      $_db.workPairings,
+    ).filter((f) => f.workId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_workPairingsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$AnnotationsTable, List<Annotation>>
+  _annotationsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.annotations,
+    aliasName: 'works__id__annotations__work_id',
+  );
+
+  $$AnnotationsTableProcessedTableManager get annotationsRefs {
+    final manager = $$AnnotationsTableTableManager(
+      $_db,
+      $_db.annotations,
+    ).filter((f) => f.workId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_annotationsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$WorksTableFilterComposer extends Composer<_$AppDatabase, $WorksTable> {
+  $$WorksTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<WorkType, WorkType, String> get type =>
+      $composableBuilder(
+        column: $table.type,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnWithTypeConverterFilters<WorkFormat, WorkFormat, String> get format =>
+      $composableBuilder(
+        column: $table.format,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get author => $composableBuilder(
+    column: $table.author,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get summary => $composableBuilder(
+    column: $table.summary,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get isbn => $composableBuilder(
+    column: $table.isbn,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceUrl => $composableBuilder(
+    column: $table.sourceUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get coverUrl => $composableBuilder(
+    column: $table.coverUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get coverPath => $composableBuilder(
+    column: $table.coverPath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<ReadingStatus, ReadingStatus, String>
+  get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<bool> get isComplete => $composableBuilder(
+    column: $table.isComplete,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get chapterCount => $composableBuilder(
+    column: $table.chapterCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get currentChapter => $composableBuilder(
+    column: $table.currentChapter,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get readOffset => $composableBuilder(
+    column: $table.readOffset,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get wordCount => $composableBuilder(
+    column: $table.wordCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get pageCount => $composableBuilder(
+    column: $table.pageCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get rating => $composableBuilder(
+    column: $table.rating,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get addedAt => $composableBuilder(
+    column: $table.addedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get checkedAt => $composableBuilder(
+    column: $table.checkedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastChapterAt => $composableBuilder(
+    column: $table.lastChapterAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get newChapters => $composableBuilder(
+    column: $table.newChapters,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get finishedAt => $composableBuilder(
+    column: $table.finishedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get currentPage => $composableBuilder(
+    column: $table.currentPage,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get anilistId => $composableBuilder(
+    column: $table.anilistId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get ownsPhysicalCopy => $composableBuilder(
+    column: $table.ownsPhysicalCopy,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get seriesIndex => $composableBuilder(
+    column: $table.seriesIndex,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get wordsEstimated => $composableBuilder(
+    column: $table.wordsEstimated,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get pagesEstimated => $composableBuilder(
+    column: $table.pagesEstimated,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get characterCount => $composableBuilder(
+    column: $table.characterCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$FandomsTableFilterComposer get fandomId {
+    final $$FandomsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.fandomId,
+      referencedTable: $db.fandoms,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FandomsTableFilterComposer(
+            $db: $db,
+            $table: $db.fandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SeriesTableFilterComposer get seriesId {
+    final $$SeriesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.seriesId,
+      referencedTable: $db.series,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SeriesTableFilterComposer(
+            $db: $db,
+            $table: $db.series,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> tagSuggestionsRefs(
+    Expression<bool> Function($$TagSuggestionsTableFilterComposer f) f,
+  ) {
+    final $$TagSuggestionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.tagSuggestions,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TagSuggestionsTableFilterComposer(
+            $db: $db,
+            $table: $db.tagSuggestions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> workCharactersRefs(
+    Expression<bool> Function($$WorkCharactersTableFilterComposer f) f,
+  ) {
+    final $$WorkCharactersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workCharacters,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkCharactersTableFilterComposer(
+            $db: $db,
+            $table: $db.workCharacters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> workFandomsRefs(
+    Expression<bool> Function($$WorkFandomsTableFilterComposer f) f,
+  ) {
+    final $$WorkFandomsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workFandoms,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkFandomsTableFilterComposer(
+            $db: $db,
+            $table: $db.workFandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> readingDaysRefs(
+    Expression<bool> Function($$ReadingDaysTableFilterComposer f) f,
+  ) {
+    final $$ReadingDaysTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.readingDays,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReadingDaysTableFilterComposer(
+            $db: $db,
+            $table: $db.readingDays,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> workTagsRefs(
+    Expression<bool> Function($$WorkTagsTableFilterComposer f) f,
+  ) {
+    final $$WorkTagsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workTags,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkTagsTableFilterComposer(
+            $db: $db,
+            $table: $db.workTags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> chaptersRefs(
+    Expression<bool> Function($$ChaptersTableFilterComposer f) f,
+  ) {
+    final $$ChaptersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.chapters,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ChaptersTableFilterComposer(
+            $db: $db,
+            $table: $db.chapters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> downloadsRefs(
+    Expression<bool> Function($$DownloadsTableFilterComposer f) f,
+  ) {
+    final $$DownloadsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.downloads,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DownloadsTableFilterComposer(
+            $db: $db,
+            $table: $db.downloads,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> workPairingsRefs(
+    Expression<bool> Function($$WorkPairingsTableFilterComposer f) f,
+  ) {
+    final $$WorkPairingsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workPairings,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkPairingsTableFilterComposer(
+            $db: $db,
+            $table: $db.workPairings,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> annotationsRefs(
+    Expression<bool> Function($$AnnotationsTableFilterComposer f) f,
+  ) {
+    final $$AnnotationsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.annotations,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AnnotationsTableFilterComposer(
+            $db: $db,
+            $table: $db.annotations,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$WorksTableOrderingComposer
+    extends Composer<_$AppDatabase, $WorksTable> {
+  $$WorksTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get format => $composableBuilder(
+    column: $table.format,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get author => $composableBuilder(
+    column: $table.author,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get summary => $composableBuilder(
+    column: $table.summary,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get isbn => $composableBuilder(
+    column: $table.isbn,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceUrl => $composableBuilder(
+    column: $table.sourceUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get coverUrl => $composableBuilder(
+    column: $table.coverUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get coverPath => $composableBuilder(
+    column: $table.coverPath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isComplete => $composableBuilder(
+    column: $table.isComplete,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get chapterCount => $composableBuilder(
+    column: $table.chapterCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get currentChapter => $composableBuilder(
+    column: $table.currentChapter,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get readOffset => $composableBuilder(
+    column: $table.readOffset,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get wordCount => $composableBuilder(
+    column: $table.wordCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get pageCount => $composableBuilder(
+    column: $table.pageCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get rating => $composableBuilder(
+    column: $table.rating,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get addedAt => $composableBuilder(
+    column: $table.addedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get checkedAt => $composableBuilder(
+    column: $table.checkedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastChapterAt => $composableBuilder(
+    column: $table.lastChapterAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get newChapters => $composableBuilder(
+    column: $table.newChapters,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get finishedAt => $composableBuilder(
+    column: $table.finishedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get currentPage => $composableBuilder(
+    column: $table.currentPage,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get anilistId => $composableBuilder(
+    column: $table.anilistId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get ownsPhysicalCopy => $composableBuilder(
+    column: $table.ownsPhysicalCopy,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get seriesIndex => $composableBuilder(
+    column: $table.seriesIndex,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get wordsEstimated => $composableBuilder(
+    column: $table.wordsEstimated,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get pagesEstimated => $composableBuilder(
+    column: $table.pagesEstimated,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get characterCount => $composableBuilder(
+    column: $table.characterCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$FandomsTableOrderingComposer get fandomId {
+    final $$FandomsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.fandomId,
+      referencedTable: $db.fandoms,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FandomsTableOrderingComposer(
+            $db: $db,
+            $table: $db.fandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SeriesTableOrderingComposer get seriesId {
+    final $$SeriesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.seriesId,
+      referencedTable: $db.series,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SeriesTableOrderingComposer(
+            $db: $db,
+            $table: $db.series,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WorksTableAnnotationComposer
+    extends Composer<_$AppDatabase, $WorksTable> {
+  $$WorksTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<WorkType, String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<WorkFormat, String> get format =>
+      $composableBuilder(column: $table.format, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get author =>
+      $composableBuilder(column: $table.author, builder: (column) => column);
+
+  GeneratedColumn<String> get summary =>
+      $composableBuilder(column: $table.summary, builder: (column) => column);
+
+  GeneratedColumn<String> get isbn =>
+      $composableBuilder(column: $table.isbn, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceUrl =>
+      $composableBuilder(column: $table.sourceUrl, builder: (column) => column);
+
+  GeneratedColumn<String> get coverUrl =>
+      $composableBuilder(column: $table.coverUrl, builder: (column) => column);
+
+  GeneratedColumn<String> get coverPath =>
+      $composableBuilder(column: $table.coverPath, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<ReadingStatus, String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<bool> get isComplete => $composableBuilder(
+    column: $table.isComplete,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get chapterCount => $composableBuilder(
+    column: $table.chapterCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get currentChapter => $composableBuilder(
+    column: $table.currentChapter,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get readOffset => $composableBuilder(
+    column: $table.readOffset,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get wordCount =>
+      $composableBuilder(column: $table.wordCount, builder: (column) => column);
+
+  GeneratedColumn<int> get pageCount =>
+      $composableBuilder(column: $table.pageCount, builder: (column) => column);
+
+  GeneratedColumn<int> get rating =>
+      $composableBuilder(column: $table.rating, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get addedAt =>
+      $composableBuilder(column: $table.addedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get checkedAt =>
+      $composableBuilder(column: $table.checkedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastChapterAt => $composableBuilder(
+    column: $table.lastChapterAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get newChapters => $composableBuilder(
+    column: $table.newChapters,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get finishedAt => $composableBuilder(
+    column: $table.finishedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get currentPage => $composableBuilder(
+    column: $table.currentPage,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get anilistId =>
+      $composableBuilder(column: $table.anilistId, builder: (column) => column);
+
+  GeneratedColumn<bool> get ownsPhysicalCopy => $composableBuilder(
+    column: $table.ownsPhysicalCopy,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get seriesIndex => $composableBuilder(
+    column: $table.seriesIndex,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get wordsEstimated => $composableBuilder(
+    column: $table.wordsEstimated,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get pagesEstimated => $composableBuilder(
+    column: $table.pagesEstimated,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get characterCount => $composableBuilder(
+    column: $table.characterCount,
+    builder: (column) => column,
+  );
+
+  $$FandomsTableAnnotationComposer get fandomId {
+    final $$FandomsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.fandomId,
+      referencedTable: $db.fandoms,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FandomsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.fandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SeriesTableAnnotationComposer get seriesId {
+    final $$SeriesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.seriesId,
+      referencedTable: $db.series,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SeriesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.series,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> tagSuggestionsRefs<T extends Object>(
+    Expression<T> Function($$TagSuggestionsTableAnnotationComposer a) f,
+  ) {
+    final $$TagSuggestionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.tagSuggestions,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TagSuggestionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.tagSuggestions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> workCharactersRefs<T extends Object>(
+    Expression<T> Function($$WorkCharactersTableAnnotationComposer a) f,
+  ) {
+    final $$WorkCharactersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workCharacters,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkCharactersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.workCharacters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> workFandomsRefs<T extends Object>(
+    Expression<T> Function($$WorkFandomsTableAnnotationComposer a) f,
+  ) {
+    final $$WorkFandomsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workFandoms,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkFandomsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.workFandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> readingDaysRefs<T extends Object>(
+    Expression<T> Function($$ReadingDaysTableAnnotationComposer a) f,
+  ) {
+    final $$ReadingDaysTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.readingDays,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReadingDaysTableAnnotationComposer(
+            $db: $db,
+            $table: $db.readingDays,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> workTagsRefs<T extends Object>(
+    Expression<T> Function($$WorkTagsTableAnnotationComposer a) f,
+  ) {
+    final $$WorkTagsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workTags,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkTagsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.workTags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> chaptersRefs<T extends Object>(
+    Expression<T> Function($$ChaptersTableAnnotationComposer a) f,
+  ) {
+    final $$ChaptersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.chapters,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ChaptersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.chapters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> downloadsRefs<T extends Object>(
+    Expression<T> Function($$DownloadsTableAnnotationComposer a) f,
+  ) {
+    final $$DownloadsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.downloads,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DownloadsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.downloads,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> workPairingsRefs<T extends Object>(
+    Expression<T> Function($$WorkPairingsTableAnnotationComposer a) f,
+  ) {
+    final $$WorkPairingsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workPairings,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkPairingsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.workPairings,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> annotationsRefs<T extends Object>(
+    Expression<T> Function($$AnnotationsTableAnnotationComposer a) f,
+  ) {
+    final $$AnnotationsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.annotations,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AnnotationsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.annotations,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$WorksTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $WorksTable,
+          Work,
+          $$WorksTableFilterComposer,
+          $$WorksTableOrderingComposer,
+          $$WorksTableAnnotationComposer,
+          $$WorksTableCreateCompanionBuilder,
+          $$WorksTableUpdateCompanionBuilder,
+          (Work, $$WorksTableReferences),
+          Work,
+          PrefetchHooks Function({
+            bool fandomId,
+            bool seriesId,
+            bool tagSuggestionsRefs,
+            bool workCharactersRefs,
+            bool workFandomsRefs,
+            bool readingDaysRefs,
+            bool workTagsRefs,
+            bool chaptersRefs,
+            bool downloadsRefs,
+            bool workPairingsRefs,
+            bool annotationsRefs,
+          })
+        > {
+  $$WorksTableTableManager(_$AppDatabase db, $WorksTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$WorksTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WorksTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$WorksTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<WorkType> type = const Value.absent(),
+                Value<WorkFormat> format = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String?> author = const Value.absent(),
+                Value<String?> summary = const Value.absent(),
+                Value<String?> isbn = const Value.absent(),
+                Value<String?> sourceUrl = const Value.absent(),
+                Value<String?> coverUrl = const Value.absent(),
+                Value<String?> coverPath = const Value.absent(),
+                Value<int?> fandomId = const Value.absent(),
+                Value<ReadingStatus> status = const Value.absent(),
+                Value<bool> isComplete = const Value.absent(),
+                Value<int?> chapterCount = const Value.absent(),
+                Value<int?> currentChapter = const Value.absent(),
+                Value<double?> readOffset = const Value.absent(),
+                Value<int?> wordCount = const Value.absent(),
+                Value<int?> pageCount = const Value.absent(),
+                Value<int?> rating = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<DateTime> addedAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> checkedAt = const Value.absent(),
+                Value<DateTime?> lastChapterAt = const Value.absent(),
+                Value<int> newChapters = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<DateTime?> finishedAt = const Value.absent(),
+                Value<int?> currentPage = const Value.absent(),
+                Value<int?> anilistId = const Value.absent(),
+                Value<bool> ownsPhysicalCopy = const Value.absent(),
+                Value<int?> seriesId = const Value.absent(),
+                Value<double?> seriesIndex = const Value.absent(),
+                Value<bool> wordsEstimated = const Value.absent(),
+                Value<bool> pagesEstimated = const Value.absent(),
+                Value<int?> characterCount = const Value.absent(),
+              }) => WorksCompanion(
+                id: id,
+                type: type,
+                format: format,
+                title: title,
+                author: author,
+                summary: summary,
+                isbn: isbn,
+                sourceUrl: sourceUrl,
+                coverUrl: coverUrl,
+                coverPath: coverPath,
+                fandomId: fandomId,
+                status: status,
+                isComplete: isComplete,
+                chapterCount: chapterCount,
+                currentChapter: currentChapter,
+                readOffset: readOffset,
+                wordCount: wordCount,
+                pageCount: pageCount,
+                rating: rating,
+                notes: notes,
+                addedAt: addedAt,
+                updatedAt: updatedAt,
+                checkedAt: checkedAt,
+                lastChapterAt: lastChapterAt,
+                newChapters: newChapters,
+                deletedAt: deletedAt,
+                finishedAt: finishedAt,
+                currentPage: currentPage,
+                anilistId: anilistId,
+                ownsPhysicalCopy: ownsPhysicalCopy,
+                seriesId: seriesId,
+                seriesIndex: seriesIndex,
+                wordsEstimated: wordsEstimated,
+                pagesEstimated: pagesEstimated,
+                characterCount: characterCount,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required WorkType type,
+                required WorkFormat format,
+                required String title,
+                Value<String?> author = const Value.absent(),
+                Value<String?> summary = const Value.absent(),
+                Value<String?> isbn = const Value.absent(),
+                Value<String?> sourceUrl = const Value.absent(),
+                Value<String?> coverUrl = const Value.absent(),
+                Value<String?> coverPath = const Value.absent(),
+                Value<int?> fandomId = const Value.absent(),
+                Value<ReadingStatus> status = const Value.absent(),
+                Value<bool> isComplete = const Value.absent(),
+                Value<int?> chapterCount = const Value.absent(),
+                Value<int?> currentChapter = const Value.absent(),
+                Value<double?> readOffset = const Value.absent(),
+                Value<int?> wordCount = const Value.absent(),
+                Value<int?> pageCount = const Value.absent(),
+                Value<int?> rating = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<DateTime> addedAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> checkedAt = const Value.absent(),
+                Value<DateTime?> lastChapterAt = const Value.absent(),
+                Value<int> newChapters = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<DateTime?> finishedAt = const Value.absent(),
+                Value<int?> currentPage = const Value.absent(),
+                Value<int?> anilistId = const Value.absent(),
+                Value<bool> ownsPhysicalCopy = const Value.absent(),
+                Value<int?> seriesId = const Value.absent(),
+                Value<double?> seriesIndex = const Value.absent(),
+                Value<bool> wordsEstimated = const Value.absent(),
+                Value<bool> pagesEstimated = const Value.absent(),
+                Value<int?> characterCount = const Value.absent(),
+              }) => WorksCompanion.insert(
+                id: id,
+                type: type,
+                format: format,
+                title: title,
+                author: author,
+                summary: summary,
+                isbn: isbn,
+                sourceUrl: sourceUrl,
+                coverUrl: coverUrl,
+                coverPath: coverPath,
+                fandomId: fandomId,
+                status: status,
+                isComplete: isComplete,
+                chapterCount: chapterCount,
+                currentChapter: currentChapter,
+                readOffset: readOffset,
+                wordCount: wordCount,
+                pageCount: pageCount,
+                rating: rating,
+                notes: notes,
+                addedAt: addedAt,
+                updatedAt: updatedAt,
+                checkedAt: checkedAt,
+                lastChapterAt: lastChapterAt,
+                newChapters: newChapters,
+                deletedAt: deletedAt,
+                finishedAt: finishedAt,
+                currentPage: currentPage,
+                anilistId: anilistId,
+                ownsPhysicalCopy: ownsPhysicalCopy,
+                seriesId: seriesId,
+                seriesIndex: seriesIndex,
+                wordsEstimated: wordsEstimated,
+                pagesEstimated: pagesEstimated,
+                characterCount: characterCount,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$WorksTable, Work>(table),
+                  $$WorksTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({
+                fandomId = false,
+                seriesId = false,
+                tagSuggestionsRefs = false,
+                workCharactersRefs = false,
+                workFandomsRefs = false,
+                readingDaysRefs = false,
+                workTagsRefs = false,
+                chaptersRefs = false,
+                downloadsRefs = false,
+                workPairingsRefs = false,
+                annotationsRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (tagSuggestionsRefs) db.tagSuggestions,
+                    if (workCharactersRefs) db.workCharacters,
+                    if (workFandomsRefs) db.workFandoms,
+                    if (readingDaysRefs) db.readingDays,
+                    if (workTagsRefs) db.workTags,
+                    if (chaptersRefs) db.chapters,
+                    if (downloadsRefs) db.downloads,
+                    if (workPairingsRefs) db.workPairings,
+                    if (annotationsRefs) db.annotations,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (fandomId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.fandomId,
+                            referencedTable: $$WorksTableReferences
+                                ._fandomIdTable(db),
+                            referencedColumn: $$WorksTableReferences
+                                ._fandomIdTable(db)
+                                .id,
+                          ) as T;
+                        }
+                        if (seriesId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.seriesId,
+                            referencedTable: $$WorksTableReferences
+                                ._seriesIdTable(db),
+                            referencedColumn: $$WorksTableReferences
+                                ._seriesIdTable(db)
+                                .id,
+                          ) as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (tagSuggestionsRefs)
+                        await $_getPrefetchedData<
+                          Work,
+                          $WorksTable,
+                          TagSuggestion
+                        >(
+                          currentTable: table,
+                          referencedTable: $$WorksTableReferences
+                              ._tagSuggestionsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WorksTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).tagSuggestionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.workId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (workCharactersRefs)
+                        await $_getPrefetchedData<
+                          Work,
+                          $WorksTable,
+                          WorkCharacter
+                        >(
+                          currentTable: table,
+                          referencedTable: $$WorksTableReferences
+                              ._workCharactersRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WorksTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).workCharactersRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.workId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (workFandomsRefs)
+                        await $_getPrefetchedData<
+                          Work,
+                          $WorksTable,
+                          WorkFandom
+                        >(
+                          currentTable: table,
+                          referencedTable: $$WorksTableReferences
+                              ._workFandomsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WorksTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).workFandomsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.workId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (readingDaysRefs)
+                        await $_getPrefetchedData<
+                          Work,
+                          $WorksTable,
+                          ReadingDay
+                        >(
+                          currentTable: table,
+                          referencedTable: $$WorksTableReferences
+                              ._readingDaysRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WorksTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).readingDaysRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.workId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (workTagsRefs)
+                        await $_getPrefetchedData<Work, $WorksTable, WorkTag>(
+                          currentTable: table,
+                          referencedTable: $$WorksTableReferences
+                              ._workTagsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WorksTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).workTagsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.workId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (chaptersRefs)
+                        await $_getPrefetchedData<Work, $WorksTable, Chapter>(
+                          currentTable: table,
+                          referencedTable: $$WorksTableReferences
+                              ._chaptersRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WorksTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).chaptersRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.workId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (downloadsRefs)
+                        await $_getPrefetchedData<Work, $WorksTable, Download>(
+                          currentTable: table,
+                          referencedTable: $$WorksTableReferences
+                              ._downloadsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WorksTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).downloadsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.workId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (workPairingsRefs)
+                        await $_getPrefetchedData<
+                          Work,
+                          $WorksTable,
+                          WorkPairing
+                        >(
+                          currentTable: table,
+                          referencedTable: $$WorksTableReferences
+                              ._workPairingsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WorksTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).workPairingsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.workId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (annotationsRefs)
+                        await $_getPrefetchedData<
+                          Work,
+                          $WorksTable,
+                          Annotation
+                        >(
+                          currentTable: table,
+                          referencedTable: $$WorksTableReferences
+                              ._annotationsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WorksTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).annotationsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.workId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$WorksTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $WorksTable,
+      Work,
+      $$WorksTableFilterComposer,
+      $$WorksTableOrderingComposer,
+      $$WorksTableAnnotationComposer,
+      $$WorksTableCreateCompanionBuilder,
+      $$WorksTableUpdateCompanionBuilder,
+      (Work, $$WorksTableReferences),
+      Work,
+      PrefetchHooks Function({
+        bool fandomId,
+        bool seriesId,
+        bool tagSuggestionsRefs,
+        bool workCharactersRefs,
+        bool workFandomsRefs,
+        bool readingDaysRefs,
+        bool workTagsRefs,
+        bool chaptersRefs,
+        bool downloadsRefs,
+        bool workPairingsRefs,
+        bool annotationsRefs,
+      })
+    >;
 typedef $$TagsTableCreateCompanionBuilder = TagsCompanion Function({
   Value<int> id,
   required String name,
@@ -7067,6 +10294,24 @@ typedef $$TagsTableUpdateCompanionBuilder = TagsCompanion Function({
 final class $$TagsTableReferences
     extends BaseReferences<_$AppDatabase, $TagsTable, Tag> {
   $$TagsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$TagSuggestionsTable, List<TagSuggestion>>
+  _tagSuggestionsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.tagSuggestions,
+    aliasName: 'tags__id__tag_suggestions__tag_id',
+  );
+
+  $$TagSuggestionsTableProcessedTableManager get tagSuggestionsRefs {
+    final manager = $$TagSuggestionsTableTableManager(
+      $_db,
+      $_db.tagSuggestions,
+    ).filter((f) => f.tagId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_tagSuggestionsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 
   static MultiTypedResultKey<$TagSynonymsTable, List<TagSynonym>>
   _tagSynonymsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
@@ -7128,6 +10373,31 @@ class $$TagsTableFilterComposer extends Composer<_$AppDatabase, $TagsTable> {
     column: $table.isAdult,
     builder: (column) => ColumnFilters(column),
   );
+
+  Expression<bool> tagSuggestionsRefs(
+    Expression<bool> Function($$TagSuggestionsTableFilterComposer f) f,
+  ) {
+    final $$TagSuggestionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.tagSuggestions,
+      getReferencedColumn: (t) => t.tagId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TagSuggestionsTableFilterComposer(
+            $db: $db,
+            $table: $db.tagSuggestions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 
   Expression<bool> tagSynonymsRefs(
     Expression<bool> Function($$TagSynonymsTableFilterComposer f) f,
@@ -7222,6 +10492,31 @@ class $$TagsTableAnnotationComposer
   GeneratedColumn<bool> get isAdult =>
       $composableBuilder(column: $table.isAdult, builder: (column) => column);
 
+  Expression<T> tagSuggestionsRefs<T extends Object>(
+    Expression<T> Function($$TagSuggestionsTableAnnotationComposer a) f,
+  ) {
+    final $$TagSuggestionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.tagSuggestions,
+      getReferencedColumn: (t) => t.tagId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TagSuggestionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.tagSuggestions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
   Expression<T> tagSynonymsRefs<T extends Object>(
     Expression<T> Function($$TagSynonymsTableAnnotationComposer a) f,
   ) {
@@ -7286,7 +10581,11 @@ class $$TagsTableTableManager
           $$TagsTableUpdateCompanionBuilder,
           (Tag, $$TagsTableReferences),
           Tag,
-          PrefetchHooks Function({bool tagSynonymsRefs, bool workTagsRefs})
+          PrefetchHooks Function({
+            bool tagSuggestionsRefs,
+            bool tagSynonymsRefs,
+            bool workTagsRefs,
+          })
         > {
   $$TagsTableTableManager(_$AppDatabase db, $TagsTable table)
     : super(
@@ -7318,16 +10617,41 @@ class $$TagsTableTableManager
               )
               .toList(),
           prefetchHooksCallback:
-              ({tagSynonymsRefs = false, workTagsRefs = false}) {
+              ({
+                tagSuggestionsRefs = false,
+                tagSynonymsRefs = false,
+                workTagsRefs = false,
+              }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
+                    if (tagSuggestionsRefs) db.tagSuggestions,
                     if (tagSynonymsRefs) db.tagSynonyms,
                     if (workTagsRefs) db.workTags,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
                     return [
+                      if (tagSuggestionsRefs)
+                        await $_getPrefetchedData<
+                          Tag,
+                          $TagsTable,
+                          TagSuggestion
+                        >(
+                          currentTable: table,
+                          referencedTable: $$TagsTableReferences
+                              ._tagSuggestionsRefsTable(db),
+                          managerFromTypedResult: (p0) => $$TagsTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).tagSuggestionsRefs,
+                          referencedItemsForCurrentItem: (
+                            item,
+                            referencedItems,
+                          ) => referencedItems.where((e) => e.tagId == item.id),
+                          typedResults: items,
+                        ),
                       if (tagSynonymsRefs)
                         await $_getPrefetchedData<Tag, $TagsTable, TagSynonym>(
                           currentTable: table,
@@ -7377,7 +10701,678 @@ typedef $$TagsTableProcessedTableManager =
       $$TagsTableUpdateCompanionBuilder,
       (Tag, $$TagsTableReferences),
       Tag,
-      PrefetchHooks Function({bool tagSynonymsRefs, bool workTagsRefs})
+      PrefetchHooks Function({
+        bool tagSuggestionsRefs,
+        bool tagSynonymsRefs,
+        bool workTagsRefs,
+      })
+    >;
+typedef $$TagSuggestionsTableCreateCompanionBuilder =
+    TagSuggestionsCompanion Function({
+      required int workId,
+      required int tagId,
+      Value<String?> reason,
+      Value<String> source,
+      Value<bool> dismissed,
+      Value<int> rowid,
+    });
+typedef $$TagSuggestionsTableUpdateCompanionBuilder =
+    TagSuggestionsCompanion Function({
+      Value<int> workId,
+      Value<int> tagId,
+      Value<String?> reason,
+      Value<String> source,
+      Value<bool> dismissed,
+      Value<int> rowid,
+    });
+
+final class $$TagSuggestionsTableReferences
+    extends BaseReferences<_$AppDatabase, $TagSuggestionsTable, TagSuggestion> {
+  $$TagSuggestionsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $WorksTable _workIdTable(_$AppDatabase db) =>
+      db.works.createAlias('tag_suggestions__work_id__works__id');
+
+  $$WorksTableProcessedTableManager get workId {
+    final $_column = $_itemColumn<int>('work_id')!;
+
+    final manager = $$WorksTableTableManager(
+      $_db,
+      $_db.works,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_workIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $TagsTable _tagIdTable(_$AppDatabase db) =>
+      db.tags.createAlias('tag_suggestions__tag_id__tags__id');
+
+  $$TagsTableProcessedTableManager get tagId {
+    final $_column = $_itemColumn<int>('tag_id')!;
+
+    final manager = $$TagsTableTableManager(
+      $_db,
+      $_db.tags,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_tagIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$TagSuggestionsTableFilterComposer
+    extends Composer<_$AppDatabase, $TagSuggestionsTable> {
+  $$TagSuggestionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get reason => $composableBuilder(
+    column: $table.reason,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get dismissed => $composableBuilder(
+    column: $table.dismissed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$WorksTableFilterComposer get workId {
+    final $$WorksTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workId,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableFilterComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$TagsTableFilterComposer get tagId {
+    final $$TagsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.tagId,
+      referencedTable: $db.tags,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TagsTableFilterComposer(
+            $db: $db,
+            $table: $db.tags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TagSuggestionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $TagSuggestionsTable> {
+  $$TagSuggestionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get reason => $composableBuilder(
+    column: $table.reason,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get dismissed => $composableBuilder(
+    column: $table.dismissed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$WorksTableOrderingComposer get workId {
+    final $$WorksTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workId,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableOrderingComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$TagsTableOrderingComposer get tagId {
+    final $$TagsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.tagId,
+      referencedTable: $db.tags,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TagsTableOrderingComposer(
+            $db: $db,
+            $table: $db.tags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TagSuggestionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TagSuggestionsTable> {
+  $$TagSuggestionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get reason =>
+      $composableBuilder(column: $table.reason, builder: (column) => column);
+
+  GeneratedColumn<String> get source =>
+      $composableBuilder(column: $table.source, builder: (column) => column);
+
+  GeneratedColumn<bool> get dismissed =>
+      $composableBuilder(column: $table.dismissed, builder: (column) => column);
+
+  $$WorksTableAnnotationComposer get workId {
+    final $$WorksTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workId,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableAnnotationComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$TagsTableAnnotationComposer get tagId {
+    final $$TagsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.tagId,
+      referencedTable: $db.tags,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TagsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.tags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TagSuggestionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TagSuggestionsTable,
+          TagSuggestion,
+          $$TagSuggestionsTableFilterComposer,
+          $$TagSuggestionsTableOrderingComposer,
+          $$TagSuggestionsTableAnnotationComposer,
+          $$TagSuggestionsTableCreateCompanionBuilder,
+          $$TagSuggestionsTableUpdateCompanionBuilder,
+          (TagSuggestion, $$TagSuggestionsTableReferences),
+          TagSuggestion,
+          PrefetchHooks Function({bool workId, bool tagId})
+        > {
+  $$TagSuggestionsTableTableManager(
+    _$AppDatabase db,
+    $TagSuggestionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TagSuggestionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TagSuggestionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TagSuggestionsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> workId = const Value.absent(),
+                Value<int> tagId = const Value.absent(),
+                Value<String?> reason = const Value.absent(),
+                Value<String> source = const Value.absent(),
+                Value<bool> dismissed = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TagSuggestionsCompanion(
+                workId: workId,
+                tagId: tagId,
+                reason: reason,
+                source: source,
+                dismissed: dismissed,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required int workId,
+                required int tagId,
+                Value<String?> reason = const Value.absent(),
+                Value<String> source = const Value.absent(),
+                Value<bool> dismissed = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TagSuggestionsCompanion.insert(
+                workId: workId,
+                tagId: tagId,
+                reason: reason,
+                source: source,
+                dismissed: dismissed,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$TagSuggestionsTable, TagSuggestion>(table),
+                  $$TagSuggestionsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({workId = false, tagId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (workId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.workId,
+                        referencedTable: $$TagSuggestionsTableReferences
+                            ._workIdTable(db),
+                        referencedColumn: $$TagSuggestionsTableReferences
+                            ._workIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+                    if (tagId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.tagId,
+                        referencedTable: $$TagSuggestionsTableReferences
+                            ._tagIdTable(db),
+                        referencedColumn: $$TagSuggestionsTableReferences
+                            ._tagIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$TagSuggestionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TagSuggestionsTable,
+      TagSuggestion,
+      $$TagSuggestionsTableFilterComposer,
+      $$TagSuggestionsTableOrderingComposer,
+      $$TagSuggestionsTableAnnotationComposer,
+      $$TagSuggestionsTableCreateCompanionBuilder,
+      $$TagSuggestionsTableUpdateCompanionBuilder,
+      (TagSuggestion, $$TagSuggestionsTableReferences),
+      TagSuggestion,
+      PrefetchHooks Function({bool workId, bool tagId})
+    >;
+typedef $$FandomAliasesTableCreateCompanionBuilder =
+    FandomAliasesCompanion Function({
+      required String aliasKey,
+      required int fandomId,
+      Value<int> rowid,
+    });
+typedef $$FandomAliasesTableUpdateCompanionBuilder =
+    FandomAliasesCompanion Function({
+      Value<String> aliasKey,
+      Value<int> fandomId,
+      Value<int> rowid,
+    });
+
+final class $$FandomAliasesTableReferences
+    extends BaseReferences<_$AppDatabase, $FandomAliasesTable, FandomAliase> {
+  $$FandomAliasesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $FandomsTable _fandomIdTable(_$AppDatabase db) =>
+      db.fandoms.createAlias('fandom_aliases__fandom_id__fandoms__id');
+
+  $$FandomsTableProcessedTableManager get fandomId {
+    final $_column = $_itemColumn<int>('fandom_id')!;
+
+    final manager = $$FandomsTableTableManager(
+      $_db,
+      $_db.fandoms,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_fandomIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$FandomAliasesTableFilterComposer
+    extends Composer<_$AppDatabase, $FandomAliasesTable> {
+  $$FandomAliasesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get aliasKey => $composableBuilder(
+    column: $table.aliasKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$FandomsTableFilterComposer get fandomId {
+    final $$FandomsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.fandomId,
+      referencedTable: $db.fandoms,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FandomsTableFilterComposer(
+            $db: $db,
+            $table: $db.fandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$FandomAliasesTableOrderingComposer
+    extends Composer<_$AppDatabase, $FandomAliasesTable> {
+  $$FandomAliasesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get aliasKey => $composableBuilder(
+    column: $table.aliasKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$FandomsTableOrderingComposer get fandomId {
+    final $$FandomsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.fandomId,
+      referencedTable: $db.fandoms,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FandomsTableOrderingComposer(
+            $db: $db,
+            $table: $db.fandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$FandomAliasesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $FandomAliasesTable> {
+  $$FandomAliasesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get aliasKey =>
+      $composableBuilder(column: $table.aliasKey, builder: (column) => column);
+
+  $$FandomsTableAnnotationComposer get fandomId {
+    final $$FandomsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.fandomId,
+      referencedTable: $db.fandoms,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FandomsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.fandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$FandomAliasesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $FandomAliasesTable,
+          FandomAliase,
+          $$FandomAliasesTableFilterComposer,
+          $$FandomAliasesTableOrderingComposer,
+          $$FandomAliasesTableAnnotationComposer,
+          $$FandomAliasesTableCreateCompanionBuilder,
+          $$FandomAliasesTableUpdateCompanionBuilder,
+          (FandomAliase, $$FandomAliasesTableReferences),
+          FandomAliase,
+          PrefetchHooks Function({bool fandomId})
+        > {
+  $$FandomAliasesTableTableManager(_$AppDatabase db, $FandomAliasesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FandomAliasesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FandomAliasesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FandomAliasesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> aliasKey = const Value.absent(),
+                Value<int> fandomId = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => FandomAliasesCompanion(
+                aliasKey: aliasKey,
+                fandomId: fandomId,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String aliasKey,
+                required int fandomId,
+                Value<int> rowid = const Value.absent(),
+              }) => FandomAliasesCompanion.insert(
+                aliasKey: aliasKey,
+                fandomId: fandomId,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$FandomAliasesTable, FandomAliase>(table),
+                  $$FandomAliasesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({fandomId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (fandomId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.fandomId,
+                        referencedTable: $$FandomAliasesTableReferences
+                            ._fandomIdTable(db),
+                        referencedColumn: $$FandomAliasesTableReferences
+                            ._fandomIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$FandomAliasesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $FandomAliasesTable,
+      FandomAliase,
+      $$FandomAliasesTableFilterComposer,
+      $$FandomAliasesTableOrderingComposer,
+      $$FandomAliasesTableAnnotationComposer,
+      $$FandomAliasesTableCreateCompanionBuilder,
+      $$FandomAliasesTableUpdateCompanionBuilder,
+      (FandomAliase, $$FandomAliasesTableReferences),
+      FandomAliase,
+      PrefetchHooks Function({bool fandomId})
     >;
 typedef $$TagSynonymsTableCreateCompanionBuilder =
     TagSynonymsCompanion Function({
@@ -7636,424 +11631,6 @@ typedef $$TagSynonymsTableProcessedTableManager =
       (TagSynonym, $$TagSynonymsTableReferences),
       TagSynonym,
       PrefetchHooks Function({bool tagId})
-    >;
-typedef $$FandomsTableCreateCompanionBuilder = FandomsCompanion Function({
-  Value<int> id,
-  required String name,
-});
-typedef $$FandomsTableUpdateCompanionBuilder = FandomsCompanion Function({
-  Value<int> id,
-  Value<String> name,
-});
-
-final class $$FandomsTableReferences
-    extends BaseReferences<_$AppDatabase, $FandomsTable, Fandom> {
-  $$FandomsTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static MultiTypedResultKey<$CharactersTable, List<Character>>
-  _charactersRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.characters,
-    aliasName: 'fandoms__id__characters__fandom_id',
-  );
-
-  $$CharactersTableProcessedTableManager get charactersRefs {
-    final manager = $$CharactersTableTableManager(
-      $_db,
-      $_db.characters,
-    ).filter((f) => f.fandomId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_charactersRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-
-  static MultiTypedResultKey<$WorksTable, List<Work>> _worksRefsTable(
-    _$AppDatabase db,
-  ) => MultiTypedResultKey.fromTable(
-    db.works,
-    aliasName: 'fandoms__id__works__fandom_id',
-  );
-
-  $$WorksTableProcessedTableManager get worksRefs {
-    final manager = $$WorksTableTableManager(
-      $_db,
-      $_db.works,
-    ).filter((f) => f.fandomId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_worksRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-
-  static MultiTypedResultKey<$WorkFandomsTable, List<WorkFandom>>
-  _workFandomsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.workFandoms,
-    aliasName: 'fandoms__id__work_fandoms__fandom_id',
-  );
-
-  $$WorkFandomsTableProcessedTableManager get workFandomsRefs {
-    final manager = $$WorkFandomsTableTableManager(
-      $_db,
-      $_db.workFandoms,
-    ).filter((f) => f.fandomId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_workFandomsRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-}
-
-class $$FandomsTableFilterComposer
-    extends Composer<_$AppDatabase, $FandomsTable> {
-  $$FandomsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  Expression<bool> charactersRefs(
-    Expression<bool> Function($$CharactersTableFilterComposer f) f,
-  ) {
-    final $$CharactersTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.characters,
-      getReferencedColumn: (t) => t.fandomId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$CharactersTableFilterComposer(
-            $db: $db,
-            $table: $db.characters,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<bool> worksRefs(
-    Expression<bool> Function($$WorksTableFilterComposer f) f,
-  ) {
-    final $$WorksTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.works,
-      getReferencedColumn: (t) => t.fandomId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$WorksTableFilterComposer(
-            $db: $db,
-            $table: $db.works,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<bool> workFandomsRefs(
-    Expression<bool> Function($$WorkFandomsTableFilterComposer f) f,
-  ) {
-    final $$WorkFandomsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.workFandoms,
-      getReferencedColumn: (t) => t.fandomId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$WorkFandomsTableFilterComposer(
-            $db: $db,
-            $table: $db.workFandoms,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $$FandomsTableOrderingComposer
-    extends Composer<_$AppDatabase, $FandomsTable> {
-  $$FandomsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $$FandomsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $FandomsTable> {
-  $$FandomsTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get name =>
-      $composableBuilder(column: $table.name, builder: (column) => column);
-
-  Expression<T> charactersRefs<T extends Object>(
-    Expression<T> Function($$CharactersTableAnnotationComposer a) f,
-  ) {
-    final $$CharactersTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.characters,
-      getReferencedColumn: (t) => t.fandomId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$CharactersTableAnnotationComposer(
-            $db: $db,
-            $table: $db.characters,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<T> worksRefs<T extends Object>(
-    Expression<T> Function($$WorksTableAnnotationComposer a) f,
-  ) {
-    final $$WorksTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.works,
-      getReferencedColumn: (t) => t.fandomId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$WorksTableAnnotationComposer(
-            $db: $db,
-            $table: $db.works,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<T> workFandomsRefs<T extends Object>(
-    Expression<T> Function($$WorkFandomsTableAnnotationComposer a) f,
-  ) {
-    final $$WorkFandomsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.workFandoms,
-      getReferencedColumn: (t) => t.fandomId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$WorkFandomsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.workFandoms,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $$FandomsTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $FandomsTable,
-          Fandom,
-          $$FandomsTableFilterComposer,
-          $$FandomsTableOrderingComposer,
-          $$FandomsTableAnnotationComposer,
-          $$FandomsTableCreateCompanionBuilder,
-          $$FandomsTableUpdateCompanionBuilder,
-          (Fandom, $$FandomsTableReferences),
-          Fandom,
-          PrefetchHooks Function({
-            bool charactersRefs,
-            bool worksRefs,
-            bool workFandomsRefs,
-          })
-        > {
-  $$FandomsTableTableManager(_$AppDatabase db, $FandomsTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$FandomsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$FandomsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$FandomsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String> name = const Value.absent(),
-          }) => FandomsCompanion(id: id, name: name),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            required String name,
-          }) => FandomsCompanion.insert(id: id, name: name),
-          withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable<$FandomsTable, Fandom>(table),
-                  $$FandomsTableReferences(db, table, e),
-                ),
-              )
-              .toList(),
-          prefetchHooksCallback:
-              ({
-                charactersRefs = false,
-                worksRefs = false,
-                workFandomsRefs = false,
-              }) {
-                return PrefetchHooks(
-                  db: db,
-                  explicitlyWatchedTables: [
-                    if (charactersRefs) db.characters,
-                    if (worksRefs) db.works,
-                    if (workFandomsRefs) db.workFandoms,
-                  ],
-                  addJoins: null,
-                  getPrefetchedDataCallback: (items) async {
-                    return [
-                      if (charactersRefs)
-                        await $_getPrefetchedData<
-                          Fandom,
-                          $FandomsTable,
-                          Character
-                        >(
-                          currentTable: table,
-                          referencedTable: $$FandomsTableReferences
-                              ._charactersRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$FandomsTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).charactersRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.fandomId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                      if (worksRefs)
-                        await $_getPrefetchedData<Fandom, $FandomsTable, Work>(
-                          currentTable: table,
-                          referencedTable: $$FandomsTableReferences
-                              ._worksRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$FandomsTableReferences(db, table, p0).worksRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.fandomId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                      if (workFandomsRefs)
-                        await $_getPrefetchedData<
-                          Fandom,
-                          $FandomsTable,
-                          WorkFandom
-                        >(
-                          currentTable: table,
-                          referencedTable: $$FandomsTableReferences
-                              ._workFandomsRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$FandomsTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).workFandomsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.fandomId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                    ];
-                  },
-                );
-              },
-        ),
-      );
-}
-
-typedef $$FandomsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $FandomsTable,
-      Fandom,
-      $$FandomsTableFilterComposer,
-      $$FandomsTableOrderingComposer,
-      $$FandomsTableAnnotationComposer,
-      $$FandomsTableCreateCompanionBuilder,
-      $$FandomsTableUpdateCompanionBuilder,
-      (Fandom, $$FandomsTableReferences),
-      Fandom,
-      PrefetchHooks Function({
-        bool charactersRefs,
-        bool worksRefs,
-        bool workFandomsRefs,
-      })
     >;
 typedef $$CharactersTableCreateCompanionBuilder = CharactersCompanion Function({
   Value<int> id,
@@ -8804,1944 +12381,6 @@ typedef $$CharacterAliasesTableProcessedTableManager =
       (CharacterAliase, $$CharacterAliasesTableReferences),
       CharacterAliase,
       PrefetchHooks Function({bool characterId})
-    >;
-typedef $$SeriesTableCreateCompanionBuilder = SeriesCompanion Function({
-  Value<int> id,
-  required String name,
-});
-typedef $$SeriesTableUpdateCompanionBuilder = SeriesCompanion Function({
-  Value<int> id,
-  Value<String> name,
-});
-
-final class $$SeriesTableReferences
-    extends BaseReferences<_$AppDatabase, $SeriesTable, SeriesItem> {
-  $$SeriesTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static MultiTypedResultKey<$WorksTable, List<Work>> _worksRefsTable(
-    _$AppDatabase db,
-  ) => MultiTypedResultKey.fromTable(
-    db.works,
-    aliasName: 'series__id__works__series_id',
-  );
-
-  $$WorksTableProcessedTableManager get worksRefs {
-    final manager = $$WorksTableTableManager(
-      $_db,
-      $_db.works,
-    ).filter((f) => f.seriesId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_worksRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-}
-
-class $$SeriesTableFilterComposer
-    extends Composer<_$AppDatabase, $SeriesTable> {
-  $$SeriesTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  Expression<bool> worksRefs(
-    Expression<bool> Function($$WorksTableFilterComposer f) f,
-  ) {
-    final $$WorksTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.works,
-      getReferencedColumn: (t) => t.seriesId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$WorksTableFilterComposer(
-            $db: $db,
-            $table: $db.works,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $$SeriesTableOrderingComposer
-    extends Composer<_$AppDatabase, $SeriesTable> {
-  $$SeriesTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $$SeriesTableAnnotationComposer
-    extends Composer<_$AppDatabase, $SeriesTable> {
-  $$SeriesTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get name =>
-      $composableBuilder(column: $table.name, builder: (column) => column);
-
-  Expression<T> worksRefs<T extends Object>(
-    Expression<T> Function($$WorksTableAnnotationComposer a) f,
-  ) {
-    final $$WorksTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.works,
-      getReferencedColumn: (t) => t.seriesId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$WorksTableAnnotationComposer(
-            $db: $db,
-            $table: $db.works,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $$SeriesTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $SeriesTable,
-          SeriesItem,
-          $$SeriesTableFilterComposer,
-          $$SeriesTableOrderingComposer,
-          $$SeriesTableAnnotationComposer,
-          $$SeriesTableCreateCompanionBuilder,
-          $$SeriesTableUpdateCompanionBuilder,
-          (SeriesItem, $$SeriesTableReferences),
-          SeriesItem,
-          PrefetchHooks Function({bool worksRefs})
-        > {
-  $$SeriesTableTableManager(_$AppDatabase db, $SeriesTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$SeriesTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$SeriesTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$SeriesTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String> name = const Value.absent(),
-          }) => SeriesCompanion(id: id, name: name),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            required String name,
-          }) => SeriesCompanion.insert(id: id, name: name),
-          withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable<$SeriesTable, SeriesItem>(table),
-                  $$SeriesTableReferences(db, table, e),
-                ),
-              )
-              .toList(),
-          prefetchHooksCallback: ({worksRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [if (worksRefs) db.works],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (worksRefs)
-                    await $_getPrefetchedData<SeriesItem, $SeriesTable, Work>(
-                      currentTable: table,
-                      referencedTable: $$SeriesTableReferences._worksRefsTable(
-                        db,
-                      ),
-                      managerFromTypedResult: (p0) =>
-                          $$SeriesTableReferences(db, table, p0).worksRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.seriesId == item.id),
-                      typedResults: items,
-                    ),
-                ];
-              },
-            );
-          },
-        ),
-      );
-}
-
-typedef $$SeriesTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $SeriesTable,
-      SeriesItem,
-      $$SeriesTableFilterComposer,
-      $$SeriesTableOrderingComposer,
-      $$SeriesTableAnnotationComposer,
-      $$SeriesTableCreateCompanionBuilder,
-      $$SeriesTableUpdateCompanionBuilder,
-      (SeriesItem, $$SeriesTableReferences),
-      SeriesItem,
-      PrefetchHooks Function({bool worksRefs})
-    >;
-typedef $$WorksTableCreateCompanionBuilder = WorksCompanion Function({
-  Value<int> id,
-  required WorkType type,
-  required WorkFormat format,
-  required String title,
-  Value<String?> author,
-  Value<String?> summary,
-  Value<String?> isbn,
-  Value<String?> sourceUrl,
-  Value<String?> coverUrl,
-  Value<String?> coverPath,
-  Value<int?> fandomId,
-  Value<ReadingStatus> status,
-  Value<bool> isComplete,
-  Value<int?> chapterCount,
-  Value<int?> currentChapter,
-  Value<double?> readOffset,
-  Value<int?> wordCount,
-  Value<int?> pageCount,
-  Value<int?> rating,
-  Value<String?> notes,
-  Value<DateTime> addedAt,
-  Value<DateTime> updatedAt,
-  Value<DateTime?> checkedAt,
-  Value<DateTime?> lastChapterAt,
-  Value<int> newChapters,
-  Value<DateTime?> deletedAt,
-  Value<DateTime?> finishedAt,
-  Value<int?> currentPage,
-  Value<bool> ownsPhysicalCopy,
-  Value<int?> seriesId,
-  Value<double?> seriesIndex,
-  Value<bool> wordsEstimated,
-  Value<bool> pagesEstimated,
-  Value<int?> characterCount,
-});
-typedef $$WorksTableUpdateCompanionBuilder = WorksCompanion Function({
-  Value<int> id,
-  Value<WorkType> type,
-  Value<WorkFormat> format,
-  Value<String> title,
-  Value<String?> author,
-  Value<String?> summary,
-  Value<String?> isbn,
-  Value<String?> sourceUrl,
-  Value<String?> coverUrl,
-  Value<String?> coverPath,
-  Value<int?> fandomId,
-  Value<ReadingStatus> status,
-  Value<bool> isComplete,
-  Value<int?> chapterCount,
-  Value<int?> currentChapter,
-  Value<double?> readOffset,
-  Value<int?> wordCount,
-  Value<int?> pageCount,
-  Value<int?> rating,
-  Value<String?> notes,
-  Value<DateTime> addedAt,
-  Value<DateTime> updatedAt,
-  Value<DateTime?> checkedAt,
-  Value<DateTime?> lastChapterAt,
-  Value<int> newChapters,
-  Value<DateTime?> deletedAt,
-  Value<DateTime?> finishedAt,
-  Value<int?> currentPage,
-  Value<bool> ownsPhysicalCopy,
-  Value<int?> seriesId,
-  Value<double?> seriesIndex,
-  Value<bool> wordsEstimated,
-  Value<bool> pagesEstimated,
-  Value<int?> characterCount,
-});
-
-final class $$WorksTableReferences
-    extends BaseReferences<_$AppDatabase, $WorksTable, Work> {
-  $$WorksTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static $FandomsTable _fandomIdTable(_$AppDatabase db) =>
-      db.fandoms.createAlias('works__fandom_id__fandoms__id');
-
-  $$FandomsTableProcessedTableManager? get fandomId {
-    final $_column = $_itemColumn<int>('fandom_id');
-    if ($_column == null) return null;
-    final manager = $$FandomsTableTableManager(
-      $_db,
-      $_db.fandoms,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_fandomIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
-
-  static $SeriesTable _seriesIdTable(_$AppDatabase db) =>
-      db.series.createAlias('works__series_id__series__id');
-
-  $$SeriesTableProcessedTableManager? get seriesId {
-    final $_column = $_itemColumn<int>('series_id');
-    if ($_column == null) return null;
-    final manager = $$SeriesTableTableManager(
-      $_db,
-      $_db.series,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_seriesIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
-
-  static MultiTypedResultKey<$WorkCharactersTable, List<WorkCharacter>>
-  _workCharactersRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.workCharacters,
-    aliasName: 'works__id__work_characters__work_id',
-  );
-
-  $$WorkCharactersTableProcessedTableManager get workCharactersRefs {
-    final manager = $$WorkCharactersTableTableManager(
-      $_db,
-      $_db.workCharacters,
-    ).filter((f) => f.workId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_workCharactersRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-
-  static MultiTypedResultKey<$WorkFandomsTable, List<WorkFandom>>
-  _workFandomsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.workFandoms,
-    aliasName: 'works__id__work_fandoms__work_id',
-  );
-
-  $$WorkFandomsTableProcessedTableManager get workFandomsRefs {
-    final manager = $$WorkFandomsTableTableManager(
-      $_db,
-      $_db.workFandoms,
-    ).filter((f) => f.workId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_workFandomsRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-
-  static MultiTypedResultKey<$ReadingDaysTable, List<ReadingDay>>
-  _readingDaysRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.readingDays,
-    aliasName: 'works__id__reading_days__work_id',
-  );
-
-  $$ReadingDaysTableProcessedTableManager get readingDaysRefs {
-    final manager = $$ReadingDaysTableTableManager(
-      $_db,
-      $_db.readingDays,
-    ).filter((f) => f.workId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_readingDaysRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-
-  static MultiTypedResultKey<$WorkTagsTable, List<WorkTag>> _workTagsRefsTable(
-    _$AppDatabase db,
-  ) => MultiTypedResultKey.fromTable(
-    db.workTags,
-    aliasName: 'works__id__work_tags__work_id',
-  );
-
-  $$WorkTagsTableProcessedTableManager get workTagsRefs {
-    final manager = $$WorkTagsTableTableManager(
-      $_db,
-      $_db.workTags,
-    ).filter((f) => f.workId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_workTagsRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-
-  static MultiTypedResultKey<$ChaptersTable, List<Chapter>> _chaptersRefsTable(
-    _$AppDatabase db,
-  ) => MultiTypedResultKey.fromTable(
-    db.chapters,
-    aliasName: 'works__id__chapters__work_id',
-  );
-
-  $$ChaptersTableProcessedTableManager get chaptersRefs {
-    final manager = $$ChaptersTableTableManager(
-      $_db,
-      $_db.chapters,
-    ).filter((f) => f.workId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_chaptersRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-
-  static MultiTypedResultKey<$DownloadsTable, List<Download>>
-  _downloadsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.downloads,
-    aliasName: 'works__id__downloads__work_id',
-  );
-
-  $$DownloadsTableProcessedTableManager get downloadsRefs {
-    final manager = $$DownloadsTableTableManager(
-      $_db,
-      $_db.downloads,
-    ).filter((f) => f.workId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_downloadsRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-
-  static MultiTypedResultKey<$WorkPairingsTable, List<WorkPairing>>
-  _workPairingsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.workPairings,
-    aliasName: 'works__id__work_pairings__work_id',
-  );
-
-  $$WorkPairingsTableProcessedTableManager get workPairingsRefs {
-    final manager = $$WorkPairingsTableTableManager(
-      $_db,
-      $_db.workPairings,
-    ).filter((f) => f.workId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_workPairingsRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-
-  static MultiTypedResultKey<$AnnotationsTable, List<Annotation>>
-  _annotationsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.annotations,
-    aliasName: 'works__id__annotations__work_id',
-  );
-
-  $$AnnotationsTableProcessedTableManager get annotationsRefs {
-    final manager = $$AnnotationsTableTableManager(
-      $_db,
-      $_db.annotations,
-    ).filter((f) => f.workId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_annotationsRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-}
-
-class $$WorksTableFilterComposer extends Composer<_$AppDatabase, $WorksTable> {
-  $$WorksTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnWithTypeConverterFilters<WorkType, WorkType, String> get type =>
-      $composableBuilder(
-        column: $table.type,
-        builder: (column) => ColumnWithTypeConverterFilters(column),
-      );
-
-  ColumnWithTypeConverterFilters<WorkFormat, WorkFormat, String> get format =>
-      $composableBuilder(
-        column: $table.format,
-        builder: (column) => ColumnWithTypeConverterFilters(column),
-      );
-
-  ColumnFilters<String> get title => $composableBuilder(
-    column: $table.title,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get author => $composableBuilder(
-    column: $table.author,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get summary => $composableBuilder(
-    column: $table.summary,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get isbn => $composableBuilder(
-    column: $table.isbn,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get sourceUrl => $composableBuilder(
-    column: $table.sourceUrl,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get coverUrl => $composableBuilder(
-    column: $table.coverUrl,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get coverPath => $composableBuilder(
-    column: $table.coverPath,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnWithTypeConverterFilters<ReadingStatus, ReadingStatus, String>
-  get status => $composableBuilder(
-    column: $table.status,
-    builder: (column) => ColumnWithTypeConverterFilters(column),
-  );
-
-  ColumnFilters<bool> get isComplete => $composableBuilder(
-    column: $table.isComplete,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get chapterCount => $composableBuilder(
-    column: $table.chapterCount,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get currentChapter => $composableBuilder(
-    column: $table.currentChapter,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get readOffset => $composableBuilder(
-    column: $table.readOffset,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get wordCount => $composableBuilder(
-    column: $table.wordCount,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get pageCount => $composableBuilder(
-    column: $table.pageCount,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get rating => $composableBuilder(
-    column: $table.rating,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get notes => $composableBuilder(
-    column: $table.notes,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get addedAt => $composableBuilder(
-    column: $table.addedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get checkedAt => $composableBuilder(
-    column: $table.checkedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get lastChapterAt => $composableBuilder(
-    column: $table.lastChapterAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get newChapters => $composableBuilder(
-    column: $table.newChapters,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
-    column: $table.deletedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get finishedAt => $composableBuilder(
-    column: $table.finishedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get currentPage => $composableBuilder(
-    column: $table.currentPage,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<bool> get ownsPhysicalCopy => $composableBuilder(
-    column: $table.ownsPhysicalCopy,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get seriesIndex => $composableBuilder(
-    column: $table.seriesIndex,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<bool> get wordsEstimated => $composableBuilder(
-    column: $table.wordsEstimated,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<bool> get pagesEstimated => $composableBuilder(
-    column: $table.pagesEstimated,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get characterCount => $composableBuilder(
-    column: $table.characterCount,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  $$FandomsTableFilterComposer get fandomId {
-    final $$FandomsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.fandomId,
-      referencedTable: $db.fandoms,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$FandomsTableFilterComposer(
-            $db: $db,
-            $table: $db.fandoms,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  $$SeriesTableFilterComposer get seriesId {
-    final $$SeriesTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.seriesId,
-      referencedTable: $db.series,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$SeriesTableFilterComposer(
-            $db: $db,
-            $table: $db.series,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  Expression<bool> workCharactersRefs(
-    Expression<bool> Function($$WorkCharactersTableFilterComposer f) f,
-  ) {
-    final $$WorkCharactersTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.workCharacters,
-      getReferencedColumn: (t) => t.workId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$WorkCharactersTableFilterComposer(
-            $db: $db,
-            $table: $db.workCharacters,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<bool> workFandomsRefs(
-    Expression<bool> Function($$WorkFandomsTableFilterComposer f) f,
-  ) {
-    final $$WorkFandomsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.workFandoms,
-      getReferencedColumn: (t) => t.workId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$WorkFandomsTableFilterComposer(
-            $db: $db,
-            $table: $db.workFandoms,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<bool> readingDaysRefs(
-    Expression<bool> Function($$ReadingDaysTableFilterComposer f) f,
-  ) {
-    final $$ReadingDaysTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.readingDays,
-      getReferencedColumn: (t) => t.workId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ReadingDaysTableFilterComposer(
-            $db: $db,
-            $table: $db.readingDays,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<bool> workTagsRefs(
-    Expression<bool> Function($$WorkTagsTableFilterComposer f) f,
-  ) {
-    final $$WorkTagsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.workTags,
-      getReferencedColumn: (t) => t.workId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$WorkTagsTableFilterComposer(
-            $db: $db,
-            $table: $db.workTags,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<bool> chaptersRefs(
-    Expression<bool> Function($$ChaptersTableFilterComposer f) f,
-  ) {
-    final $$ChaptersTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.chapters,
-      getReferencedColumn: (t) => t.workId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ChaptersTableFilterComposer(
-            $db: $db,
-            $table: $db.chapters,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<bool> downloadsRefs(
-    Expression<bool> Function($$DownloadsTableFilterComposer f) f,
-  ) {
-    final $$DownloadsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.downloads,
-      getReferencedColumn: (t) => t.workId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$DownloadsTableFilterComposer(
-            $db: $db,
-            $table: $db.downloads,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<bool> workPairingsRefs(
-    Expression<bool> Function($$WorkPairingsTableFilterComposer f) f,
-  ) {
-    final $$WorkPairingsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.workPairings,
-      getReferencedColumn: (t) => t.workId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$WorkPairingsTableFilterComposer(
-            $db: $db,
-            $table: $db.workPairings,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<bool> annotationsRefs(
-    Expression<bool> Function($$AnnotationsTableFilterComposer f) f,
-  ) {
-    final $$AnnotationsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.annotations,
-      getReferencedColumn: (t) => t.workId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$AnnotationsTableFilterComposer(
-            $db: $db,
-            $table: $db.annotations,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $$WorksTableOrderingComposer
-    extends Composer<_$AppDatabase, $WorksTable> {
-  $$WorksTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get type => $composableBuilder(
-    column: $table.type,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get format => $composableBuilder(
-    column: $table.format,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get title => $composableBuilder(
-    column: $table.title,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get author => $composableBuilder(
-    column: $table.author,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get summary => $composableBuilder(
-    column: $table.summary,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get isbn => $composableBuilder(
-    column: $table.isbn,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get sourceUrl => $composableBuilder(
-    column: $table.sourceUrl,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get coverUrl => $composableBuilder(
-    column: $table.coverUrl,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get coverPath => $composableBuilder(
-    column: $table.coverPath,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get status => $composableBuilder(
-    column: $table.status,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<bool> get isComplete => $composableBuilder(
-    column: $table.isComplete,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get chapterCount => $composableBuilder(
-    column: $table.chapterCount,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get currentChapter => $composableBuilder(
-    column: $table.currentChapter,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get readOffset => $composableBuilder(
-    column: $table.readOffset,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get wordCount => $composableBuilder(
-    column: $table.wordCount,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get pageCount => $composableBuilder(
-    column: $table.pageCount,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get rating => $composableBuilder(
-    column: $table.rating,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get notes => $composableBuilder(
-    column: $table.notes,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get addedAt => $composableBuilder(
-    column: $table.addedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get checkedAt => $composableBuilder(
-    column: $table.checkedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get lastChapterAt => $composableBuilder(
-    column: $table.lastChapterAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get newChapters => $composableBuilder(
-    column: $table.newChapters,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
-    column: $table.deletedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get finishedAt => $composableBuilder(
-    column: $table.finishedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get currentPage => $composableBuilder(
-    column: $table.currentPage,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<bool> get ownsPhysicalCopy => $composableBuilder(
-    column: $table.ownsPhysicalCopy,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get seriesIndex => $composableBuilder(
-    column: $table.seriesIndex,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<bool> get wordsEstimated => $composableBuilder(
-    column: $table.wordsEstimated,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<bool> get pagesEstimated => $composableBuilder(
-    column: $table.pagesEstimated,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get characterCount => $composableBuilder(
-    column: $table.characterCount,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  $$FandomsTableOrderingComposer get fandomId {
-    final $$FandomsTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.fandomId,
-      referencedTable: $db.fandoms,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$FandomsTableOrderingComposer(
-            $db: $db,
-            $table: $db.fandoms,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  $$SeriesTableOrderingComposer get seriesId {
-    final $$SeriesTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.seriesId,
-      referencedTable: $db.series,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$SeriesTableOrderingComposer(
-            $db: $db,
-            $table: $db.series,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$WorksTableAnnotationComposer
-    extends Composer<_$AppDatabase, $WorksTable> {
-  $$WorksTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumnWithTypeConverter<WorkType, String> get type =>
-      $composableBuilder(column: $table.type, builder: (column) => column);
-
-  GeneratedColumnWithTypeConverter<WorkFormat, String> get format =>
-      $composableBuilder(column: $table.format, builder: (column) => column);
-
-  GeneratedColumn<String> get title =>
-      $composableBuilder(column: $table.title, builder: (column) => column);
-
-  GeneratedColumn<String> get author =>
-      $composableBuilder(column: $table.author, builder: (column) => column);
-
-  GeneratedColumn<String> get summary =>
-      $composableBuilder(column: $table.summary, builder: (column) => column);
-
-  GeneratedColumn<String> get isbn =>
-      $composableBuilder(column: $table.isbn, builder: (column) => column);
-
-  GeneratedColumn<String> get sourceUrl =>
-      $composableBuilder(column: $table.sourceUrl, builder: (column) => column);
-
-  GeneratedColumn<String> get coverUrl =>
-      $composableBuilder(column: $table.coverUrl, builder: (column) => column);
-
-  GeneratedColumn<String> get coverPath =>
-      $composableBuilder(column: $table.coverPath, builder: (column) => column);
-
-  GeneratedColumnWithTypeConverter<ReadingStatus, String> get status =>
-      $composableBuilder(column: $table.status, builder: (column) => column);
-
-  GeneratedColumn<bool> get isComplete => $composableBuilder(
-    column: $table.isComplete,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get chapterCount => $composableBuilder(
-    column: $table.chapterCount,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get currentChapter => $composableBuilder(
-    column: $table.currentChapter,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<double> get readOffset => $composableBuilder(
-    column: $table.readOffset,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get wordCount =>
-      $composableBuilder(column: $table.wordCount, builder: (column) => column);
-
-  GeneratedColumn<int> get pageCount =>
-      $composableBuilder(column: $table.pageCount, builder: (column) => column);
-
-  GeneratedColumn<int> get rating =>
-      $composableBuilder(column: $table.rating, builder: (column) => column);
-
-  GeneratedColumn<String> get notes =>
-      $composableBuilder(column: $table.notes, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get addedAt =>
-      $composableBuilder(column: $table.addedAt, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get updatedAt =>
-      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get checkedAt =>
-      $composableBuilder(column: $table.checkedAt, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get lastChapterAt => $composableBuilder(
-    column: $table.lastChapterAt,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get newChapters => $composableBuilder(
-    column: $table.newChapters,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<DateTime> get deletedAt =>
-      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get finishedAt => $composableBuilder(
-    column: $table.finishedAt,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get currentPage => $composableBuilder(
-    column: $table.currentPage,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<bool> get ownsPhysicalCopy => $composableBuilder(
-    column: $table.ownsPhysicalCopy,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<double> get seriesIndex => $composableBuilder(
-    column: $table.seriesIndex,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<bool> get wordsEstimated => $composableBuilder(
-    column: $table.wordsEstimated,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<bool> get pagesEstimated => $composableBuilder(
-    column: $table.pagesEstimated,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get characterCount => $composableBuilder(
-    column: $table.characterCount,
-    builder: (column) => column,
-  );
-
-  $$FandomsTableAnnotationComposer get fandomId {
-    final $$FandomsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.fandomId,
-      referencedTable: $db.fandoms,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$FandomsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.fandoms,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  $$SeriesTableAnnotationComposer get seriesId {
-    final $$SeriesTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.seriesId,
-      referencedTable: $db.series,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$SeriesTableAnnotationComposer(
-            $db: $db,
-            $table: $db.series,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  Expression<T> workCharactersRefs<T extends Object>(
-    Expression<T> Function($$WorkCharactersTableAnnotationComposer a) f,
-  ) {
-    final $$WorkCharactersTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.workCharacters,
-      getReferencedColumn: (t) => t.workId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$WorkCharactersTableAnnotationComposer(
-            $db: $db,
-            $table: $db.workCharacters,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<T> workFandomsRefs<T extends Object>(
-    Expression<T> Function($$WorkFandomsTableAnnotationComposer a) f,
-  ) {
-    final $$WorkFandomsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.workFandoms,
-      getReferencedColumn: (t) => t.workId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$WorkFandomsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.workFandoms,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<T> readingDaysRefs<T extends Object>(
-    Expression<T> Function($$ReadingDaysTableAnnotationComposer a) f,
-  ) {
-    final $$ReadingDaysTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.readingDays,
-      getReferencedColumn: (t) => t.workId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ReadingDaysTableAnnotationComposer(
-            $db: $db,
-            $table: $db.readingDays,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<T> workTagsRefs<T extends Object>(
-    Expression<T> Function($$WorkTagsTableAnnotationComposer a) f,
-  ) {
-    final $$WorkTagsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.workTags,
-      getReferencedColumn: (t) => t.workId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$WorkTagsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.workTags,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<T> chaptersRefs<T extends Object>(
-    Expression<T> Function($$ChaptersTableAnnotationComposer a) f,
-  ) {
-    final $$ChaptersTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.chapters,
-      getReferencedColumn: (t) => t.workId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ChaptersTableAnnotationComposer(
-            $db: $db,
-            $table: $db.chapters,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<T> downloadsRefs<T extends Object>(
-    Expression<T> Function($$DownloadsTableAnnotationComposer a) f,
-  ) {
-    final $$DownloadsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.downloads,
-      getReferencedColumn: (t) => t.workId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$DownloadsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.downloads,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<T> workPairingsRefs<T extends Object>(
-    Expression<T> Function($$WorkPairingsTableAnnotationComposer a) f,
-  ) {
-    final $$WorkPairingsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.workPairings,
-      getReferencedColumn: (t) => t.workId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$WorkPairingsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.workPairings,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<T> annotationsRefs<T extends Object>(
-    Expression<T> Function($$AnnotationsTableAnnotationComposer a) f,
-  ) {
-    final $$AnnotationsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.annotations,
-      getReferencedColumn: (t) => t.workId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$AnnotationsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.annotations,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $$WorksTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $WorksTable,
-          Work,
-          $$WorksTableFilterComposer,
-          $$WorksTableOrderingComposer,
-          $$WorksTableAnnotationComposer,
-          $$WorksTableCreateCompanionBuilder,
-          $$WorksTableUpdateCompanionBuilder,
-          (Work, $$WorksTableReferences),
-          Work,
-          PrefetchHooks Function({
-            bool fandomId,
-            bool seriesId,
-            bool workCharactersRefs,
-            bool workFandomsRefs,
-            bool readingDaysRefs,
-            bool workTagsRefs,
-            bool chaptersRefs,
-            bool downloadsRefs,
-            bool workPairingsRefs,
-            bool annotationsRefs,
-          })
-        > {
-  $$WorksTableTableManager(_$AppDatabase db, $WorksTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$WorksTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$WorksTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$WorksTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                Value<WorkType> type = const Value.absent(),
-                Value<WorkFormat> format = const Value.absent(),
-                Value<String> title = const Value.absent(),
-                Value<String?> author = const Value.absent(),
-                Value<String?> summary = const Value.absent(),
-                Value<String?> isbn = const Value.absent(),
-                Value<String?> sourceUrl = const Value.absent(),
-                Value<String?> coverUrl = const Value.absent(),
-                Value<String?> coverPath = const Value.absent(),
-                Value<int?> fandomId = const Value.absent(),
-                Value<ReadingStatus> status = const Value.absent(),
-                Value<bool> isComplete = const Value.absent(),
-                Value<int?> chapterCount = const Value.absent(),
-                Value<int?> currentChapter = const Value.absent(),
-                Value<double?> readOffset = const Value.absent(),
-                Value<int?> wordCount = const Value.absent(),
-                Value<int?> pageCount = const Value.absent(),
-                Value<int?> rating = const Value.absent(),
-                Value<String?> notes = const Value.absent(),
-                Value<DateTime> addedAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<DateTime?> checkedAt = const Value.absent(),
-                Value<DateTime?> lastChapterAt = const Value.absent(),
-                Value<int> newChapters = const Value.absent(),
-                Value<DateTime?> deletedAt = const Value.absent(),
-                Value<DateTime?> finishedAt = const Value.absent(),
-                Value<int?> currentPage = const Value.absent(),
-                Value<bool> ownsPhysicalCopy = const Value.absent(),
-                Value<int?> seriesId = const Value.absent(),
-                Value<double?> seriesIndex = const Value.absent(),
-                Value<bool> wordsEstimated = const Value.absent(),
-                Value<bool> pagesEstimated = const Value.absent(),
-                Value<int?> characterCount = const Value.absent(),
-              }) => WorksCompanion(
-                id: id,
-                type: type,
-                format: format,
-                title: title,
-                author: author,
-                summary: summary,
-                isbn: isbn,
-                sourceUrl: sourceUrl,
-                coverUrl: coverUrl,
-                coverPath: coverPath,
-                fandomId: fandomId,
-                status: status,
-                isComplete: isComplete,
-                chapterCount: chapterCount,
-                currentChapter: currentChapter,
-                readOffset: readOffset,
-                wordCount: wordCount,
-                pageCount: pageCount,
-                rating: rating,
-                notes: notes,
-                addedAt: addedAt,
-                updatedAt: updatedAt,
-                checkedAt: checkedAt,
-                lastChapterAt: lastChapterAt,
-                newChapters: newChapters,
-                deletedAt: deletedAt,
-                finishedAt: finishedAt,
-                currentPage: currentPage,
-                ownsPhysicalCopy: ownsPhysicalCopy,
-                seriesId: seriesId,
-                seriesIndex: seriesIndex,
-                wordsEstimated: wordsEstimated,
-                pagesEstimated: pagesEstimated,
-                characterCount: characterCount,
-              ),
-          createCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                required WorkType type,
-                required WorkFormat format,
-                required String title,
-                Value<String?> author = const Value.absent(),
-                Value<String?> summary = const Value.absent(),
-                Value<String?> isbn = const Value.absent(),
-                Value<String?> sourceUrl = const Value.absent(),
-                Value<String?> coverUrl = const Value.absent(),
-                Value<String?> coverPath = const Value.absent(),
-                Value<int?> fandomId = const Value.absent(),
-                Value<ReadingStatus> status = const Value.absent(),
-                Value<bool> isComplete = const Value.absent(),
-                Value<int?> chapterCount = const Value.absent(),
-                Value<int?> currentChapter = const Value.absent(),
-                Value<double?> readOffset = const Value.absent(),
-                Value<int?> wordCount = const Value.absent(),
-                Value<int?> pageCount = const Value.absent(),
-                Value<int?> rating = const Value.absent(),
-                Value<String?> notes = const Value.absent(),
-                Value<DateTime> addedAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<DateTime?> checkedAt = const Value.absent(),
-                Value<DateTime?> lastChapterAt = const Value.absent(),
-                Value<int> newChapters = const Value.absent(),
-                Value<DateTime?> deletedAt = const Value.absent(),
-                Value<DateTime?> finishedAt = const Value.absent(),
-                Value<int?> currentPage = const Value.absent(),
-                Value<bool> ownsPhysicalCopy = const Value.absent(),
-                Value<int?> seriesId = const Value.absent(),
-                Value<double?> seriesIndex = const Value.absent(),
-                Value<bool> wordsEstimated = const Value.absent(),
-                Value<bool> pagesEstimated = const Value.absent(),
-                Value<int?> characterCount = const Value.absent(),
-              }) => WorksCompanion.insert(
-                id: id,
-                type: type,
-                format: format,
-                title: title,
-                author: author,
-                summary: summary,
-                isbn: isbn,
-                sourceUrl: sourceUrl,
-                coverUrl: coverUrl,
-                coverPath: coverPath,
-                fandomId: fandomId,
-                status: status,
-                isComplete: isComplete,
-                chapterCount: chapterCount,
-                currentChapter: currentChapter,
-                readOffset: readOffset,
-                wordCount: wordCount,
-                pageCount: pageCount,
-                rating: rating,
-                notes: notes,
-                addedAt: addedAt,
-                updatedAt: updatedAt,
-                checkedAt: checkedAt,
-                lastChapterAt: lastChapterAt,
-                newChapters: newChapters,
-                deletedAt: deletedAt,
-                finishedAt: finishedAt,
-                currentPage: currentPage,
-                ownsPhysicalCopy: ownsPhysicalCopy,
-                seriesId: seriesId,
-                seriesIndex: seriesIndex,
-                wordsEstimated: wordsEstimated,
-                pagesEstimated: pagesEstimated,
-                characterCount: characterCount,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable<$WorksTable, Work>(table),
-                  $$WorksTableReferences(db, table, e),
-                ),
-              )
-              .toList(),
-          prefetchHooksCallback:
-              ({
-                fandomId = false,
-                seriesId = false,
-                workCharactersRefs = false,
-                workFandomsRefs = false,
-                readingDaysRefs = false,
-                workTagsRefs = false,
-                chaptersRefs = false,
-                downloadsRefs = false,
-                workPairingsRefs = false,
-                annotationsRefs = false,
-              }) {
-                return PrefetchHooks(
-                  db: db,
-                  explicitlyWatchedTables: [
-                    if (workCharactersRefs) db.workCharacters,
-                    if (workFandomsRefs) db.workFandoms,
-                    if (readingDaysRefs) db.readingDays,
-                    if (workTagsRefs) db.workTags,
-                    if (chaptersRefs) db.chapters,
-                    if (downloadsRefs) db.downloads,
-                    if (workPairingsRefs) db.workPairings,
-                    if (annotationsRefs) db.annotations,
-                  ],
-                  addJoins:
-                      <
-                        T extends TableManagerState<
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic
-                        >
-                      >(state) {
-                        if (fandomId) {
-                          state = state.withJoin(
-                            currentTable: table,
-                            currentColumn: table.fandomId,
-                            referencedTable: $$WorksTableReferences
-                                ._fandomIdTable(db),
-                            referencedColumn: $$WorksTableReferences
-                                ._fandomIdTable(db)
-                                .id,
-                          ) as T;
-                        }
-                        if (seriesId) {
-                          state = state.withJoin(
-                            currentTable: table,
-                            currentColumn: table.seriesId,
-                            referencedTable: $$WorksTableReferences
-                                ._seriesIdTable(db),
-                            referencedColumn: $$WorksTableReferences
-                                ._seriesIdTable(db)
-                                .id,
-                          ) as T;
-                        }
-
-                        return state;
-                      },
-                  getPrefetchedDataCallback: (items) async {
-                    return [
-                      if (workCharactersRefs)
-                        await $_getPrefetchedData<
-                          Work,
-                          $WorksTable,
-                          WorkCharacter
-                        >(
-                          currentTable: table,
-                          referencedTable: $$WorksTableReferences
-                              ._workCharactersRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$WorksTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).workCharactersRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.workId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                      if (workFandomsRefs)
-                        await $_getPrefetchedData<
-                          Work,
-                          $WorksTable,
-                          WorkFandom
-                        >(
-                          currentTable: table,
-                          referencedTable: $$WorksTableReferences
-                              ._workFandomsRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$WorksTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).workFandomsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.workId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                      if (readingDaysRefs)
-                        await $_getPrefetchedData<
-                          Work,
-                          $WorksTable,
-                          ReadingDay
-                        >(
-                          currentTable: table,
-                          referencedTable: $$WorksTableReferences
-                              ._readingDaysRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$WorksTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).readingDaysRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.workId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                      if (workTagsRefs)
-                        await $_getPrefetchedData<Work, $WorksTable, WorkTag>(
-                          currentTable: table,
-                          referencedTable: $$WorksTableReferences
-                              ._workTagsRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$WorksTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).workTagsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.workId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                      if (chaptersRefs)
-                        await $_getPrefetchedData<Work, $WorksTable, Chapter>(
-                          currentTable: table,
-                          referencedTable: $$WorksTableReferences
-                              ._chaptersRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$WorksTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).chaptersRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.workId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                      if (downloadsRefs)
-                        await $_getPrefetchedData<Work, $WorksTable, Download>(
-                          currentTable: table,
-                          referencedTable: $$WorksTableReferences
-                              ._downloadsRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$WorksTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).downloadsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.workId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                      if (workPairingsRefs)
-                        await $_getPrefetchedData<
-                          Work,
-                          $WorksTable,
-                          WorkPairing
-                        >(
-                          currentTable: table,
-                          referencedTable: $$WorksTableReferences
-                              ._workPairingsRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$WorksTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).workPairingsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.workId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                      if (annotationsRefs)
-                        await $_getPrefetchedData<
-                          Work,
-                          $WorksTable,
-                          Annotation
-                        >(
-                          currentTable: table,
-                          referencedTable: $$WorksTableReferences
-                              ._annotationsRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$WorksTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).annotationsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.workId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                    ];
-                  },
-                );
-              },
-        ),
-      );
-}
-
-typedef $$WorksTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $WorksTable,
-      Work,
-      $$WorksTableFilterComposer,
-      $$WorksTableOrderingComposer,
-      $$WorksTableAnnotationComposer,
-      $$WorksTableCreateCompanionBuilder,
-      $$WorksTableUpdateCompanionBuilder,
-      (Work, $$WorksTableReferences),
-      Work,
-      PrefetchHooks Function({
-        bool fandomId,
-        bool seriesId,
-        bool workCharactersRefs,
-        bool workFandomsRefs,
-        bool readingDaysRefs,
-        bool workTagsRefs,
-        bool chaptersRefs,
-        bool downloadsRefs,
-        bool workPairingsRefs,
-        bool annotationsRefs,
-      })
     >;
 typedef $$WorkCharactersTableCreateCompanionBuilder =
     WorkCharactersCompanion Function({
@@ -14341,19 +15980,23 @@ typedef $$AnnotationsTableProcessedTableManager =
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
-  $$TagsTableTableManager get tags => $$TagsTableTableManager(_db, _db.tags);
-  $$TagSynonymsTableTableManager get tagSynonyms =>
-      $$TagSynonymsTableTableManager(_db, _db.tagSynonyms);
   $$FandomsTableTableManager get fandoms =>
       $$FandomsTableTableManager(_db, _db.fandoms);
-  $$CharactersTableTableManager get characters =>
-      $$CharactersTableTableManager(_db, _db.characters);
-  $$CharacterAliasesTableTableManager get characterAliases =>
-      $$CharacterAliasesTableTableManager(_db, _db.characterAliases);
   $$SeriesTableTableManager get series =>
       $$SeriesTableTableManager(_db, _db.series);
   $$WorksTableTableManager get works =>
       $$WorksTableTableManager(_db, _db.works);
+  $$TagsTableTableManager get tags => $$TagsTableTableManager(_db, _db.tags);
+  $$TagSuggestionsTableTableManager get tagSuggestions =>
+      $$TagSuggestionsTableTableManager(_db, _db.tagSuggestions);
+  $$FandomAliasesTableTableManager get fandomAliases =>
+      $$FandomAliasesTableTableManager(_db, _db.fandomAliases);
+  $$TagSynonymsTableTableManager get tagSynonyms =>
+      $$TagSynonymsTableTableManager(_db, _db.tagSynonyms);
+  $$CharactersTableTableManager get characters =>
+      $$CharactersTableTableManager(_db, _db.characters);
+  $$CharacterAliasesTableTableManager get characterAliases =>
+      $$CharacterAliasesTableTableManager(_db, _db.characterAliases);
   $$WorkCharactersTableTableManager get workCharacters =>
       $$WorkCharactersTableTableManager(_db, _db.workCharacters);
   $$WorkFandomsTableTableManager get workFandoms =>

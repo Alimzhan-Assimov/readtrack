@@ -146,7 +146,8 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
       for (final f in existing?.crossovers ?? const <Fandom>[]) f.name,
     ];
     _characters = [
-      for (final c in existing?.characters ?? const <Character>[]) c.name,
+      for (final c in existing?.confirmedCharacters ?? const <Character>[])
+        c.name,
     ];
     _seriesIndex.text = _formatIndex(w?.seriesIndex);
     _url.text = w?.sourceUrl ?? '';
@@ -448,6 +449,9 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
         await _db.saveChapterList(id, chapterListing(info));
       }
       await _db.fillMissingCounts(id);
+      if (widget.existing == null) {
+        await suggestKeywordTags(_db, id, '${_title.text}\n${_summary.text}');
+      }
     } catch (e, stack) {
       logError('save', 'Saving an entry failed', error: e, stack: stack);
       // Never leave the button stuck without saying why.
