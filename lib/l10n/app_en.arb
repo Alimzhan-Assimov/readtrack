@@ -622,8 +622,16 @@
     }
   },
   "addByIsbn": "By ISBN",
-  "addByIsbnHint": "A paper book: details and cover from Open Library",
+  "addByIsbnHint": "A paper book: details and cover from Open Library or the German National Library",
   "isbnLookUp": "Look up this ISBN",
+  "isbnLookingUp": "Looking up ISBN {isbn}…",
+  "@isbnLookingUp": {
+    "placeholders": {
+      "isbn": {
+        "type": "String"
+      }
+    }
+  },
   "isbnInvalid": "That isn't a valid ISBN-10 or ISBN-13.",
   "isbnNotFound": "No details found for this ISBN. Please fill them in.",
   "isbnLookupFailed": "The lookup failed: {error}",
