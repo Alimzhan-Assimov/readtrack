@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:opds="http://opds-spec.org/2010/catalog" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:relevance="http://a9.com/-/opensearch/extensions/relevance/1.0/">
+<id>http://www.gutenberg.org/ebooks/2600.opds</id>
+<updated>2026-10-24T06:39:17Z</updated>
+<title>War and Peace by graf Leo Tolstoy</title>
+<subtitle>Free eBooks since 1971.</subtitle>
+<author>
+<name>Project Gutenberg</name>
+<uri>https://www.gutenberg.org</uri>
+<email>webmaster@gutenberg.org</email>
+</author>
+<icon>https://www.gutenberg.org/gutenberg/favicon.ico</icon>
+<link rel="search" type="application/opensearchdescription+xml" title="Project Gutenberg Catalog Search" href="https://www.gutenberg.org/catalog/osd-books.xml"/>
+<link rel="self" title="This Page" type="application/atom+xml;profile=opds-catalog" href="/ebooks/2600.opds"/>
+<link rel="alternate" type="text/html" title="HTML Page" href="/ebooks/2600"/>
+<link rel="start" title="Start Page" type="application/atom+xml;profile=opds-catalog" href="/ebooks.opds/"/>
+<opensearch:itemsPerPage>25</opensearch:itemsPerPage>
+<opensearch:startIndex>1</opensearch:startIndex>
+<entry>
+<updated>2026-10-24T06:39:17Z</updated>
+<title>War and Peace</title>
+<content type="xhtml">
+<div xmlns="http://www.w3.org/1999/xhtml">
+<p>This edition had all images removed.</p>
+<p>
+Title:
+War and Peace
+</p>
+<p>
+Note:
+Wikipedia page about this book: https:<a href="//en.wikipedia.org/wiki/War_and_Peace">//en.wikipedia.org/wiki/War_and_Peace</a>
+</p>
+<p>
+Credits:
+An Anonymous Volunteer and David Widger
+</p>
+<p>
+Summary:
+"War and Peace" by graf Leo Tolstoy is a literary work published in 1869. Set during the Napoleonic Wars, it chronicles the French invasion of Russia through five interlocking narratives following different Russian aristocratic families. The work blends fictional storytelling with philosophical discussions about history, war, and power. Tolstoy himself hesitated to classify it, saying it is "not a novel, even less is it a poem, and still less a historical chronicle." It remains one of the most praised classics of world literature. (This is an automatically generated summary.)
+</p>
+<p>
+Reading Level:
+Reading ease score: 78.3 (7th grade). Fairly easy to read.
+</p>
+<p>Author: Tolstoy, Leo, graf, 1828-1910</p><p>Translator: Maude, Aylmer, 1858-1938</p><p>Translator: Maude, Louise, 1855-1939</p>
+<p>EBook No.: 2600</p>
+<p>Published: Apr 1, 2001</p>
+<p>Downloads: 48849</p>
+<p>Language: English</p>
+<p>Subject: Historical fiction</p><p>Subject: War stories</p><p>Subject: Napoleonic Wars, 1800-1815 -- Campaigns -- Russia -- Fiction</p><p>Subject: Russia -- History -- Alexander I, 1801-1825 -- Fiction</p><p>Subject: Aristocracy (Social class) -- Russia -- Fiction</p>
+<p>LoCC: Language and Literatures: Slavic (including Russian), Languages and Literature</p>
+<p>Category: Text</p>
+<p>Rights: Public domain in the USA.</p>
+</div>
+</content>
+<id>urn:gutenberg:2600:2</id>
+<published>2001-04-01T00:00:00+00:00</published>
+<rights>Public domain in the USA.</rights>
+<contributor>
+<name>Maude, Louise</name>
+</contributor>
+<contributor>
+<name>Maude, Aylmer</name>
+</contributor>
+<author>
+<name>Tolstoy, Leo, graf</name>
+</author>
+<category scheme="http://purl.org/dc/terms/LCSH" term="Historical fiction"/><category scheme="http://purl.org/dc/terms/LCSH" term="War stories"/><category scheme="http://purl.org/dc/terms/LCSH" term="Napoleonic Wars, 1800-1815 -- Campaigns -- Russia -- Fiction"/><category scheme="http://purl.org/dc/terms/LCSH" term="Russia -- History -- Alexander I, 1801-1825 -- Fiction"/><category scheme="http://purl.org/dc/terms/LCSH" term="Aristocracy (Social class) -- Russia -- Fiction"/>
+<category scheme="http://purl.org/dc/terms/LCC" term="PG" label="Language and Literatures: Slavic (including Russian), Languages and Literature"/>
+<category scheme="http://purl.org/dc/terms/DCMIType" term="Text"/>
+<dcterms:language>en</dcterms:language>
+<relevance:score>1</relevance:score>
+<link type="application/epub+zip" rel="http://opds-spec.org/acquisition" title="EPUB (older e-readers, no images)" length="1802904" href="https://www.gutenberg.org/ebooks/2600.epub.noimages"/>
+<link type="application/x-mobipocket-ebook" rel="http://opds-spec.org/acquisition" title="Kindle (no images)" length="2166056" href="https://www.gutenberg.org/ebooks/2600.kindle.noimages"/>
+<link type="image/jpeg" rel="http://opds-spec.org/image" href="https://www.gutenberg.org/cache/epub/2600/pg2600.cover.medium.jpg"/>
+<link type="image/jpeg" rel="http://opds-spec.org/image/thumbnail" href="https://www.gutenberg.org/cache/epub/2600/pg2600.cover.small.jpg"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/author/136.opds" title="By Tolstoy, Leo, graf…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/author/4589.opds" title="By Maude, Aylmer…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/author/500.opds" title="By Maude, Louise…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/subject/60.opds" title="On Historical fiction…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/subject/808.opds" title="On War stories…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/subject/3301.opds" title="On Napoleonic Wars, 1800-1815 -- Campaigns -- Russia -- Fiction…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/subject/3302.opds" title="On Russia -- History -- Alexander I, 1801-1825 -- Fiction…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/subject/15214.opds" title="On Aristocracy (Social class) -- Russia -- Fiction…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/bookshelf/149.opds" title="In Napoleonic(Bookshelf)…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/bookshelf/56.opds" title="In Opera…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/bookshelf/41.opds" title="In Historical Fiction…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/bookshelf/13.opds" title="In Best Books Ever Listings…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/bookshelf/49.opds" title="In Movie Books…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/bookshelf/635.opds" title="In Category: Historical Novels…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/bookshelf/645.opds" title="In Category: Novels…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/bookshelf/649.opds" title="In Category: Classics of Literature…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/bookshelf/650.opds" title="In Category: Russian Literature…"/>
+</entry>
+<entry>
+<updated>2026-10-24T06:39:17Z</updated>
+<title>War and Peace</title>
+<content type="xhtml">
+<div xmlns="http://www.w3.org/1999/xhtml">
+<p>This edition has images.</p>
+<p>
+Title:
+War and Peace
+</p>
+<p>
+Note:
+Wikipedia page about this book: https:<a href="//en.wikipedia.org/wiki/War_and_Peace">//en.wikipedia.org/wiki/War_and_Peace</a>
+</p>
+<p>
+Credits:
+An Anonymous Volunteer and David Widger
+</p>
+<p>
+Summary:
+"War and Peace" by graf Leo Tolstoy is a literary work published in 1869. Set during the Napoleonic Wars, it chronicles the French invasion of Russia through five interlocking narratives following different Russian aristocratic families. The work blends fictional storytelling with philosophical discussions about history, war, and power. Tolstoy himself hesitated to classify it, saying it is "not a novel, even less is it a poem, and still less a historical chronicle." It remains one of the most praised classics of world literature. (This is an automatically generated summary.)
+</p>
+<p>
+Reading Level:
+Reading ease score: 78.3 (7th grade). Fairly easy to read.
+</p>
+<p>Author: Tolstoy, Leo, graf, 1828-1910</p><p>Translator: Maude, Aylmer, 1858-1938</p><p>Translator: Maude, Louise, 1855-1939</p>
+<p>EBook No.: 2600</p>
+<p>Published: Apr 1, 2001</p>
+<p>Downloads: 48849</p>
+<p>Language: English</p>
+<p>Subject: Historical fiction</p><p>Subject: War stories</p><p>Subject: Napoleonic Wars, 1800-1815 -- Campaigns -- Russia -- Fiction</p><p>Subject: Russia -- History -- Alexander I, 1801-1825 -- Fiction</p><p>Subject: Aristocracy (Social class) -- Russia -- Fiction</p>
+<p>LoCC: Language and Literatures: Slavic (including Russian), Languages and Literature</p>
+<p>Category: Text</p>
+<p>Rights: Public domain in the USA.</p>
+</div>
+</content>
+<id>urn:gutenberg:2600:3</id>
+<published>2001-04-01T00:00:00+00:00</published>
+<rights>Public domain in the USA.</rights>
+<contributor>
+<name>Maude, Louise</name>
+</contributor>
+<contributor>
+<name>Maude, Aylmer</name>
+</contributor>
+<author>
+<name>Tolstoy, Leo, graf</name>
+</author>
+<category scheme="http://purl.org/dc/terms/LCSH" term="Historical fiction"/><category scheme="http://purl.org/dc/terms/LCSH" term="War stories"/><category scheme="http://purl.org/dc/terms/LCSH" term="Napoleonic Wars, 1800-1815 -- Campaigns -- Russia -- Fiction"/><category scheme="http://purl.org/dc/terms/LCSH" term="Russia -- History -- Alexander I, 1801-1825 -- Fiction"/><category scheme="http://purl.org/dc/terms/LCSH" term="Aristocracy (Social class) -- Russia -- Fiction"/>
+<category scheme="http://purl.org/dc/terms/LCC" term="PG" label="Language and Literatures: Slavic (including Russian), Languages and Literature"/>
+<category scheme="http://purl.org/dc/terms/DCMIType" term="Text"/>
+<dcterms:language>en</dcterms:language>
+<relevance:score>1</relevance:score>
+<link type="application/epub+zip" rel="http://opds-spec.org/acquisition" title="EPUB3 (E-readers incl. Send-to-Kindle)" length="1832521" href="https://www.gutenberg.org/ebooks/2600.epub3.images"/>
+<link type="application/epub+zip" rel="http://opds-spec.org/acquisition" title="EPUB (older e-readers)" length="1855300" href="https://www.gutenberg.org/ebooks/2600.epub.images"/>
+<link type="application/x-mobipocket-ebook" rel="http://opds-spec.org/acquisition" title="Kindles (kf8)" length="2559635" href="https://www.gutenberg.org/ebooks/2600.kf8.images"/>
+<link type="application/x-mobipocket-ebook" rel="http://opds-spec.org/acquisition" title="Older Kindles" length="2214399" href="https://www.gutenberg.org/ebooks/2600.kindle.images"/>
+<link type="image/jpeg" rel="http://opds-spec.org/image" href="https://www.gutenberg.org/cache/epub/2600/pg2600.cover.medium.jpg"/>
+<link type="image/jpeg" rel="http://opds-spec.org/image/thumbnail" href="https://www.gutenberg.org/cache/epub/2600/pg2600.cover.small.jpg"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/author/136.opds" title="By Tolstoy, Leo, graf…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/author/4589.opds" title="By Maude, Aylmer…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/author/500.opds" title="By Maude, Louise…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/subject/60.opds" title="On Historical fiction…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/subject/808.opds" title="On War stories…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/subject/3301.opds" title="On Napoleonic Wars, 1800-1815 -- Campaigns -- Russia -- Fiction…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/subject/3302.opds" title="On Russia -- History -- Alexander I, 1801-1825 -- Fiction…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/subject/15214.opds" title="On Aristocracy (Social class) -- Russia -- Fiction…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/bookshelf/149.opds" title="In Napoleonic(Bookshelf)…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/bookshelf/56.opds" title="In Opera…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/bookshelf/41.opds" title="In Historical Fiction…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/bookshelf/13.opds" title="In Best Books Ever Listings…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/bookshelf/49.opds" title="In Movie Books…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/bookshelf/635.opds" title="In Category: Historical Novels…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/bookshelf/645.opds" title="In Category: Novels…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/bookshelf/649.opds" title="In Category: Classics of Literature…"/>
+<link type="application/atom+xml;profile=opds-catalog" rel="related" href="/ebooks/bookshelf/650.opds" title="In Category: Russian Literature…"/>
+</entry>
+</feed>
