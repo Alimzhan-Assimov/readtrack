@@ -1,4 +1,7 @@
+import 'dart:async';
 import 'dart:convert';
+
+import 'package:xml/xml.dart';
 
 import 'fetcher.dart';
 
@@ -23,21 +26,42 @@ class BookDetails {
   final List<String> tags;
 }
 
-/// Looks [isbn] up in Open Library, then Google Books; null if neither
-/// knows it. Both are free and need no key.
+typedef _Catalog = Future<BookDetails?> Function(
+  String isbn,
+  PageFetcher fetcher,
+);
+
+/// Looks [isbn] up in Open Library, the German National Library (first for
+/// German ISBNs, which Open Library rarely has) and Google Books; null if
+/// none knows it. All are free and need no key. Throws only if no catalog
+/// answered at all; Google Books without a key is usually over its daily
+/// quota, so it gets little time.
 Future<BookDetails?> lookupIsbn(String isbn, PageFetcher fetcher) async {
+  final german = isbn.startsWith('9783') || isbn.length == 10 && isbn[0] == '3';
+  final catalogs = <(_Catalog, Duration)>[
+    if (german) (_dnb, const Duration(seconds: 15)),
+    (_openLibrary, const Duration(seconds: 15)),
+    if (!german) (_dnb, const Duration(seconds: 15)),
+    (_googleBooks, const Duration(seconds: 6)),
+  ];
   SourceException? failure;
-  for (final lookup in [_openLibrary, _googleBooks]) {
+  var answered = false;
+  for (final (lookup, limit) in catalogs) {
     try {
-      final details = await lookup(isbn, fetcher);
+      final details = await lookup(isbn, fetcher).timeout(limit);
       if (details != null) return details;
+      answered = true;
     } on SourceException catch (e) {
       failure ??= e;
+    } on TimeoutException {
+      // Too slow (or retrying a quota error); try the next catalog.
     } on FormatException {
-      // An unexpected answer; try the next catalog.
+      answered = true; // An unexpected answer; try the next catalog.
     }
   }
-  if (failure != null) throw failure;
+  if (!answered) {
+    throw failure ?? SourceException('No book catalog answered in time.');
+  }
   return null;
 }
 
@@ -94,6 +118,65 @@ Future<BookDetails?> _googleBooks(String isbn, PageFetcher fetcher) async {
         ? null
         : Uri.parse(thumbnail.replaceFirst('http://', 'https://')),
     tags: [for (final c in info['categories'] as List? ?? const []) '$c'],
+  );
+}
+
+/// The German National Library's catalog (SRU, MARC 21): German-language
+/// books and translations.
+Future<BookDetails?> _dnb(String isbn, PageFetcher fetcher) async {
+  final xml = XmlDocument.parse(
+    await fetcher.getText(
+      Uri.https('services.dnb.de', '/sru/dnb', {
+        'version': '1.1',
+        'operation': 'searchRetrieve',
+        'query': 'num=$isbn',
+        'recordSchema': 'MARC21-xml',
+        'maximumRecords': '1',
+      }),
+    ),
+  );
+  final record = xml
+      .findAllElements('record', namespaceUri: '*')
+      .where((e) => e.getAttribute('type') == 'Bibliographic')
+      .firstOrNull;
+  if (record == null) return null;
+  List<String> field(String tag, String code) => [
+    for (final f in record.findAllElements('datafield', namespaceUri: '*'))
+      if (f.getAttribute('tag') == tag)
+        for (final s in f.findElements('subfield', namespaceUri: '*'))
+          if (s.getAttribute('code') == code)
+            // Without the non-sorting marks around "Der" in "Der Schwarm".
+            s.innerText.replaceAll(RegExp('[\u0098\u009c¬]'), '').trim(),
+  ];
+  final title = field('245', 'a').firstOrNull;
+  if (title == null || title.isEmpty) return null;
+  // A short subtitle; "Roman" or a long edition note is left out.
+  final subtitle = field('245', 'b').firstOrNull;
+  final keepSubtitle =
+      subtitle != null &&
+      subtitle.contains(' ') &&
+      subtitle.length <= 80 &&
+      !subtitle.contains(' - ');
+  // "Wisser, Daniel" → "Daniel Wisser".
+  final authors = [
+    for (final name in field('100', 'a'))
+      switch (name.split(', ')) {
+        [final last, final first] => '$first $last',
+        _ => name,
+      },
+  ];
+  final pages = RegExp(r'(\d+)\s*(?:Seiten|S\.|pages|p\.)')
+      .firstMatch(field('300', 'a').firstOrNull ?? '');
+  return BookDetails(
+    isbn: isbn,
+    title: keepSubtitle ? '$title: $subtitle' : title,
+    author: authors.isEmpty
+        ? field('245', 'c').firstOrNull
+        : authors.join(', '),
+    summary: field('520', 'a').firstOrNull,
+    pageCount: pages == null ? null : int.parse(pages[1]!),
+    coverUrl: Uri.https('portal.dnb.de', '/opac/mvb/cover', {'isbn': isbn}),
+    tags: field('650', 'a').take(8).toList(),
   );
 }
 

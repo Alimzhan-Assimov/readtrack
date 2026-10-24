@@ -262,10 +262,10 @@ void main() {
       ),
       tagNames: tags,
     );
-    final a = await add('A', ['Kingdom Management']);
-    final b = await add('B', ['Kingdom Building', 'Kingdom Management']);
+    final a = await add('A', ['Realm Management']);
+    final b = await add('B', ['Kingdom Building', 'Realm Management']);
     final tags = {for (final t in await db.allTags()) t.name: t.id};
-    await db.mergeTag(tags['Kingdom Management']!, tags['Kingdom Building']!);
+    await db.mergeTag(tags['Realm Management']!, tags['Kingdom Building']!);
     for (final id in [a, b]) {
       expect(
         [for (final t in (await db.watchWork(id).first)!.tags) t.name],
@@ -273,18 +273,15 @@ void main() {
       );
     }
     expect((await db.watchTagSynonyms().first)[tags['Kingdom Building']], [
-      'kingdom management',
+      'realm management',
     ]);
     // Later imports with the old name land on the merged tag.
-    final c = await add('C', ['kingdom management']);
+    final c = await add('C', ['realm management']);
     expect((await db.watchWork(c).first)!.tags.single.name, 'Kingdom Building');
 
-    await db.removeTagSynonym('kingdom management');
-    final d = await add('D', ['Kingdom Management']);
-    expect(
-      (await db.watchWork(d).first)!.tags.single.name,
-      'Kingdom Management',
-    );
+    await db.removeTagSynonym('realm management');
+    final d = await add('D', ['Realm Management']);
+    expect((await db.watchWork(d).first)!.tags.single.name, 'Realm Management');
   });
 
   test('sorting by title ignores case', () async {

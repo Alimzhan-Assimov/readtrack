@@ -323,6 +323,25 @@ class _LibraryScreenState extends State<LibraryScreen> {
       messenger.showSnackBar(SnackBar(content: Text(l10n.isbnInvalid)));
       return null;
     }
+    // Several catalogs may be asked, which takes a few seconds.
+    unawaited(
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          content: Row(
+            children: [
+              const SizedBox.square(
+                dimension: 24,
+                child: CircularProgressIndicator(),
+              ),
+              const SizedBox(width: 16),
+              Expanded(child: Text(l10n.isbnLookingUp(isbn))),
+            ],
+          ),
+        ),
+      ),
+    );
     BookDetails? details;
     final fetcher = HttpFetcher();
     try {
@@ -335,6 +354,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
         SnackBar(content: Text(l10n.isbnLookupFailed(e.message))),
       );
     } finally {
+      navigator.pop(); // the progress dialog
       await fetcher.close();
     }
     return navigator.push<int>(

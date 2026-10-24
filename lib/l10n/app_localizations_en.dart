@@ -586,79 +586,46 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteDownload => 'Delete download';
 
   @override
-  String get aiSettingsTitle => 'AI (optional)';
-
-  @override
-  String get aiSettingsIntro =>
-      'An AI service can suggest tags from a story\'s chapters. You choose the service and bring your own key (Ollama runs on your computer for free). Text is sent only when you ask, and you see how much first. ReadTrack never uses texts to train a model.';
-
-  @override
-  String get aiProvider => 'Service';
-
-  @override
-  String get aiOff => 'Off';
-
-  @override
-  String get aiUrl => 'Address';
-
-  @override
-  String get aiModel => 'Model';
-
-  @override
-  String get aiModelRequired => 'Required';
-
-  @override
-  String get aiKey => 'API key';
-
-  @override
-  String get aiKeyHint =>
-      'Kept in your system\'s keyring, not in ReadTrack\'s database, backups or sync.';
-
-  @override
-  String get aiTest => 'Test';
-
-  @override
-  String get aiTestOk => 'Works.';
-
-  @override
-  String get aiTestOdd =>
-      'The service answered, but not as expected. Try another model.';
-
-  @override
-  String get aiSuggestTags => 'Suggest with AI';
-
-  @override
-  String get aiModeQuick => 'Quick';
-
-  @override
-  String get aiModeQuickHint => 'Summary and the first three chapters';
-
-  @override
-  String get aiModeThorough => 'Thorough';
-
-  @override
-  String get aiModeThoroughHint =>
-      'Summary and chapters from the start, the middle and the end';
-
-  @override
-  String get aiModeNew => 'New chapters';
-
-  @override
-  String aiModeNewHint(int chapter) {
-    return 'Only chapters after chapter $chapter, analyzed last time';
+  String adultTagsHidden(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tags marked 18+ are hidden',
+      one: '1 tag marked 18+ is hidden',
+    );
+    return '$_temp0 because “Hide 18+ tags” is on.';
   }
 
   @override
-  String aiWillSend(int words, String service) {
-    return 'About $words words will be sent to $service.';
+  String get updateDetails => 'Update details';
+
+  @override
+  String get detailsUpdated =>
+      'Took the site\'s current details: characters, series, franchise and tags were added where missing.';
+
+  @override
+  String get updateAllDetails => 'Update details of all online stories';
+
+  @override
+  String get updateAllDetailsHint =>
+      'Adds characters, series, franchises and tags the sites list now, e.g. for stories added before ReadTrack kept them. Your own changes stay.';
+
+  @override
+  String updatingDetails(int done, int total) {
+    return 'Updating $done of $total…';
   }
 
   @override
-  String get aiNoChapters =>
-      'No downloaded chapters: only the summary is sent.';
-
-  @override
-  String get aiSend => 'Send';
+  String detailsUpdatedAll(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Updated; $count stories could not be loaded',
+      one: 'Updated; 1 story could not be loaded',
+      zero: 'All stories updated',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get suggestTags => 'Suggest tags';
@@ -1039,10 +1006,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addByIsbnHint =>
-      'A paper book: details and cover from Open Library';
+      'A paper book: details and cover from Open Library or the German National Library';
 
   @override
   String get isbnLookUp => 'Look up this ISBN';
+
+  @override
+  String isbnLookingUp(String isbn) {
+    return 'Looking up ISBN $isbn…';
+  }
 
   @override
   String get isbnInvalid => 'That isn\'t a valid ISBN-10 or ISBN-13.';
@@ -1908,4 +1880,79 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get restoredFromTrash => 'Restored from the trash';
+
+  @override
+  String get aiSettingsTitle => 'AI (optional)';
+
+  @override
+  String get aiSettingsIntro =>
+      'An AI service can suggest tags from a story\'s chapters. You choose the service and bring your own key (Ollama runs on your computer for free). Text is sent only when you ask, and you see how much first. ReadTrack never uses texts to train a model.';
+
+  @override
+  String get aiProvider => 'Service';
+
+  @override
+  String get aiOff => 'Off';
+
+  @override
+  String get aiUrl => 'Address';
+
+  @override
+  String get aiModel => 'Model';
+
+  @override
+  String get aiModelRequired => 'Required';
+
+  @override
+  String get aiKey => 'API key';
+
+  @override
+  String get aiKeyHint =>
+      'Kept in your system\'s keyring, not in ReadTrack\'s database, backups or sync.';
+
+  @override
+  String get aiTest => 'Test';
+
+  @override
+  String get aiTestOk => 'Works.';
+
+  @override
+  String get aiTestOdd =>
+      'The service answered, but not as expected. Try another model.';
+
+  @override
+  String get aiSuggestTags => 'Suggest with AI';
+
+  @override
+  String get aiModeQuick => 'Quick';
+
+  @override
+  String get aiModeQuickHint => 'Summary and the first three chapters';
+
+  @override
+  String get aiModeThorough => 'Thorough';
+
+  @override
+  String get aiModeThoroughHint =>
+      'Summary and chapters from the start, the middle and the end';
+
+  @override
+  String get aiModeNew => 'New chapters';
+
+  @override
+  String aiModeNewHint(int chapter) {
+    return 'Only chapters after chapter $chapter, analyzed last time';
+  }
+
+  @override
+  String aiWillSend(int words, String service) {
+    return 'About $words words will be sent to $service.';
+  }
+
+  @override
+  String get aiNoChapters =>
+      'No downloaded chapters: only the summary is sent.';
+
+  @override
+  String get aiSend => 'Send';
 }

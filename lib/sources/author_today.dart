@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:html/dom.dart' as dom;
+
 import '../data/enums.dart';
 import 'author_today_fetcher.dart';
 import 'fetcher.dart';
@@ -54,7 +56,9 @@ class AuthorTodaySource extends StorySource {
     return StoryInfo(
       url: storyUrl,
       siteName: name,
-      type: WorkType.book,
+      // Published chapter by chapter; the "Фанфик" genre makes it fan
+      // fiction (see storyType).
+      type: WorkType.webnovel,
       title: title,
       author: authors.isEmpty ? null : authors.join(', '),
       summary: annotation == null
@@ -65,6 +69,7 @@ class AuthorTodaySource extends StorySource {
         for (final a in doc.querySelectorAll('.book-genres a')) squash(a.text),
         for (final a in doc.querySelectorAll('.tags a')) squash(a.text),
       ],
+      series: _series(doc),
       characterCount: parseCount(
         doc
             .querySelector('[data-hint^="Размер, кол-во знаков"]')
@@ -87,6 +92,21 @@ class AuthorTodaySource extends StorySource {
             url: storyUrl.resolve(a.attributes['href']!),
           ),
       ],
+    );
+  }
+
+  /// "Цикл: <a href="/work/series/1">🥥 Name</a><span>#2</span>".
+  static ({String name, double? index})? _series(dom.Document doc) {
+    final link = doc.querySelector('a[href^="/work/series/"]');
+    final name = squash(link?.text ?? '')
+        .replaceFirst(RegExp(r'^[^\p{L}\p{N}]+', unicode: true), '');
+    if (link == null || name.isEmpty) return null;
+    final number = RegExp(r'#\s*(\d+(?:[.,]\d+)?)')
+        .firstMatch(link.nextElementSibling?.text ?? '')
+        ?.group(1);
+    return (
+      name: name,
+      index: number == null ? null : double.parse(number.replaceAll(',', '.')),
     );
   }
 

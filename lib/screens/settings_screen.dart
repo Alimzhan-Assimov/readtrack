@@ -8,6 +8,7 @@ import '../data/database.dart';
 import '../data/database_scope.dart';
 import '../l10n/l10n.dart';
 import '../library/backup.dart';
+import '../library/story_sync.dart';
 import '../library/library_scope.dart';
 import 'ai_settings_screen.dart';
 import 'categories_screen.dart';
@@ -60,6 +61,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
     if (into != null) await _db.mergeTag(tag.id, into.id);
+  }
+
+  (int, int)? _refreshing;
+
+  Future<void> _refreshAll() async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _refreshing = (0, 0));
+    try {
+      final failed = await refreshAllFromSites(
+        _db,
+        onProgress: (done, total) {
+          if (mounted) setState(() => _refreshing = (done, total));
+        },
+      );
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.detailsUpdatedAll(failed.length))),
+      );
+    } finally {
+      if (mounted) setState(() => _refreshing = null);
+    }
   }
 
   Future<void> _createBackup() async {
@@ -158,10 +180,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
         builder: (context, constraints) => StreamBuilder<List<Tag>>(
           stream: _tags,
           builder: (context, snapshot) {
-            final tags = [
+            final hideAdult = settings?.hideAdultTags ?? false;
+            final matching = [
               for (final t in snapshot.data ?? const <Tag>[])
                 if (t.name.toLowerCase().contains(query)) t,
             ];
+            final tags = [
+              for (final t in matching)
+                if (!hideAdult || !t.isAdult) t,
+            ];
+            final hiddenAdult = matching.length - tags.length;
             return ListView(
               padding: readablePadding(constraints.maxWidth, bottom: 32),
               children: [
@@ -192,6 +220,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     value: settings.autoDownload,
                     onChanged: settings.setAutoDownload,
                   ),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.manage_history),
+                  title: Text(l10n.updateAllDetails),
+                  subtitle: Text(switch (_refreshing) {
+                    (final done, final total) when total > 0 =>
+                      l10n.updatingDetails(done, total),
+                    _ => l10n.updateAllDetailsHint,
+                  }),
+                  enabled: _refreshing == null,
+                  onTap: _refreshAll,
+                ),
                 const SizedBox(height: 16),
                 Text(
                   l10n.backupHeading,
@@ -289,6 +329,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const SizedBox(height: 8),
                 if (tags.isEmpty)
                   ListTile(enabled: false, title: Text(l10n.pickerEmpty)),
+                if (hiddenAdult > 0)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      l10n.adultTagsHidden(hiddenAdult),
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ),
                 StreamBuilder<Map<int, List<String>>>(
                   stream: _synonyms,
                   builder: (context, synonymSnapshot) {

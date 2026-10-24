@@ -329,45 +329,37 @@
     }
   },
   "deleteDownload": "Delete download",
-  "aiSettingsTitle": "AI (optional)",
-  "aiSettingsIntro": "An AI service can suggest tags from a story's chapters. You choose the service and bring your own key (Ollama runs on your computer for free). Text is sent only when you ask, and you see how much first. ReadTrack never uses texts to train a model.",
-  "aiProvider": "Service",
-  "aiOff": "Off",
-  "aiUrl": "Address",
-  "aiModel": "Model",
-  "aiModelRequired": "Required",
-  "aiKey": "API key",
-  "aiKeyHint": "Kept in your system's keyring, not in ReadTrack's database, backups or sync.",
-  "aiTest": "Test",
-  "aiTestOk": "Works.",
-  "aiTestOdd": "The service answered, but not as expected. Try another model.",
-  "aiSuggestTags": "Suggest with AI",
-  "aiModeQuick": "Quick",
-  "aiModeQuickHint": "Summary and the first three chapters",
-  "aiModeThorough": "Thorough",
-  "aiModeThoroughHint": "Summary and chapters from the start, the middle and the end",
-  "aiModeNew": "New chapters",
-  "aiModeNewHint": "Only chapters after chapter {chapter}, analyzed last time",
-  "@aiModeNewHint": {
+  "adultTagsHidden": "{count, plural, =1{1 tag marked 18+ is hidden} other{{count} tags marked 18+ are hidden}} because “Hide 18+ tags” is on.",
+  "@adultTagsHidden": {
     "placeholders": {
-      "chapter": {
+      "count": {
         "type": "int"
       }
     }
   },
-  "aiWillSend": "About {words} words will be sent to {service}.",
-  "@aiWillSend": {
+  "updateDetails": "Update details",
+  "detailsUpdated": "Took the site's current details: characters, series, franchise and tags were added where missing.",
+  "updateAllDetails": "Update details of all online stories",
+  "updateAllDetailsHint": "Adds characters, series, franchises and tags the sites list now, e.g. for stories added before ReadTrack kept them. Your own changes stay.",
+  "updatingDetails": "Updating {done} of {total}…",
+  "@updatingDetails": {
     "placeholders": {
-      "words": {
+      "done": {
         "type": "int"
       },
-      "service": {
-        "type": "String"
+      "total": {
+        "type": "int"
       }
     }
   },
-  "aiNoChapters": "No downloaded chapters: only the summary is sent.",
-  "aiSend": "Send",
+  "detailsUpdatedAll": "{count, plural, =0{All stories updated} =1{Updated; 1 story could not be loaded} other{Updated; {count} stories could not be loaded}}",
+  "@detailsUpdatedAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "suggestTags": "Suggest tags",
   "tagSuggestionWhy": "{reason}. Tap to add the tag.",
   "@tagSuggestionWhy": {
@@ -630,8 +622,16 @@
     }
   },
   "addByIsbn": "By ISBN",
-  "addByIsbnHint": "A paper book: details and cover from Open Library",
+  "addByIsbnHint": "A paper book: details and cover from Open Library or the German National Library",
   "isbnLookUp": "Look up this ISBN",
+  "isbnLookingUp": "Looking up ISBN {isbn}…",
+  "@isbnLookingUp": {
+    "placeholders": {
+      "isbn": {
+        "type": "String"
+      }
+    }
+  },
   "isbnInvalid": "That isn't a valid ISBN-10 or ISBN-13.",
   "isbnNotFound": "No details found for this ISBN. Please fill them in.",
   "isbnLookupFailed": "The lookup failed: {error}",
@@ -1203,5 +1203,44 @@
     }
   },
   "cannotUndo": "Downloaded chapters and files are deleted too. This cannot be undone.",
-  "restoredFromTrash": "Restored from the trash"
+  "restoredFromTrash": "Restored from the trash",
+  "aiSettingsTitle": "AI (optional)",
+  "aiSettingsIntro": "An AI service can suggest tags from a story's chapters. You choose the service and bring your own key (Ollama runs on your computer for free). Text is sent only when you ask, and you see how much first. ReadTrack never uses texts to train a model.",
+  "aiProvider": "Service",
+  "aiOff": "Off",
+  "aiUrl": "Address",
+  "aiModel": "Model",
+  "aiModelRequired": "Required",
+  "aiKey": "API key",
+  "aiKeyHint": "Kept in your system's keyring, not in ReadTrack's database, backups or sync.",
+  "aiTest": "Test",
+  "aiTestOk": "Works.",
+  "aiTestOdd": "The service answered, but not as expected. Try another model.",
+  "aiSuggestTags": "Suggest with AI",
+  "aiModeQuick": "Quick",
+  "aiModeQuickHint": "Summary and the first three chapters",
+  "aiModeThorough": "Thorough",
+  "aiModeThoroughHint": "Summary and chapters from the start, the middle and the end",
+  "aiModeNew": "New chapters",
+  "aiModeNewHint": "Only chapters after chapter {chapter}, analyzed last time",
+  "@aiModeNewHint": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "aiWillSend": "About {words} words will be sent to {service}.",
+  "@aiWillSend": {
+    "placeholders": {
+      "words": {
+        "type": "int"
+      },
+      "service": {
+        "type": "String"
+      }
+    }
+  },
+  "aiNoChapters": "No downloaded chapters: only the summary is sent.",
+  "aiSend": "Send"
 }

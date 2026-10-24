@@ -531,6 +531,8 @@ class AppDatabase extends _$AppDatabase {
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
       await mergeSimilarFandoms();
+      await mergeSynonymTags();
+      await mergeEquivalentPairings();
     },
   );
 
@@ -1512,6 +1514,56 @@ class AppDatabase extends _$AppDatabase {
           ))
           .go();
 
+  /// The franchise a story without one most likely belongs to, from its
+  /// tags ("наруто", "мир наруто", "Naruto (Anime)") or else its title
+  /// ("Наруто с чит-кодами"; only with [useTitle], since an original novel
+  /// may be called "Twist of Fate"): the listed franchises and the
+  /// library's own categories are tried. Null if nothing fits.
+  Future<String?> guessFandom({
+    required String title,
+    List<String> tags = const [],
+    bool useTitle = true,
+  }) async {
+    final known = {
+      ...FandomList.namesByKey(),
+      for (final f in await select(fandoms).get())
+        if (fandomKey(f.name).length >= 4) fandomKey(f.name): f.name,
+    };
+    final aliases = {
+      for (final a in await select(fandomAliases).get())
+        if (a.aliasKey.length >= 4) a.aliasKey: a.fandomId,
+    };
+    final names = {for (final f in await select(fandoms).get()) f.id: f.name};
+    String? byKey(String text) {
+      final key = fandomKey(text);
+      if (key.isEmpty) return null;
+      if (aliases[key] case final id?) return names[id];
+      return known[key];
+    }
+
+    final prefix = RegExp(
+      r'^(мир|вселенная|world of|universe of|welt von)\s+',
+      caseSensitive: false,
+    );
+    for (final tag in tags) {
+      final found = byKey(tag) ?? byKey(tag.replaceFirst(prefix, ''));
+      if (found != null) return found;
+    }
+    if (!useTitle) return null;
+    // Runs of up to four words of the title, longest first.
+    final words = title
+        .split(RegExp(r'[^\p{L}\p{N}\-:]+', unicode: true))
+        .where((w) => w.isNotEmpty)
+        .toList();
+    for (var n = 4; n >= 1; n--) {
+      for (var i = 0; i + n <= words.length; i++) {
+        final found = byKey(words.sublist(i, i + n).join(' '));
+        if (found != null) return found;
+      }
+    }
+    return null;
+  }
+
   Future<int?> _fandomIdFor(String? name) async {
     var n = name?.trim() ?? '';
     if (n.isEmpty) return null;
@@ -1810,7 +1862,7 @@ class AppDatabase extends _$AppDatabase {
       );
 
   Future<int?> _pairingIdFor(String name) async {
-    final n = name.trim();
+    final n = normalizePairing(name);
     if (n.isEmpty) return null;
     final existing = _sameName(await select(pairings).get(), (p) => p.name, n);
     return existing?.id ??
@@ -1840,6 +1892,61 @@ class AppDatabase extends _$AppDatabase {
         await (delete(tags)..where((t) => t.id.equals(tag.id))).go();
       }
     });
+  }
+
+  /// Merges pairings that differ only in how original characters are
+  /// written ("Naruto/OC" and "Naruto/Original Character(s)"), keeping their
+  /// works, and writes the remaining one the normal way.
+  Future<void> mergeEquivalentPairings() => transaction(() async {
+    final groups = <String, List<Pairing>>{};
+    for (final p in await (select(
+      pairings,
+    )..orderBy([(p) => OrderingTerm.asc(p.id)])).get()) {
+      groups
+          .putIfAbsent(normalizePairing(p.name).toLowerCase(), () => [])
+          .add(p);
+    }
+    for (final group in groups.values) {
+      final keep = group.first;
+      for (final other in group.skip(1)) {
+        await customStatement(
+          'INSERT OR IGNORE INTO work_pairings (work_id, pairing_id) '
+          'SELECT work_id, ? FROM work_pairings WHERE pairing_id = ?',
+          [keep.id, other.id],
+        );
+        await (delete(pairings)..where((p) => p.id.equals(other.id))).go();
+      }
+      final name = normalizePairing(keep.name);
+      if (name != keep.name) {
+        await (update(pairings)..where((p) => p.id.equals(keep.id))).write(
+          PairingsCompanion(name: Value(name)),
+        );
+      }
+    }
+  });
+
+  /// Merges tags that are known spellings or translations of another
+  /// ([kTagSynonyms]: "экшн", "Aktion" → "Action") into it, so existing
+  /// works are filtered together. A missing target is made by renaming.
+  Future<void> mergeSynonymTags() async {
+    final all = await select(tags).get();
+    final byName = {for (final t in all) t.name.toLowerCase(): t};
+    for (final tag in all) {
+      final canonical = kTagSynonyms[tag.name.toLowerCase().trim()];
+      if (canonical == null ||
+          canonical.toLowerCase() == tag.name.toLowerCase()) {
+        continue;
+      }
+      final target = byName[canonical.toLowerCase()];
+      if (target == null) {
+        await (update(tags)..where((t) => t.id.equals(tag.id))).write(
+          TagsCompanion(name: Value(canonical)),
+        );
+        byName[canonical.toLowerCase()] = tag.copyWith(name: canonical);
+      } else if (target.id != tag.id) {
+        await mergeTag(tag.id, target.id);
+      }
+    }
   }
 
   /// Moves [fromId]'s works to [intoId] and deletes it; its name becomes a
