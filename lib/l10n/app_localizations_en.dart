@@ -1006,10 +1006,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addByIsbnHint =>
-      'A paper book: details and cover from Open Library';
+      'A paper book: details and cover from Open Library or the German National Library';
 
   @override
   String get isbnLookUp => 'Look up this ISBN';
+
+  @override
+  String isbnLookingUp(String isbn) {
+    return 'Looking up ISBN $isbn…';
+  }
 
   @override
   String get isbnInvalid => 'That isn\'t a valid ISBN-10 or ISBN-13.';

@@ -1561,7 +1561,7 @@ abstract class AppLocalizations {
   /// No description provided for @addByIsbnHint.
   ///
   /// In en, this message translates to:
-  /// **'A paper book: details and cover from Open Library'**
+  /// **'A paper book: details and cover from Open Library or the German National Library'**
   String get addByIsbnHint;
 
   /// No description provided for @isbnLookUp.
@@ -1569,6 +1569,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Look up this ISBN'**
   String get isbnLookUp;
+
+  /// No description provided for @isbnLookingUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking up ISBN {isbn}…'**
+  String isbnLookingUp(String isbn);
 
   /// No description provided for @isbnInvalid.
   ///
