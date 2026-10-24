@@ -9,6 +9,7 @@ import '../data/database_scope.dart';
 import '../l10n/l10n.dart';
 import '../library/backup.dart';
 import '../library/library_scope.dart';
+import 'ai_settings_screen.dart';
 import 'categories_screen.dart';
 import 'log_screen.dart';
 import 'trash_screen.dart';
@@ -218,6 +219,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   leading: const Icon(Icons.settings_backup_restore),
                   title: Text(l10n.restoreBackup),
                   onTap: _restoreBackup,
+                ),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.auto_awesome),
+                  title: Text(l10n.aiSettingsTitle),
+                  subtitle: Text(settings?.ai?.provider.label ?? l10n.aiOff),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const AiSettingsScreen()),
+                  ),
                 ),
                 ListTile(
                   contentPadding: EdgeInsets.zero,

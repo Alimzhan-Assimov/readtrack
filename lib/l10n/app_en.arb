@@ -329,6 +329,45 @@
     }
   },
   "deleteDownload": "Delete download",
+  "aiSettingsTitle": "AI (optional)",
+  "aiSettingsIntro": "An AI service can suggest tags from a story's chapters. You choose the service and bring your own key (Ollama runs on your computer for free). Text is sent only when you ask, and you see how much first. ReadTrack never uses texts to train a model.",
+  "aiProvider": "Service",
+  "aiOff": "Off",
+  "aiUrl": "Address",
+  "aiModel": "Model",
+  "aiModelRequired": "Required",
+  "aiKey": "API key",
+  "aiKeyHint": "Kept in your system's keyring, not in ReadTrack's database, backups or sync.",
+  "aiTest": "Test",
+  "aiTestOk": "Works.",
+  "aiTestOdd": "The service answered, but not as expected. Try another model.",
+  "aiSuggestTags": "Suggest with AI",
+  "aiModeQuick": "Quick",
+  "aiModeQuickHint": "Summary and the first three chapters",
+  "aiModeThorough": "Thorough",
+  "aiModeThoroughHint": "Summary and chapters from the start, the middle and the end",
+  "aiModeNew": "New chapters",
+  "aiModeNewHint": "Only chapters after chapter {chapter}, analyzed last time",
+  "@aiModeNewHint": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "aiWillSend": "About {words} words will be sent to {service}.",
+  "@aiWillSend": {
+    "placeholders": {
+      "words": {
+        "type": "int"
+      },
+      "service": {
+        "type": "String"
+      }
+    }
+  },
+  "aiNoChapters": "No downloaded chapters: only the summary is sent.",
+  "aiSend": "Send",
   "suggestTags": "Suggest tags",
   "tagSuggestionWhy": "{reason}. Tap to add the tag.",
   "@tagSuggestionWhy": {

@@ -697,6 +697,17 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _aiAnalyzedChapterMeta = const VerificationMeta(
+    'aiAnalyzedChapter',
+  );
+  @override
+  late final GeneratedColumn<int> aiAnalyzedChapter = GeneratedColumn<int>(
+    'ai_analyzed_chapter',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _ownsPhysicalCopyMeta = const VerificationMeta(
     'ownsPhysicalCopy',
   );
@@ -809,6 +820,7 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
     finishedAt,
     currentPage,
     anilistId,
+    aiAnalyzedChapter,
     ownsPhysicalCopy,
     seriesId,
     seriesIndex,
@@ -998,6 +1010,15 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
         anilistId.isAcceptableOrUnknown(data['anilist_id']!, _anilistIdMeta),
       );
     }
+    if (data.containsKey('ai_analyzed_chapter')) {
+      context.handle(
+        _aiAnalyzedChapterMeta,
+        aiAnalyzedChapter.isAcceptableOrUnknown(
+          data['ai_analyzed_chapter']!,
+          _aiAnalyzedChapterMeta,
+        ),
+      );
+    }
     if (data.containsKey('owns_physical_copy')) {
       context.handle(
         _ownsPhysicalCopyMeta,
@@ -1180,6 +1201,10 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
         DriftSqlType.int,
         data['${effectivePrefix}anilist_id'],
       ),
+      aiAnalyzedChapter: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}ai_analyzed_chapter'],
+      ),
       ownsPhysicalCopy: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}owns_physical_copy'],
@@ -1274,6 +1299,10 @@ class Work extends DataClass implements Insertable<Work> {
   /// The work's id on AniList, once looked up there.
   final int? anilistId;
 
+  /// The last chapter an AI tag analysis read, so later ones can send only
+  /// what's new.
+  final int? aiAnalyzedChapter;
+
   /// The user also has the book on paper (for digital or online entries).
   final bool ownsPhysicalCopy;
   final int? seriesId;
@@ -1318,6 +1347,7 @@ class Work extends DataClass implements Insertable<Work> {
     this.finishedAt,
     this.currentPage,
     this.anilistId,
+    this.aiAnalyzedChapter,
     required this.ownsPhysicalCopy,
     this.seriesId,
     this.seriesIndex,
@@ -1407,6 +1437,9 @@ class Work extends DataClass implements Insertable<Work> {
     if (!nullToAbsent || anilistId != null) {
       map['anilist_id'] = Variable<int>(anilistId);
     }
+    if (!nullToAbsent || aiAnalyzedChapter != null) {
+      map['ai_analyzed_chapter'] = Variable<int>(aiAnalyzedChapter);
+    }
     map['owns_physical_copy'] = Variable<bool>(ownsPhysicalCopy);
     if (!nullToAbsent || seriesId != null) {
       map['series_id'] = Variable<int>(seriesId);
@@ -1491,6 +1524,9 @@ class Work extends DataClass implements Insertable<Work> {
       anilistId: anilistId == null && nullToAbsent
           ? const Value.absent()
           : Value(anilistId),
+      aiAnalyzedChapter: aiAnalyzedChapter == null && nullToAbsent
+          ? const Value.absent()
+          : Value(aiAnalyzedChapter),
       ownsPhysicalCopy: Value(ownsPhysicalCopy),
       seriesId: seriesId == null && nullToAbsent
           ? const Value.absent()
@@ -1547,6 +1583,7 @@ class Work extends DataClass implements Insertable<Work> {
       finishedAt: serializer.fromJson<DateTime?>(json['finishedAt']),
       currentPage: serializer.fromJson<int?>(json['currentPage']),
       anilistId: serializer.fromJson<int?>(json['anilistId']),
+      aiAnalyzedChapter: serializer.fromJson<int?>(json['aiAnalyzedChapter']),
       ownsPhysicalCopy: serializer.fromJson<bool>(json['ownsPhysicalCopy']),
       seriesId: serializer.fromJson<int?>(json['seriesId']),
       seriesIndex: serializer.fromJson<double?>(json['seriesIndex']),
@@ -1594,6 +1631,7 @@ class Work extends DataClass implements Insertable<Work> {
       'finishedAt': serializer.toJson<DateTime?>(finishedAt),
       'currentPage': serializer.toJson<int?>(currentPage),
       'anilistId': serializer.toJson<int?>(anilistId),
+      'aiAnalyzedChapter': serializer.toJson<int?>(aiAnalyzedChapter),
       'ownsPhysicalCopy': serializer.toJson<bool>(ownsPhysicalCopy),
       'seriesId': serializer.toJson<int?>(seriesId),
       'seriesIndex': serializer.toJson<double?>(seriesIndex),
@@ -1633,6 +1671,7 @@ class Work extends DataClass implements Insertable<Work> {
     Value<DateTime?> finishedAt = const Value.absent(),
     Value<int?> currentPage = const Value.absent(),
     Value<int?> anilistId = const Value.absent(),
+    Value<int?> aiAnalyzedChapter = const Value.absent(),
     bool? ownsPhysicalCopy,
     Value<int?> seriesId = const Value.absent(),
     Value<double?> seriesIndex = const Value.absent(),
@@ -1673,6 +1712,9 @@ class Work extends DataClass implements Insertable<Work> {
     finishedAt: finishedAt.present ? finishedAt.value : this.finishedAt,
     currentPage: currentPage.present ? currentPage.value : this.currentPage,
     anilistId: anilistId.present ? anilistId.value : this.anilistId,
+    aiAnalyzedChapter: aiAnalyzedChapter.present
+        ? aiAnalyzedChapter.value
+        : this.aiAnalyzedChapter,
     ownsPhysicalCopy: ownsPhysicalCopy ?? this.ownsPhysicalCopy,
     seriesId: seriesId.present ? seriesId.value : this.seriesId,
     seriesIndex: seriesIndex.present ? seriesIndex.value : this.seriesIndex,
@@ -1729,6 +1771,9 @@ class Work extends DataClass implements Insertable<Work> {
           ? data.currentPage.value
           : this.currentPage,
       anilistId: data.anilistId.present ? data.anilistId.value : this.anilistId,
+      aiAnalyzedChapter: data.aiAnalyzedChapter.present
+          ? data.aiAnalyzedChapter.value
+          : this.aiAnalyzedChapter,
       ownsPhysicalCopy: data.ownsPhysicalCopy.present
           ? data.ownsPhysicalCopy.value
           : this.ownsPhysicalCopy,
@@ -1780,6 +1825,7 @@ class Work extends DataClass implements Insertable<Work> {
           ..write('finishedAt: $finishedAt, ')
           ..write('currentPage: $currentPage, ')
           ..write('anilistId: $anilistId, ')
+          ..write('aiAnalyzedChapter: $aiAnalyzedChapter, ')
           ..write('ownsPhysicalCopy: $ownsPhysicalCopy, ')
           ..write('seriesId: $seriesId, ')
           ..write('seriesIndex: $seriesIndex, ')
@@ -1821,6 +1867,7 @@ class Work extends DataClass implements Insertable<Work> {
     finishedAt,
     currentPage,
     anilistId,
+    aiAnalyzedChapter,
     ownsPhysicalCopy,
     seriesId,
     seriesIndex,
@@ -1861,6 +1908,7 @@ class Work extends DataClass implements Insertable<Work> {
           other.finishedAt == this.finishedAt &&
           other.currentPage == this.currentPage &&
           other.anilistId == this.anilistId &&
+          other.aiAnalyzedChapter == this.aiAnalyzedChapter &&
           other.ownsPhysicalCopy == this.ownsPhysicalCopy &&
           other.seriesId == this.seriesId &&
           other.seriesIndex == this.seriesIndex &&
@@ -1899,6 +1947,7 @@ class WorksCompanion extends UpdateCompanion<Work> {
   final Value<DateTime?> finishedAt;
   final Value<int?> currentPage;
   final Value<int?> anilistId;
+  final Value<int?> aiAnalyzedChapter;
   final Value<bool> ownsPhysicalCopy;
   final Value<int?> seriesId;
   final Value<double?> seriesIndex;
@@ -1935,6 +1984,7 @@ class WorksCompanion extends UpdateCompanion<Work> {
     this.finishedAt = const Value.absent(),
     this.currentPage = const Value.absent(),
     this.anilistId = const Value.absent(),
+    this.aiAnalyzedChapter = const Value.absent(),
     this.ownsPhysicalCopy = const Value.absent(),
     this.seriesId = const Value.absent(),
     this.seriesIndex = const Value.absent(),
@@ -1972,6 +2022,7 @@ class WorksCompanion extends UpdateCompanion<Work> {
     this.finishedAt = const Value.absent(),
     this.currentPage = const Value.absent(),
     this.anilistId = const Value.absent(),
+    this.aiAnalyzedChapter = const Value.absent(),
     this.ownsPhysicalCopy = const Value.absent(),
     this.seriesId = const Value.absent(),
     this.seriesIndex = const Value.absent(),
@@ -2011,6 +2062,7 @@ class WorksCompanion extends UpdateCompanion<Work> {
     Expression<DateTime>? finishedAt,
     Expression<int>? currentPage,
     Expression<int>? anilistId,
+    Expression<int>? aiAnalyzedChapter,
     Expression<bool>? ownsPhysicalCopy,
     Expression<int>? seriesId,
     Expression<double>? seriesIndex,
@@ -2048,6 +2100,7 @@ class WorksCompanion extends UpdateCompanion<Work> {
       if (finishedAt != null) 'finished_at': finishedAt,
       if (currentPage != null) 'current_page': currentPage,
       if (anilistId != null) 'anilist_id': anilistId,
+      if (aiAnalyzedChapter != null) 'ai_analyzed_chapter': aiAnalyzedChapter,
       if (ownsPhysicalCopy != null) 'owns_physical_copy': ownsPhysicalCopy,
       if (seriesId != null) 'series_id': seriesId,
       if (seriesIndex != null) 'series_index': seriesIndex,
@@ -2087,6 +2140,7 @@ class WorksCompanion extends UpdateCompanion<Work> {
     Value<DateTime?>? finishedAt,
     Value<int?>? currentPage,
     Value<int?>? anilistId,
+    Value<int?>? aiAnalyzedChapter,
     Value<bool>? ownsPhysicalCopy,
     Value<int?>? seriesId,
     Value<double?>? seriesIndex,
@@ -2124,6 +2178,7 @@ class WorksCompanion extends UpdateCompanion<Work> {
       finishedAt: finishedAt ?? this.finishedAt,
       currentPage: currentPage ?? this.currentPage,
       anilistId: anilistId ?? this.anilistId,
+      aiAnalyzedChapter: aiAnalyzedChapter ?? this.aiAnalyzedChapter,
       ownsPhysicalCopy: ownsPhysicalCopy ?? this.ownsPhysicalCopy,
       seriesId: seriesId ?? this.seriesId,
       seriesIndex: seriesIndex ?? this.seriesIndex,
@@ -2229,6 +2284,9 @@ class WorksCompanion extends UpdateCompanion<Work> {
     if (anilistId.present) {
       map['anilist_id'] = Variable<int>(anilistId.value);
     }
+    if (aiAnalyzedChapter.present) {
+      map['ai_analyzed_chapter'] = Variable<int>(aiAnalyzedChapter.value);
+    }
     if (ownsPhysicalCopy.present) {
       map['owns_physical_copy'] = Variable<bool>(ownsPhysicalCopy.value);
     }
@@ -2282,6 +2340,7 @@ class WorksCompanion extends UpdateCompanion<Work> {
           ..write('finishedAt: $finishedAt, ')
           ..write('currentPage: $currentPage, ')
           ..write('anilistId: $anilistId, ')
+          ..write('aiAnalyzedChapter: $aiAnalyzedChapter, ')
           ..write('ownsPhysicalCopy: $ownsPhysicalCopy, ')
           ..write('seriesId: $seriesId, ')
           ..write('seriesIndex: $seriesIndex, ')
@@ -8482,6 +8541,7 @@ typedef $$WorksTableCreateCompanionBuilder = WorksCompanion Function({
   Value<DateTime?> finishedAt,
   Value<int?> currentPage,
   Value<int?> anilistId,
+  Value<int?> aiAnalyzedChapter,
   Value<bool> ownsPhysicalCopy,
   Value<int?> seriesId,
   Value<double?> seriesIndex,
@@ -8519,6 +8579,7 @@ typedef $$WorksTableUpdateCompanionBuilder = WorksCompanion Function({
   Value<DateTime?> finishedAt,
   Value<int?> currentPage,
   Value<int?> anilistId,
+  Value<int?> aiAnalyzedChapter,
   Value<bool> ownsPhysicalCopy,
   Value<int?> seriesId,
   Value<double?> seriesIndex,
@@ -8878,6 +8939,11 @@ class $$WorksTableFilterComposer extends Composer<_$AppDatabase, $WorksTable> {
 
   ColumnFilters<int> get anilistId => $composableBuilder(
     column: $table.anilistId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get aiAnalyzedChapter => $composableBuilder(
+    column: $table.aiAnalyzedChapter,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -9327,6 +9393,11 @@ class $$WorksTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get aiAnalyzedChapter => $composableBuilder(
+    column: $table.aiAnalyzedChapter,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get ownsPhysicalCopy => $composableBuilder(
     column: $table.ownsPhysicalCopy,
     builder: (column) => ColumnOrderings(column),
@@ -9507,6 +9578,11 @@ class $$WorksTableAnnotationComposer
 
   GeneratedColumn<int> get anilistId =>
       $composableBuilder(column: $table.anilistId, builder: (column) => column);
+
+  GeneratedColumn<int> get aiAnalyzedChapter => $composableBuilder(
+    column: $table.aiAnalyzedChapter,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<bool> get ownsPhysicalCopy => $composableBuilder(
     column: $table.ownsPhysicalCopy,
@@ -9874,6 +9950,7 @@ class $$WorksTableTableManager
                 Value<DateTime?> finishedAt = const Value.absent(),
                 Value<int?> currentPage = const Value.absent(),
                 Value<int?> anilistId = const Value.absent(),
+                Value<int?> aiAnalyzedChapter = const Value.absent(),
                 Value<bool> ownsPhysicalCopy = const Value.absent(),
                 Value<int?> seriesId = const Value.absent(),
                 Value<double?> seriesIndex = const Value.absent(),
@@ -9910,6 +9987,7 @@ class $$WorksTableTableManager
                 finishedAt: finishedAt,
                 currentPage: currentPage,
                 anilistId: anilistId,
+                aiAnalyzedChapter: aiAnalyzedChapter,
                 ownsPhysicalCopy: ownsPhysicalCopy,
                 seriesId: seriesId,
                 seriesIndex: seriesIndex,
@@ -9948,6 +10026,7 @@ class $$WorksTableTableManager
                 Value<DateTime?> finishedAt = const Value.absent(),
                 Value<int?> currentPage = const Value.absent(),
                 Value<int?> anilistId = const Value.absent(),
+                Value<int?> aiAnalyzedChapter = const Value.absent(),
                 Value<bool> ownsPhysicalCopy = const Value.absent(),
                 Value<int?> seriesId = const Value.absent(),
                 Value<double?> seriesIndex = const Value.absent(),
@@ -9984,6 +10063,7 @@ class $$WorksTableTableManager
                 finishedAt: finishedAt,
                 currentPage: currentPage,
                 anilistId: anilistId,
+                aiAnalyzedChapter: aiAnalyzedChapter,
                 ownsPhysicalCopy: ownsPhysicalCopy,
                 seriesId: seriesId,
                 seriesIndex: seriesIndex,

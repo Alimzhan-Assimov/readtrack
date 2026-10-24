@@ -257,6 +257,10 @@ class Works extends Table {
   /// The work's id on AniList, once looked up there.
   IntColumn get anilistId => integer().nullable()();
 
+  /// The last chapter an AI tag analysis read, so later ones can send only
+  /// what's new.
+  IntColumn get aiAnalyzedChapter => integer().nullable()();
+
   /// The user also has the book on paper (for digital or online entries).
   BoolColumn get ownsPhysicalCopy =>
       boolean().withDefault(const Constant(false))();
@@ -439,7 +443,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 19;
+  int get schemaVersion => 20;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -509,6 +513,9 @@ class AppDatabase extends _$AppDatabase {
       if (from < 17) await m.createTable(fandomAliases);
       if (from < 18) await _addColumnIfMissing(m, works, works.anilistId);
       if (from < 19) await m.createTable(tagSuggestions);
+      if (from < 20) {
+        await _addColumnIfMissing(m, works, works.aiAnalyzedChapter);
+      }
       if (from < 14) {
         await m.createTable(characters);
         await m.createTable(characterAliases);

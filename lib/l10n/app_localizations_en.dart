@@ -586,6 +586,81 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteDownload => 'Delete download';
 
   @override
+  String get aiSettingsTitle => 'AI (optional)';
+
+  @override
+  String get aiSettingsIntro =>
+      'An AI service can suggest tags from a story\'s chapters. You choose the service and bring your own key (Ollama runs on your computer for free). Text is sent only when you ask, and you see how much first. ReadTrack never uses texts to train a model.';
+
+  @override
+  String get aiProvider => 'Service';
+
+  @override
+  String get aiOff => 'Off';
+
+  @override
+  String get aiUrl => 'Address';
+
+  @override
+  String get aiModel => 'Model';
+
+  @override
+  String get aiModelRequired => 'Required';
+
+  @override
+  String get aiKey => 'API key';
+
+  @override
+  String get aiKeyHint =>
+      'Kept in your system\'s keyring, not in ReadTrack\'s database, backups or sync.';
+
+  @override
+  String get aiTest => 'Test';
+
+  @override
+  String get aiTestOk => 'Works.';
+
+  @override
+  String get aiTestOdd =>
+      'The service answered, but not as expected. Try another model.';
+
+  @override
+  String get aiSuggestTags => 'Suggest with AI';
+
+  @override
+  String get aiModeQuick => 'Quick';
+
+  @override
+  String get aiModeQuickHint => 'Summary and the first three chapters';
+
+  @override
+  String get aiModeThorough => 'Thorough';
+
+  @override
+  String get aiModeThoroughHint =>
+      'Summary and chapters from the start, the middle and the end';
+
+  @override
+  String get aiModeNew => 'New chapters';
+
+  @override
+  String aiModeNewHint(int chapter) {
+    return 'Only chapters after chapter $chapter, analyzed last time';
+  }
+
+  @override
+  String aiWillSend(int words, String service) {
+    return 'About $words words will be sent to $service.';
+  }
+
+  @override
+  String get aiNoChapters =>
+      'No downloaded chapters: only the summary is sent.';
+
+  @override
+  String get aiSend => 'Send';
+
+  @override
   String get suggestTags => 'Suggest tags';
 
   @override
