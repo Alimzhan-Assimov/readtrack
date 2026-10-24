@@ -940,6 +940,24 @@ abstract class AppLocalizations {
   /// **'Delete download'**
   String get deleteDownload;
 
+  /// No description provided for @estimateLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimate length'**
+  String get estimateLength;
+
+  /// No description provided for @estimateLengthHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Reads three sample chapters from the site and scales them up.'**
+  String get estimateLengthHint;
+
+  /// No description provided for @estimateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'No sample chapter could be loaded.'**
+  String get estimateFailed;
+
   /// No description provided for @downloadWithImages.
   ///
   /// In en, this message translates to:

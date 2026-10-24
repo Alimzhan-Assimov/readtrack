@@ -315,6 +315,9 @@
     }
   },
   "deleteDownload": "Delete download",
+  "estimateLength": "Estimate length",
+  "estimateLengthHint": "Reads three sample chapters from the site and scales them up.",
+  "estimateFailed": "No sample chapter could be loaded.",
   "downloadWithImages": "Include images",
   "downloadWithImagesHint": "Off: only the text is downloaded and saved, which uses less data and space.",
   "downloadKeepsImages": "Images are included, as in this download.",

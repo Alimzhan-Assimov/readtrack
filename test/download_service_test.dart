@@ -8,6 +8,7 @@ import 'package:readtrack/diagnostics/app_log.dart';
 import 'package:readtrack/library/download_service.dart';
 import 'package:readtrack/library/exporters.dart';
 import 'package:readtrack/library/storage.dart';
+import 'package:readtrack/library/story_sync.dart';
 import 'package:readtrack/sources/sources.dart';
 import 'package:readtrack/sources/fetcher.dart' show SourceAccessException;
 
@@ -216,6 +217,37 @@ void main() {
       '<p>ab</p><a href="/c">link</a>',
     );
   });
+
+  test(
+    'length is estimated from sample chapters spread over the story',
+    () async {
+      await db.updateWork(
+        work.id,
+        const WorksCompanion(chapterCount: Value(5)),
+      );
+      final source = _FlakySource({});
+      final words = await estimateLength(
+        db,
+        (await db.workById(work.id))!,
+        source,
+        open: (_) => FakeFetcher(const {}),
+      );
+      // Chapters 1–4 are readable (5 is locked): start, middle and end.
+      expect(source.requested, [1, 3, 4]);
+      // Each sample is "Text of chapter n." = 4 words, times 5 chapters.
+      expect(words, 20);
+      final w = (await db.workById(work.id))!;
+      expect((w.wordCount, w.wordsEstimated), (20, true));
+      expect((w.pageCount, w.pagesEstimated), (1, true));
+      expect(
+        (await db.chaptersOf(work.id)).every((c) => c.content == null),
+        isTrue,
+      );
+      // A later recount without anything better keeps the estimate.
+      await db.fillMissingCounts(work.id);
+      expect((await db.workById(work.id))!.wordCount, 20);
+    },
+  );
 
   test('a retry fills the gaps an interrupted download left', () async {
     final first = _FlakySource({2, 4});

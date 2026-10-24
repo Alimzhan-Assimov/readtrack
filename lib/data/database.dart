@@ -813,7 +813,8 @@ class AppDatabase extends _$AppDatabase {
         : givenPages != null
         // Royal Road counts 275 words per page.
         ? givenPages * 275
-        : null;
+        // E.g. from sample chapters; kept until something better is known.
+        : w.wordCount;
     final pageCount = !(w.pageCount == null || w.pagesEstimated)
         ? w.pageCount
         : wordCount == null

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:drift/drift.dart' show Value;
 
 import '../data/database.dart';
+import '../sources/html_clean.dart';
 import '../sources/sources.dart';
 
 /// Loads a story's details from its site, opening and closing the fetcher.
@@ -90,3 +91,53 @@ ChapterRef chapterRefOf(Chapter chapter) => ChapterRef(
   url: Uri.parse(chapter.url!),
   locked: chapter.isLocked,
 );
+
+/// Estimates the length of a story the site gives no size for: fetches up
+/// to [samples] chapters spread over it (start, middle, end), and scales
+/// their average up to all chapters. Returns the estimated words, or null
+/// if no chapter could be read. The texts are not stored.
+Future<int?> estimateLength(
+  AppDatabase db,
+  Work work,
+  StorySource source, {
+  int samples = 3,
+  PageFetcher Function(StorySource source) open = openFetcher,
+}) async {
+  final chapters = await db.chaptersOf(work.id);
+  final readable = [
+    for (final c in chapters)
+      if (!c.isLocked && c.url != null) c,
+  ];
+  if (readable.isEmpty) return null;
+  final picks = {
+    for (var i = 0; i < samples; i++)
+      readable[samples == 1
+          ? 0
+          : (i * (readable.length - 1) / (samples - 1)).round()],
+  };
+  final fetcher = open(source);
+  final counts = <int>[];
+  try {
+    for (final c in picks) {
+      try {
+        final content = await source.fetchChapter(chapterRefOf(c), fetcher);
+        counts.add(countWords(htmlToPlainText(content.html)));
+      } on SourceException {
+        // Try the others.
+      }
+    }
+  } finally {
+    await fetcher.close();
+  }
+  if (counts.isEmpty) return null;
+  final average = counts.reduce((a, b) => a + b) / counts.length;
+  final total = max(work.chapterCount ?? 0, chapters.length);
+  final words = (average * total).round();
+  await db.updateWork(
+    work.id,
+    WorksCompanion(wordCount: Value(words), wordsEstimated: const Value(true)),
+    touch: false,
+  );
+  await db.fillMissingCounts(work.id);
+  return words;
+}

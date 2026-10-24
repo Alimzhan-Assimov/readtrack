@@ -7,6 +7,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../data/database.dart';
 import '../data/database_scope.dart';
 import '../l10n/l10n.dart';
+import '../library/story_sync.dart';
+import '../sources/sources.dart';
 import '../ui/app_settings.dart';
 import '../ui/format.dart';
 import '../ui/labels.dart';
@@ -37,6 +39,7 @@ class WorkDetailScreen extends StatefulWidget {
 
 class _WorkDetailScreenState extends State<WorkDetailScreen> {
   late Stream<WorkWithDetails?> _work;
+  bool _estimating = false;
 
   AppDatabase get _db => DatabaseScope.of(context);
 
@@ -68,6 +71,27 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
     if (!opened && mounted) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(context.l10n.linkOpenFailed)));
+    }
+  }
+
+  /// The site to read [w] from, if any.
+  StorySource? _sourceOf(Work w) {
+    final url = w.sourceUrl;
+    final source = url == null ? null : sourceFor(Uri.parse(url));
+    return source != null && source.canRead ? source : null;
+  }
+
+  Future<void> _estimate(Work w, StorySource source) async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _estimating = true);
+    try {
+      final words = await estimateLength(_db, w, source);
+      if (words == null) {
+        messenger.showSnackBar(SnackBar(content: Text(l10n.estimateFailed)));
+      }
+    } finally {
+      if (mounted) setState(() => _estimating = false);
     }
   }
 
@@ -228,6 +252,22 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
                   _StatBox(
                     value: estimated(l10n.formatNumber(n), w.pagesEstimated),
                     label: l10n.fieldPages,
+                  ),
+                if (w.wordCount == null &&
+                    (w.chapterCount ?? 0) > 0 &&
+                    _sourceOf(w) != null)
+                  ActionChip(
+                    avatar: _estimating
+                        ? const SizedBox.square(
+                            dimension: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.straighten, size: 18),
+                    label: Text(l10n.estimateLength),
+                    tooltip: l10n.estimateLengthHint,
+                    onPressed: _estimating
+                        ? null
+                        : () => _estimate(w, _sourceOf(w)!),
                   ),
               ],
             ),

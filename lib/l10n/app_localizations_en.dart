@@ -556,6 +556,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteDownload => 'Delete download';
 
   @override
+  String get estimateLength => 'Estimate length';
+
+  @override
+  String get estimateLengthHint =>
+      'Reads three sample chapters from the site and scales them up.';
+
+  @override
+  String get estimateFailed => 'No sample chapter could be loaded.';
+
+  @override
   String get downloadWithImages => 'Include images';
 
   @override
