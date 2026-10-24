@@ -329,6 +329,280 @@
     }
   },
   "deleteDownload": "Delete download",
+  "suggestTags": "Suggest tags",
+  "tagSuggestionWhy": "{reason}. Tap to add the tag.",
+  "@tagSuggestionWhy": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "tagReasonKeyword": "The summary mentions “{word}”",
+  "@tagReasonKeyword": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "tagsSuggested": "{count, plural, =0{No new tag suggestions} =1{1 tag suggested} other{{count} tags suggested}}",
+  "@tagsSuggested": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "findCharacters": "Find in the text",
+  "suggestedCharacter": "Found in the text. Tap to confirm.",
+  "dismissSuggestion": "Not in this story",
+  "noKnownCharacters": "No characters are known for this category yet. Add some, or look the franchise up on AniList.",
+  "noTextToSearch": "There is no downloaded text to search yet.",
+  "charactersFound": "{count, plural, =0{No more known characters found} =1{Found 1 character; confirm it with a tap} other{Found {count} characters; confirm them with a tap}}",
+  "@charactersFound": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aniListLookUp": "Look up on AniList",
+  "aniListTitle": "AniList",
+  "aniListHint": "Pick the matching one. Empty fields are filled in; tags, characters and links to sequels or prequels in your library are added.",
+  "aniListApplied": "Took AniList's details: {characters, plural, =0{no new characters} =1{1 new character} other{{characters} new characters}}, {relations, plural, =0{no links} =1{1 link} other{{relations} links}}",
+  "@aniListApplied": {
+    "placeholders": {
+      "characters": {
+        "type": "int"
+      },
+      "relations": {
+        "type": "int"
+      }
+    }
+  },
+  "categoriesTitle": "Categories",
+  "categoriesTileHint": "Rename or merge franchises",
+  "categoriesHint": "Merging a category into another moves its entries, crossovers and characters, and remembers its name, so stories imported later with that name land in the right place.",
+  "renameCategory": "Rename",
+  "mergeCategoryInto": "Merge into another category…",
+  "mergeCategoryTitle": "Merge “{name}” into",
+  "@mergeCategoryTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryAliases": "{count, plural, =1{1 other name} other{{count} other names}}",
+  "@categoryAliases": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pageCurrent": "Page {current}",
+  "@pageCurrent": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      }
+    }
+  },
+  "pageProgress": "Page {current} of {total}",
+  "@pageProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "setPage": "Set page",
+  "currentPageTitle": "Which page are you on?",
+  "autoDownload": "Download new chapters",
+  "autoDownloadHint": "When a check finds new chapters, stories you have downloaded get them too, in the same file.",
+  "autoDownloaded": "{count, plural, =1{Downloaded 1 new chapter} other{Downloaded {count} new chapters}}",
+  "@autoDownloaded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mangaMode": "Page layout",
+  "mangaPages": "Pages, left to right",
+  "mangaPagesRtl": "Pages, right to left (manga)",
+  "mangaScroll": "Long strip (webtoon)",
+  "mangaDoublePage": "Two pages side by side (wide windows)",
+  "ownsPaperCopy": "I also own it on paper",
+  "paperCopy": "Paper copy",
+  "mergeTagInto": "Merge into another tag…",
+  "mergeTagTitle": "Merge “{name}” into",
+  "@mergeTagTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "tagAlsoCalled": "Also: {names}",
+  "@tagAlsoCalled": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "removeSynonym": "Forget “{name}”",
+  "@removeSynonym": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sectionCharacters": "Characters",
+  "addCharacter": "Add a character",
+  "addCharacterHint": "e.g. Fujiwara Chika",
+  "pickCharacters": "Choose characters",
+  "filterCharacter": "Character",
+  "sectionCrossovers": "Crossover with",
+  "addCrossover": "Add a category",
+  "addCrossoverHint": "The other franchises of a crossover",
+  "openFranchise": "Everything for {name}",
+  "@openFranchise": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "franchiseSummary": "{own, plural, =1{1 entry} other{{own} entries}}, {crossovers, plural, =0{no crossovers} =1{1 crossover} other{{crossovers} crossovers}}",
+  "@franchiseSummary": {
+    "placeholders": {
+      "own": {
+        "type": "int"
+      },
+      "crossovers": {
+        "type": "int"
+      }
+    }
+  },
+  "franchiseCrossovers": "Crossovers from other categories",
+  "fieldSeries": "Series",
+  "fieldSeriesHint": "e.g. Harry Potter",
+  "fieldSeriesIndex": "No.",
+  "pickSeries": "Choose a series",
+  "filterSeries": "Series",
+  "sectionSeries": "Series: {name}",
+  "@sectionSeries": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sectionRelated": "Related",
+  "addRelation": "Add",
+  "addRelationTitle": "Related to “{title}”",
+  "@addRelationTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "removeRelation": "Remove relation",
+  "relationSequel": "Sequel",
+  "relationPrequel": "Prequel",
+  "relationSpinOff": "Spin-off",
+  "relationSpinOffOf": "Spin-off of",
+  "relationSideStory": "Side story",
+  "relationSideStoryOf": "Side story of",
+  "statsTitle": "Statistics",
+  "statsIntro": "Counts reading in ReadTrack's reader: time while you scroll or turn pages, and the words of each chapter read to the end.",
+  "statsLast30Days": "Words per day, last 30 days",
+  "statsNothingYet": "Nothing read in the app yet.",
+  "statsMostInADay": "Most in a day: {words} words",
+  "@statsMostInADay": {
+    "placeholders": {
+      "words": {
+        "type": "String"
+      }
+    }
+  },
+  "statsTotals": "Totals",
+  "statsThisWeek": "this week",
+  "statsThisMonth": "this month",
+  "statsThisYear": "this year",
+  "statsWordsIn": "words {span}",
+  "@statsWordsIn": {
+    "placeholders": {
+      "span": {
+        "type": "String"
+      }
+    }
+  },
+  "statsStreaks": "Streaks",
+  "statsCurrentStreak": "Current streak",
+  "statsLongestStreak": "Longest streak",
+  "statsDays": "{count, plural, =1{1 day} other{{count} days}}",
+  "@statsDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsYearInReview": "{year} in review",
+  "@statsYearInReview": {
+    "placeholders": {
+      "year": {
+        "type": "String"
+      }
+    }
+  },
+  "statsRead": "read",
+  "statsDaysRead": "Days with reading",
+  "statsFinished": "Finished",
+  "statsMostRead": "Most read",
+  "statsFinishedList": "Finished",
+  "statsMinutes": "{minutes} min",
+  "@statsMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "statsHours": "{hours} h {minutes} min",
+  "@statsHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "addByIsbn": "By ISBN",
+  "addByIsbnHint": "A paper book: details and cover from Open Library",
+  "isbnLookUp": "Look up this ISBN",
+  "isbnInvalid": "That isn't a valid ISBN-10 or ISBN-13.",
+  "isbnNotFound": "No details found for this ISBN. Please fill them in.",
+  "isbnLookupFailed": "The lookup failed: {error}",
+  "@isbnLookupFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "addFromCatalog": "From a free catalog",
   "addFromCatalogHint": "Project Gutenberg, Standard Ebooks or your own OPDS catalog (e.g. Calibre)",
   "catalogsTitle": "Catalogs",

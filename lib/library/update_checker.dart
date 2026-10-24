@@ -79,6 +79,44 @@ class UpdateChecker {
         now: now ?? DateTime.now(),
       ).whenComplete(() => _running = null);
 
+  /// Updates [work] from the site's feed of recent chapters, if it has one
+  /// and it covers everything new; false means the whole story is needed.
+  Future<bool> _fromFeed(
+    StorySource source,
+    Work work,
+    Uri url,
+    PageFetcher fetcher,
+    DateTime now,
+  ) async {
+    final List<({ChapterRef chapter, DateTime? date})>? recent;
+    try {
+      recent = await source.recentChapters(url, fetcher);
+    } on SourceException {
+      return false;
+    }
+    if (recent == null || recent.isEmpty) return false;
+    final known = await _db.chaptersOf(work.id);
+    if (known.isEmpty) return false;
+    final keys = {
+      for (final c in known)
+        if (c.url case final u?) source.chapterKey(Uri.parse(u)),
+    };
+    final fresh = [
+      for (final r in recent)
+        if (!keys.contains(source.chapterKey(r.chapter.url))) r,
+    ];
+    // Without overlap, chapters between the feed and the list are missing.
+    if (fresh.length == recent.length) return false;
+    await appendChapters(
+      _db,
+      work,
+      [for (final r in fresh) r.chapter],
+      lastChapterAt: fresh.lastOrNull?.date,
+      now: now,
+    );
+    return true;
+  }
+
   Future<UpdateSummary> _check({
     required bool all,
     required DateTime now,
@@ -105,8 +143,10 @@ class UpdateChecker {
               try {
                 final url = source.storyUrl(Uri.parse(work.sourceUrl!));
                 if (url == null) continue;
-                final info = await source.fetchStory(url, fetcher);
-                await applyStoryInfo(_db, work, info, now: now);
+                if (!await _fromFeed(source, work, url, fetcher, now)) {
+                  final info = await source.fetchStory(url, fetcher);
+                  await applyStoryInfo(_db, work, info, now: now);
+                }
                 final after = await _db.workById(work.id);
                 final fresh = (after?.newChapters ?? 0) - work.newChapters;
                 if (fresh > 0) {

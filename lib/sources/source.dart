@@ -43,6 +43,9 @@ class StoryInfo {
     this.wordCount,
     this.pageCount,
     this.characterCount,
+    this.series,
+    this.crossovers = const [],
+    this.characters = const [],
     this.isComplete,
     this.updatedOn,
     this._chapterCount,
@@ -69,6 +72,15 @@ class StoryInfo {
 
   /// Size in characters, for sites that give neither words nor pages.
   final int? characterCount;
+
+  /// Characters the site lists for the story.
+  final List<String> characters;
+
+  /// Further fandoms of a crossover, besides [fandom].
+  final List<String> crossovers;
+
+  /// The series the story is part of, and its position there.
+  final ({String name, double? index})? series;
   final bool? isComplete;
 
   /// When the story was last updated, if the site says.
@@ -136,6 +148,18 @@ abstract class StorySource {
   Future<StoryInfo> fetchStory(Uri storyUrl, PageFetcher fetcher);
 
   Future<ChapterContent> fetchChapter(ChapterRef chapter, PageFetcher fetcher);
+
+  /// The newest chapters, oldest first, from a light feed the site offers
+  /// (e.g. RSS), with their release time if known; null if there is none.
+  /// Lets the check for new chapters skip loading the whole story.
+  Future<List<({ChapterRef chapter, DateTime? date})>?> recentChapters(
+    Uri storyUrl,
+    PageFetcher fetcher,
+  ) async => null;
+
+  /// What identifies a chapter across [recentChapters] and the story's
+  /// chapter list; the link by default.
+  String chapterKey(Uri chapterUrl) => '$chapterUrl';
 
   /// Selectors for the story links on this site's list pages, tried in
   /// order; the first that finds any wins. Empty takes every story link,
