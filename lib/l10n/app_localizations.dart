@@ -982,6 +982,42 @@ abstract class AppLocalizations {
   /// **'Delete download'**
   String get deleteDownload;
 
+  /// No description provided for @addByIsbn.
+  ///
+  /// In en, this message translates to:
+  /// **'By ISBN'**
+  String get addByIsbn;
+
+  /// No description provided for @addByIsbnHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A paper book: details and cover from Open Library'**
+  String get addByIsbnHint;
+
+  /// No description provided for @isbnLookUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Look up this ISBN'**
+  String get isbnLookUp;
+
+  /// No description provided for @isbnInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'That isn\'t a valid ISBN-10 or ISBN-13.'**
+  String get isbnInvalid;
+
+  /// No description provided for @isbnNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No details found for this ISBN. Please fill them in.'**
+  String get isbnNotFound;
+
+  /// No description provided for @isbnLookupFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The lookup failed: {error}'**
+  String isbnLookupFailed(String error);
+
   /// No description provided for @addFromCatalog.
   ///
   /// In en, this message translates to:

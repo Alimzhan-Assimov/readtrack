@@ -329,6 +329,19 @@
     }
   },
   "deleteDownload": "Delete download",
+  "addByIsbn": "By ISBN",
+  "addByIsbnHint": "A paper book: details and cover from Open Library",
+  "isbnLookUp": "Look up this ISBN",
+  "isbnInvalid": "That isn't a valid ISBN-10 or ISBN-13.",
+  "isbnNotFound": "No details found for this ISBN. Please fill them in.",
+  "isbnLookupFailed": "The lookup failed: {error}",
+  "@isbnLookupFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "addFromCatalog": "From a free catalog",
   "addFromCatalogHint": "Project Gutenberg, Standard Ebooks or your own OPDS catalog (e.g. Calibre)",
   "catalogsTitle": "Catalogs",

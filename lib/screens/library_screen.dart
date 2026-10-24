@@ -8,6 +8,8 @@ import '../data/database.dart';
 import '../data/database_scope.dart';
 import '../l10n/l10n.dart';
 import '../library/file_import.dart';
+import '../sources/fetcher.dart';
+import '../sources/isbn_lookup.dart';
 import '../library/library_scope.dart';
 import '../library/shelves.dart';
 import '../ui/app_settings.dart';
@@ -237,6 +239,12 @@ class _LibraryScreenState extends State<LibraryScreen> {
               onTap: () => Navigator.pop(context, _AddKind.file),
             ),
             ListTile(
+              leading: const Icon(Icons.qr_code),
+              title: Text(l10n.addByIsbn),
+              subtitle: Text(l10n.addByIsbnHint),
+              onTap: () => Navigator.pop(context, _AddKind.isbn),
+            ),
+            ListTile(
               leading: const Icon(Icons.edit_note),
               title: Text(l10n.addManually),
               subtitle: Text(l10n.addManuallyHint),
@@ -259,7 +267,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
       return;
     }
     final int? id;
-    if (kind == _AddKind.file) {
+    if (kind == _AddKind.isbn) {
+      id = await _addByIsbn();
+    } else if (kind == _AddKind.file) {
       id = await _importFile();
     } else {
       id = await Navigator.of(context).push<int>(
@@ -271,6 +281,46 @@ class _LibraryScreenState extends State<LibraryScreen> {
       );
     }
     if (id != null && mounted) _open(id, wide: wide);
+  }
+
+  /// Asks for an ISBN, looks it up and opens the form with what was found
+  /// (or just the ISBN); returns the new id.
+  Future<int?> _addByIsbn() async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    final input = await showTextPrompt(
+      context,
+      title: l10n.addByIsbn,
+      hint: '978-3-…',
+    );
+    if (input == null || input.isEmpty || !mounted) return null;
+    final isbn = isbnOf(input);
+    if (isbn == null) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.isbnInvalid)));
+      return null;
+    }
+    BookDetails? details;
+    final fetcher = HttpFetcher();
+    try {
+      details = await lookupIsbn(isbn, fetcher);
+      if (details == null) {
+        messenger.showSnackBar(SnackBar(content: Text(l10n.isbnNotFound)));
+      }
+    } on SourceException catch (e) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.isbnLookupFailed(e.message))),
+      );
+    } finally {
+      await fetcher.close();
+    }
+    return navigator.push<int>(
+      MaterialPageRoute(
+        builder: (_) => WorkEditScreen(
+          details: details ?? BookDetails(isbn: isbn, title: ''),
+        ),
+      ),
+    );
   }
 
   /// Lets the user pick a book file, shows its details in the form and
@@ -558,7 +608,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
   }
 }
 
-enum _AddKind { link, list, catalog, file, manual }
+enum _AddKind { link, list, catalog, file, isbn, manual }
 
 class _EmptyState extends StatelessWidget {
   const _EmptyState({required this.filtered});

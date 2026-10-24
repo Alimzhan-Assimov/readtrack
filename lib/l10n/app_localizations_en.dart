@@ -586,6 +586,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteDownload => 'Delete download';
 
   @override
+  String get addByIsbn => 'By ISBN';
+
+  @override
+  String get addByIsbnHint =>
+      'A paper book: details and cover from Open Library';
+
+  @override
+  String get isbnLookUp => 'Look up this ISBN';
+
+  @override
+  String get isbnInvalid => 'That isn\'t a valid ISBN-10 or ISBN-13.';
+
+  @override
+  String get isbnNotFound =>
+      'No details found for this ISBN. Please fill them in.';
+
+  @override
+  String isbnLookupFailed(String error) {
+    return 'The lookup failed: $error';
+  }
+
+  @override
   String get addFromCatalog => 'From a free catalog';
 
   @override

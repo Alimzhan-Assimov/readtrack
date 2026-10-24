@@ -13,7 +13,9 @@ import '../library/book_importer.dart';
 import '../library/file_import.dart';
 import '../library/library_scope.dart';
 import '../library/story_sync.dart';
+import '../sources/fetcher.dart';
 import '../sources/html_clean.dart';
+import '../sources/isbn_lookup.dart';
 import '../sources/sources.dart';
 import '../data/adult_tags.dart';
 import '../ui/app_settings.dart';
@@ -26,7 +28,13 @@ import '../widgets/value_picker.dart';
 /// Form for creating ([existing] == null) or editing a work.
 /// Pops with the work's id as the result after saving.
 class WorkEditScreen extends StatefulWidget {
-  const WorkEditScreen({super.key, this.existing, this.imported, this.file});
+  const WorkEditScreen({
+    super.key,
+    this.existing,
+    this.imported,
+    this.file,
+    this.details,
+  });
 
   final WorkWithDetails? existing;
 
@@ -35,6 +43,9 @@ class WorkEditScreen extends StatefulWidget {
 
   /// A book file read for import; saving imports it with the form's values.
   final ({ImportedBook book, String path})? file;
+
+  /// A paper book's details found by its ISBN.
+  final BookDetails? details;
 
   @override
   State<WorkEditScreen> createState() => _WorkEditScreenState();
@@ -126,6 +137,13 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _notes.text = w?.notes ?? '';
     if (widget.imported case final info?) _prefill(info);
     if (widget.file case final file?) _prefillFile(file.book);
+    if (widget.details case final d?) {
+      _type = WorkType.book;
+      _format = WorkFormat.physical;
+      _isComplete = true;
+      _applyDetails(d);
+      _dirty = true;
+    }
     _initialWords = _words.text;
     _initialPages = _pages.text;
   }
@@ -153,6 +171,53 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _summary.text = info.summary ?? '';
     // Not saved yet, so leaving should ask first.
     _dirty = true;
+  }
+
+  /// Cover found by the ISBN lookup, saved with the entry.
+  Uri? _coverUrl;
+  bool _lookingUp = false;
+
+  /// Fills the empty fields from [d]; what the user typed stays.
+  void _applyDetails(BookDetails d) {
+    void fill(TextEditingController c, String? value) {
+      if (c.text.trim().isEmpty && value != null) c.text = value;
+    }
+
+    fill(_title, d.title);
+    fill(_author, d.author);
+    fill(_summary, d.summary);
+    fill(_pages, d.pageCount?.toString());
+    fill(_isbn, d.isbn);
+    if (_tags.isEmpty) _tags = TagInput.merge(const [], d.tags.join(','));
+    _coverUrl ??= d.coverUrl;
+  }
+
+  Future<void> _lookUpIsbn() async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    final isbn = isbnOf(_isbn.text);
+    if (isbn == null) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.isbnInvalid)));
+      return;
+    }
+    setState(() => _lookingUp = true);
+    final fetcher = HttpFetcher();
+    try {
+      final details = await lookupIsbn(isbn, fetcher);
+      if (!mounted) return;
+      if (details == null) {
+        messenger.showSnackBar(SnackBar(content: Text(l10n.isbnNotFound)));
+      } else {
+        _change(() => _applyDetails(details));
+      }
+    } on SourceException catch (e) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.isbnLookupFailed(e.message))),
+      );
+    } finally {
+      await fetcher.close();
+      if (mounted) setState(() => _lookingUp = false);
+    }
   }
 
   void _prefillFile(ImportedBook book) {
@@ -296,7 +361,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
           : Value(widget.imported!.characterCount),
       rating: Value(_rating),
       notes: Value(_text(_notes)),
-      coverUrl: switch (widget.imported?.coverUrl) {
+      coverUrl: switch (widget.imported?.coverUrl ?? _coverUrl) {
         final cover? => Value(cover.toString()),
         null => const Value.absent(),
       },
@@ -608,8 +673,23 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
         const SizedBox(height: 8),
         TextFormField(
           controller: _isbn,
-          decoration: _decoration(l10n.fieldIsbn),
+          decoration: _decoration(l10n.fieldIsbn).copyWith(
+            suffixIcon: _lookingUp
+                ? const Padding(
+                    padding: EdgeInsets.all(12),
+                    child: SizedBox.square(
+                      dimension: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  )
+                : IconButton(
+                    icon: const Icon(Icons.manage_search),
+                    tooltip: l10n.isbnLookUp,
+                    onPressed: _lookUpIsbn,
+                  ),
+          ),
           keyboardType: TextInputType.number,
+          onFieldSubmitted: (_) => _lookUpIsbn(),
         ),
       ],
       _Heading(l10n.sectionTags),
