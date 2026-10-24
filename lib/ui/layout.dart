@@ -11,9 +11,15 @@ abstract final class Breakpoints {
 /// Maximum width for text and forms so lines stay readable.
 const kReadableWidth = 720.0;
 
-/// Horizontal padding that centers content at [kReadableWidth] in wide
-/// windows.
-EdgeInsets readablePadding(double width, {double top = 0, double bottom = 0}) {
-  final side = math.max(16.0, (width - kReadableWidth) / 2);
+/// Horizontal padding that centers content at [maxWidth] in wide windows.
+EdgeInsets readablePadding(
+  double width, {
+  double top = 0,
+  double bottom = 0,
+  double maxWidth = kReadableWidth,
+}) {
+  final side = maxWidth.isFinite
+      ? math.max(16.0, (width - maxWidth) / 2)
+      : 16.0;
   return EdgeInsets.fromLTRB(side, top, side, bottom);
 }

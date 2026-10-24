@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../data/database.dart';
 import '../l10n/l10n.dart';
 import '../ui/app_settings.dart';
+import '../ui/fonts.dart';
+import '../ui/layout.dart';
 import '../widgets/text_prompt.dart';
 
 /// Bottom sheet with the reader's text settings; changes apply right away.
@@ -11,10 +13,14 @@ class ReaderSettingsSheet extends StatefulWidget {
     super.key,
     required this.prefs,
     required this.onChanged,
+    this.fonts = installedFontFamilies,
   });
 
   final ReaderPrefs prefs;
   final ValueChanged<ReaderPrefs> onChanged;
+
+  /// Font families offered under "Other font".
+  final Future<List<String>> Function() fonts;
 
   @override
   State<ReaderSettingsSheet> createState() => _ReaderSettingsSheetState();
@@ -27,6 +33,20 @@ class _ReaderSettingsSheetState extends State<ReaderSettingsSheet> {
     setState(() => _prefs = prefs);
     widget.onChanged(prefs);
   }
+
+  Future<void> _pickFont() async {
+    final family = await showDialog<String>(
+      context: context,
+      builder: (_) =>
+          _FontPicker(families: widget.fonts(), current: _prefs.fontFamily),
+    );
+    if (family != null && mounted) {
+      _set(_prefs.copyWith(fontFamily: family));
+    }
+  }
+
+  // Slider steps of 100 up to 1600; one more step means the whole window.
+  static const _minWidth = 400.0, _maxWidth = 1600.0, _widthStep = 100.0;
 
   @override
   Widget build(BuildContext context) {
@@ -91,8 +111,21 @@ class _ReaderSettingsSheetState extends State<ReaderSettingsSheet> {
                     }, style: TextStyle(fontFamily: f.family)),
                   ),
               ],
-              selected: {_prefs.font},
-              onSelectionChanged: (s) => _set(_prefs.copyWith(font: s.first)),
+              emptySelectionAllowed: true,
+              selected: {if (_prefs.fontFamily == null) _prefs.font},
+              onSelectionChanged: (s) {
+                if (s.isEmpty) return;
+                _set(_prefs.copyWith(font: s.first, clearFontFamily: true));
+              },
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.font_download_outlined),
+              label: Text(
+                _prefs.fontFamily ?? l10n.readerFontOther,
+                style: TextStyle(fontFamily: _prefs.fontFamily),
+              ),
+              onPressed: _pickFont,
             ),
             label(l10n.readerLineSpacing),
             SegmentedButton<double>(
@@ -112,13 +145,16 @@ class _ReaderSettingsSheetState extends State<ReaderSettingsSheet> {
                 for (final t in ReaderTheme.values)
                   ChoiceChip(
                     avatar: CircleAvatar(
-                      backgroundColor:
-                          t.background ?? theme.colorScheme.surface,
+                      backgroundColor: t == ReaderTheme.custom
+                          ? _prefs.background
+                          : t.background ?? theme.colorScheme.surface,
                       child: Text(
                         'A',
                         style: TextStyle(
                           fontSize: 12,
-                          color: t.text ?? theme.colorScheme.onSurface,
+                          color: t == ReaderTheme.custom
+                              ? _prefs.textColor
+                              : t.text ?? theme.colorScheme.onSurface,
                         ),
                       ),
                     ),
@@ -128,12 +164,60 @@ class _ReaderSettingsSheetState extends State<ReaderSettingsSheet> {
                       ReaderTheme.sepia => l10n.readerThemeSepia,
                       ReaderTheme.dark => l10n.readerThemeDark,
                       ReaderTheme.black => l10n.readerThemeBlack,
+                      ReaderTheme.custom => l10n.readerThemeCustom,
                     }),
                     selected: _prefs.theme == t,
                     onSelected: (_) => _set(_prefs.copyWith(theme: t)),
                   ),
               ],
             ),
+            if (_prefs.theme == ReaderTheme.custom)
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _HexColorField(
+                        label: l10n.readerBackgroundColor,
+                        color: _prefs.background,
+                        onChanged: (c) => _set(_prefs.copyWith(background: c)),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _HexColorField(
+                        label: l10n.readerTextColor,
+                        color: _prefs.textColor,
+                        onChanged: (c) => _set(_prefs.copyWith(textColor: c)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            label(l10n.readerTextWidth),
+            Slider(
+              min: _minWidth,
+              max: _maxWidth + _widthStep,
+              divisions: (_maxWidth - _minWidth) ~/ _widthStep + 1,
+              value: _prefs.textWidth.isFinite
+                  ? _prefs.textWidth.clamp(_minWidth, _maxWidth)
+                  : _maxWidth + _widthStep,
+              label: _prefs.textWidth.isFinite
+                  ? '${_prefs.textWidth.round()}'
+                  : l10n.readerWidthFull,
+              onChanged: (v) => _set(
+                _prefs.copyWith(textWidth: v > _maxWidth ? double.infinity : v),
+              ),
+            ),
+            if (_prefs.textWidth != kReadableWidth)
+              Align(
+                alignment: AlignmentDirectional.centerEnd,
+                child: TextButton(
+                  onPressed: () =>
+                      _set(_prefs.copyWith(textWidth: kReadableWidth)),
+                  child: Text(l10n.readerWidthReset),
+                ),
+              ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               title: Text(l10n.readerJustify),
@@ -143,6 +227,157 @@ class _ReaderSettingsSheetState extends State<ReaderSettingsSheet> {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// A hex color input with a swatch; reports only valid colors.
+class _HexColorField extends StatefulWidget {
+  const _HexColorField({
+    required this.label,
+    required this.color,
+    required this.onChanged,
+  });
+
+  final String label;
+  final Color color;
+  final ValueChanged<Color> onChanged;
+
+  @override
+  State<_HexColorField> createState() => _HexColorFieldState();
+}
+
+class _HexColorFieldState extends State<_HexColorField> {
+  late final _controller = TextEditingController(
+    text: hexOfColor(widget.color),
+  );
+  bool _invalid = false;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: _controller,
+      decoration: InputDecoration(
+        labelText: widget.label,
+        hintText: '#RRGGBB',
+        errorText: _invalid ? context.l10n.readerHexInvalid : null,
+        border: const OutlineInputBorder(),
+        isDense: true,
+        prefixIcon: Padding(
+          padding: const EdgeInsets.all(10),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: widget.color,
+              shape: BoxShape.circle,
+              border: Border.all(color: Theme.of(context).colorScheme.outline),
+            ),
+            child: const SizedBox.square(dimension: 20),
+          ),
+        ),
+      ),
+      onChanged: (text) {
+        final color = parseHexColor(text);
+        setState(() => _invalid = color == null);
+        if (color != null) widget.onChanged(color);
+      },
+    );
+  }
+}
+
+/// Lists the installed fonts, each shown in itself; any typed name can be
+/// used too. Returns the chosen family.
+class _FontPicker extends StatefulWidget {
+  const _FontPicker({required this.families, this.current});
+
+  final Future<List<String>> families;
+  final String? current;
+
+  @override
+  State<_FontPicker> createState() => _FontPickerState();
+}
+
+class _FontPickerState extends State<_FontPicker> {
+  String _query = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final query = _query.trim();
+    return AlertDialog(
+      title: Text(l10n.readerFontPick),
+      content: SizedBox(
+        width: 400,
+        height: 480,
+        child: Column(
+          children: [
+            TextField(
+              autofocus: true,
+              decoration: InputDecoration(
+                hintText: l10n.readerFontSearch,
+                prefixIcon: const Icon(Icons.search),
+              ),
+              onChanged: (v) => setState(() => _query = v),
+              onSubmitted: (v) {
+                if (v.trim().isNotEmpty) Navigator.pop(context, v.trim());
+              },
+            ),
+            Expanded(
+              child: FutureBuilder<List<String>>(
+                future: widget.families,
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  final lower = query.toLowerCase();
+                  final matches = [
+                    for (final f in snapshot.data!)
+                      if (f.toLowerCase().contains(lower)) f,
+                  ];
+                  final typed =
+                      query.isNotEmpty &&
+                      !matches.any((f) => f.toLowerCase() == lower);
+                  if (matches.isEmpty && !typed) {
+                    return Center(
+                      child: Text(
+                        l10n.readerFontNone,
+                        textAlign: TextAlign.center,
+                      ),
+                    );
+                  }
+                  return ListView(
+                    children: [
+                      if (typed)
+                        ListTile(
+                          leading: const Icon(Icons.edit),
+                          title: Text(l10n.readerFontUse(query)),
+                          onTap: () => Navigator.pop(context, query),
+                        ),
+                      for (final f in matches)
+                        ListTile(
+                          selected: f == widget.current,
+                          title: Text(f, style: TextStyle(fontFamily: f)),
+                          onTap: () => Navigator.pop(context, f),
+                        ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(l10n.cancel),
+        ),
+      ],
     );
   }
 }

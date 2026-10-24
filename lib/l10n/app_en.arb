@@ -513,6 +513,25 @@
   "readerThemeDark": "Dark",
   "readerThemeBlack": "Night",
   "readerJustify": "Justify text",
+  "readerThemeCustom": "Custom",
+  "readerBackgroundColor": "Background",
+  "readerTextColor": "Text",
+  "readerHexInvalid": "Use #RRGGBB",
+  "readerTextWidth": "Text width",
+  "readerWidthFull": "Full",
+  "readerWidthReset": "Default width",
+  "readerFontOther": "Other font…",
+  "readerFontPick": "Choose a font",
+  "readerFontSearch": "Search or type a font name",
+  "readerFontUse": "Use “{name}”",
+  "@readerFontUse": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "readerFontNone": "No installed fonts found. Type the name of a font.",
   "addBookmark": "Add bookmark",
   "bookmarkAdded": "Bookmark added",
   "bookmarkAt": "Bookmark at {percent} %",
