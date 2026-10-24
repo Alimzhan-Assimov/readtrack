@@ -586,6 +586,41 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteDownload => 'Delete download';
 
   @override
+  String get sectionCrossovers => 'Crossover with';
+
+  @override
+  String get addCrossover => 'Add a category';
+
+  @override
+  String get addCrossoverHint => 'The other franchises of a crossover';
+
+  @override
+  String openFranchise(String name) {
+    return 'Everything for $name';
+  }
+
+  @override
+  String franchiseSummary(int own, int crossovers) {
+    String _temp0 = intl.Intl.pluralLogic(
+      own,
+      locale: localeName,
+      other: '$own entries',
+      one: '1 entry',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      crossovers,
+      locale: localeName,
+      other: '$crossovers crossovers',
+      one: '1 crossover',
+      zero: 'no crossovers',
+    );
+    return '$_temp0, $_temp1';
+  }
+
+  @override
+  String get franchiseCrossovers => 'Crossovers from other categories';
+
+  @override
   String get fieldSeries => 'Series';
 
   @override

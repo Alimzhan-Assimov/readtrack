@@ -85,6 +85,7 @@ class Ao3Source extends StorySource {
           ? null
           : htmlToPlainText(cleanHtml(summary, base: storyUrl)),
       fandom: tags('fandom').firstOrNull,
+      crossovers: tags('fandom').skip(1).toList(),
       series: _series(doc),
       // "Uchiha Sasuke/Uzumaki Naruto" etc. are relationships, not tags.
       pairings: tags('relationship'),

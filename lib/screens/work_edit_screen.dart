@@ -57,6 +57,8 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
   final _author = TextEditingController();
   final _fandom = TextEditingController();
   final _series = TextEditingController();
+  final _crossoverInput = TextEditingController();
+  List<String> _crossovers = const [];
   final _seriesIndex = TextEditingController();
   final _url = TextEditingController();
   final _chapters = TextEditingController();
@@ -99,6 +101,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _fandom,
     _series,
     _seriesIndex,
+    _crossoverInput,
     _url,
     _chapters,
     _currentChapter,
@@ -133,6 +136,9 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _author.text = w?.author ?? '';
     _fandom.text = existing?.fandom?.name ?? '';
     _series.text = existing?.series?.name ?? '';
+    _crossovers = [
+      for (final f in existing?.crossovers ?? const <Fandom>[]) f.name,
+    ];
     _seriesIndex.text = _formatIndex(w?.seriesIndex);
     _url.text = w?.sourceUrl ?? '';
     _chapters.text = w?.chapterCount?.toString() ?? '';
@@ -172,6 +178,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _author.text = info.author ?? '';
     _fandom.text = info.fandom ?? '';
     _series.text = info.series?.name ?? '';
+    _crossovers = info.crossovers;
     _seriesIndex.text = _formatIndex(info.series?.index);
     _url.text = info.url.toString();
     _chapters.text = '${info.chapterCount}';
@@ -354,6 +361,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     // Include a tag that was typed but not confirmed yet.
     final tags = TagInput.merge(_tags, _tagInput.text);
     final pairings = TagInput.merge(_pairings, _pairingInput.text);
+    final crossovers = TagInput.merge(_crossovers, _crossoverInput.text);
     final w = widget.existing?.work;
     final data = WorksCompanion(
       id: w == null ? const Value.absent() : Value(w.id),
@@ -407,6 +415,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
               work: data,
               fandomName: _fandom.text,
               seriesName: _series.text,
+              crossoverNames: crossovers,
               tagNames: tags,
               pairingNames: pairings,
             )
@@ -414,6 +423,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
               data,
               fandomName: _fandom.text,
               seriesName: _series.text,
+              crossoverNames: crossovers,
               tagNames: tags,
               pairingNames: pairings,
               adultTags: widget.imported?.adultTags ?? const {},
@@ -772,6 +782,16 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
         ],
         isHidden: _isHiddenTag,
         onChanged: (tags) => _change(() => _tags = tags),
+      ),
+      _Heading(l10n.sectionCrossovers),
+      TagInput(
+        controller: _crossoverInput,
+        tags: _crossovers,
+        suggestions: _fandomSuggestions,
+        label: l10n.addCrossover,
+        hint: l10n.addCrossoverHint,
+        pickerTitle: l10n.pickCategory,
+        onChanged: (c) => _change(() => _crossovers = c),
       ),
       _Heading(l10n.sectionPairings),
       TagInput(

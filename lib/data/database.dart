@@ -21,6 +21,23 @@ class Fandoms extends Table {
   TextColumn get name => text().unique()();
 }
 
+/// How a further category takes part in a work besides its main one.
+enum FandomRole { crossover, guest }
+
+/// Categories a work belongs to besides [Works.fandomId], e.g. the second
+/// franchise of a crossover. It shows up under each of them.
+class WorkFandoms extends Table {
+  IntColumn get workId =>
+      integer().references(Works, #id, onDelete: KeyAction.cascade)();
+  IntColumn get fandomId =>
+      integer().references(Fandoms, #id, onDelete: KeyAction.cascade)();
+  TextColumn get role =>
+      textEnum<FandomRole>().withDefault(const Constant('crossover'))();
+
+  @override
+  Set<Column> get primaryKey => {workId, fandomId};
+}
+
 /// A series of works read in order, e.g. "Harry Potter".
 @DataClassName('SeriesItem')
 class Series extends Table {
@@ -233,7 +250,11 @@ class WorkWithDetails {
     this.tags, {
     this.pairings = const [],
     this.series,
+    this.crossovers = const [],
   });
+
+  /// Further categories, e.g. the other side of a crossover.
+  final List<Fandom> crossovers;
 
   final SeriesItem? series;
 
@@ -253,9 +274,11 @@ class DeletedWork {
     this.annotations = const [],
     this.relations = const [],
     this.readingDays = const [],
+    this.crossovers = const [],
   });
 
   final Work work;
+  final List<WorkFandom> crossovers;
   final List<WorkRelation> relations;
   final List<ReadingDay> readingDays;
   final List<int> tagIds;
@@ -283,6 +306,7 @@ class ReadingDays extends Table {
 
 @DriftDatabase(
   tables: [
+    WorkFandoms,
     Series,
     WorkRelations,
     ReadingDays,
@@ -302,7 +326,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 13;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -361,6 +385,7 @@ class AppDatabase extends _$AppDatabase {
           "UPDATE works SET finished_at = updated_at WHERE status = 'finished'",
         );
       }
+      if (from < 13) await m.createTable(workFandoms);
       if (from < 12) {
         await m.createTable(series);
         await m.createTable(workRelations);
@@ -495,7 +520,16 @@ class AppDatabase extends _$AppDatabase {
   }) {
     final query = _worksWithFandom()..where(works.deletedAt.isNull());
     if (type != null) query.where(works.type.equalsValue(type));
-    if (fandomId != null) query.where(works.fandomId.equals(fandomId));
+    if (fandomId != null) {
+      query.where(
+        works.fandomId.equals(fandomId) |
+            works.id.isInQuery(
+              selectOnly(workFandoms)
+                ..addColumns([workFandoms.workId])
+                ..where(workFandoms.fandomId.equals(fandomId)),
+            ),
+      );
+    }
     if (seriesId != null) query.where(works.seriesId.equals(seriesId));
     if (status != null) query.where(works.status.equalsValue(status));
     if (minWords != null) {
@@ -564,6 +598,7 @@ class AppDatabase extends _$AppDatabase {
     w.work.title,
     w.work.author ?? '',
     w.fandom?.name ?? '',
+    for (final c in w.crossovers) c.name,
     w.series?.name ?? '',
     for (final t in w.tags) t.name,
     for (final p in w.pairings) p.name,
@@ -574,8 +609,13 @@ class AppDatabase extends _$AppDatabase {
   Future<Map<int, int>> usageCounts(UsageKind kind) async {
     final (sql, column) = switch (kind) {
       UsageKind.fandom => (
-        'SELECT fandom_id AS id, COUNT(*) AS n FROM works '
-            'WHERE deleted_at IS NULL AND fandom_id IS NOT NULL GROUP BY fandom_id',
+        // Main category or crossover, each work once.
+        'SELECT f AS id, COUNT(DISTINCT w) AS n FROM ('
+            'SELECT fandom_id AS f, id AS w FROM works '
+            'WHERE deleted_at IS NULL AND fandom_id IS NOT NULL '
+            'UNION SELECT x.fandom_id, x.work_id FROM work_fandoms x '
+            'JOIN works ON works.id = x.work_id WHERE works.deleted_at IS NULL'
+            ') GROUP BY f',
         'id',
       ),
       UsageKind.tag => (
@@ -630,6 +670,23 @@ class AppDatabase extends _$AppDatabase {
 
   Future<List<WorkWithDetails>> _withTags(List<TypedResult> rows) async {
     final ids = [for (final r in rows) r.readTable(works).id];
+    final crossoverRows = ids.isEmpty
+        ? const <TypedResult>[]
+        : await (select(workFandoms).join([
+                  innerJoin(
+                    fandoms,
+                    fandoms.id.equalsExp(workFandoms.fandomId),
+                  ),
+                ])
+                ..where(workFandoms.workId.isIn(ids))
+                ..orderBy([OrderingTerm.asc(fandoms.name)]))
+              .get();
+    final crossoversByWork = <int, List<Fandom>>{};
+    for (final r in crossoverRows) {
+      crossoversByWork
+          .putIfAbsent(r.readTable(workFandoms).workId, () => [])
+          .add(r.readTable(fandoms));
+    }
     final tagRows = ids.isEmpty
         ? const <TypedResult>[]
         : await (select(workTags)
@@ -668,6 +725,7 @@ class AppDatabase extends _$AppDatabase {
           tagsByWork[r.readTable(works).id] ?? const [],
           pairings: pairingsByWork[r.readTable(works).id] ?? const [],
           series: r.readTableOrNull(series),
+          crossovers: crossoversByWork[r.readTable(works).id] ?? const [],
         ),
     ];
   }
@@ -676,11 +734,22 @@ class AppDatabase extends _$AppDatabase {
   Future<List<Fandom>> usedFandoms() =>
       (select(fandoms)
             ..where(
-              (f) => f.id.isInQuery(
-                selectOnly(works)
-                  ..addColumns([works.fandomId])
-                  ..where(works.deletedAt.isNull()),
-              ),
+              (f) =>
+                  f.id.isInQuery(
+                    selectOnly(works)
+                      ..addColumns([works.fandomId])
+                      ..where(works.deletedAt.isNull()),
+                  ) |
+                  f.id.isInQuery(
+                    selectOnly(workFandoms).join([
+                        innerJoin(
+                          works,
+                          works.id.equalsExp(workFandoms.workId),
+                        ),
+                      ])
+                      ..addColumns([workFandoms.fandomId])
+                      ..where(works.deletedAt.isNull()),
+                  ),
             )
             ..orderBy([(f) => OrderingTerm.asc(f.name)]))
           .get();
@@ -738,6 +807,9 @@ class AppDatabase extends _$AppDatabase {
 
     /// Null leaves the series as it is; empty removes it.
     String? seriesName,
+
+    /// Categories besides [fandomName]; null leaves them as they are.
+    List<String>? crossoverNames,
     List<String> tagNames = const [],
     List<String> pairingNames = const [],
 
@@ -770,6 +842,18 @@ class AppDatabase extends _$AppDatabase {
         await (update(works)..where((w) => w.id.equals(id))).write(row);
       } else {
         id = await into(works).insert(row);
+      }
+      if (crossoverNames != null) {
+        await (delete(workFandoms)..where((f) => f.workId.equals(id))).go();
+        final main = row.fandomId.value;
+        for (final name in crossoverNames) {
+          final fandomId = await _fandomIdFor(name);
+          if (fandomId == null || fandomId == main) continue;
+          await into(workFandoms).insert(
+            WorkFandomsCompanion.insert(workId: id, fandomId: fandomId),
+            mode: InsertMode.insertOrIgnore,
+          );
+        }
       }
       await (delete(workTags)..where((t) => t.workId.equals(id))).go();
       final adult = {for (final t in adultTags) t.toLowerCase()};
@@ -880,6 +964,9 @@ class AppDatabase extends _$AppDatabase {
       final savedReading = await (select(
         readingDays,
       )..where((r) => r.workId.equals(id))).get();
+      final savedCrossovers = await (select(
+        workFandoms,
+      )..where((f) => f.workId.equals(id))).get();
       await (delete(works)..where((w) => w.id.equals(id))).go();
       return DeletedWork(
         work,
@@ -890,6 +977,7 @@ class AppDatabase extends _$AppDatabase {
         annotations: savedAnnotations,
         relations: savedRelations,
         readingDays: savedReading,
+        crossovers: savedCrossovers,
       );
     });
   }
@@ -917,6 +1005,7 @@ class AppDatabase extends _$AppDatabase {
         b.insertAll(downloads, deleted.downloads);
         b.insertAll(annotations, deleted.annotations);
         b.insertAll(readingDays, deleted.readingDays);
+        b.insertAll(workFandoms, deleted.crossovers);
         // The other work may be gone by now.
         b.insertAll(workRelations, [
           for (final r in deleted.relations)
@@ -1245,6 +1334,11 @@ class AppDatabase extends _$AppDatabase {
         for (final duplicate in group.skip(1)) {
           await (update(works)..where((w) => w.fandomId.equals(duplicate.id)))
               .write(WorksCompanion(fandomId: Value(keep.id)));
+          // Crossover links too; one already pointing at [keep] wins.
+          await customStatement(
+            'UPDATE OR IGNORE work_fandoms SET fandom_id = ? WHERE fandom_id = ?',
+            [keep.id, duplicate.id],
+          );
           await (delete(fandoms)..where((f) => f.id.equals(duplicate.id))).go();
         }
         final base = baseFandomName(keep.name);

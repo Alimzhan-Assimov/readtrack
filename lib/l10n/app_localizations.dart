@@ -982,6 +982,42 @@ abstract class AppLocalizations {
   /// **'Delete download'**
   String get deleteDownload;
 
+  /// No description provided for @sectionCrossovers.
+  ///
+  /// In en, this message translates to:
+  /// **'Crossover with'**
+  String get sectionCrossovers;
+
+  /// No description provided for @addCrossover.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a category'**
+  String get addCrossover;
+
+  /// No description provided for @addCrossoverHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The other franchises of a crossover'**
+  String get addCrossoverHint;
+
+  /// No description provided for @openFranchise.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything for {name}'**
+  String openFranchise(String name);
+
+  /// No description provided for @franchiseSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{own, plural, =1{1 entry} other{{own} entries}}, {crossovers, plural, =0{no crossovers} =1{1 crossover} other{{crossovers} crossovers}}'**
+  String franchiseSummary(int own, int crossovers);
+
+  /// No description provided for @franchiseCrossovers.
+  ///
+  /// In en, this message translates to:
+  /// **'Crossovers from other categories'**
+  String get franchiseCrossovers;
+
   /// No description provided for @fieldSeries.
   ///
   /// In en, this message translates to:

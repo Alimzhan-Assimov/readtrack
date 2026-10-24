@@ -171,6 +171,7 @@ Future<int> addStory(
     ),
     fandomName: info.fandom,
     seriesName: info.series?.name,
+    crossoverNames: info.crossovers,
     tagNames: info.tags,
     pairingNames: info.pairings,
     adultTags: info.adultTags,

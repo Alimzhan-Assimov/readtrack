@@ -329,6 +329,29 @@
     }
   },
   "deleteDownload": "Delete download",
+  "sectionCrossovers": "Crossover with",
+  "addCrossover": "Add a category",
+  "addCrossoverHint": "The other franchises of a crossover",
+  "openFranchise": "Everything for {name}",
+  "@openFranchise": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "franchiseSummary": "{own, plural, =1{1 entry} other{{own} entries}}, {crossovers, plural, =0{no crossovers} =1{1 crossover} other{{crossovers} crossovers}}",
+  "@franchiseSummary": {
+    "placeholders": {
+      "own": {
+        "type": "int"
+      },
+      "crossovers": {
+        "type": "int"
+      }
+    }
+  },
+  "franchiseCrossovers": "Crossovers from other categories",
   "fieldSeries": "Series",
   "fieldSeriesHint": "e.g. Harry Potter",
   "fieldSeriesIndex": "No.",

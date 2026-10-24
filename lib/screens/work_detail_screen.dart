@@ -14,6 +14,7 @@ import '../ui/format.dart';
 import '../ui/labels.dart';
 import '../ui/layout.dart';
 import '../widgets/work_cover.dart';
+import 'franchise_screen.dart';
 import 'read_section.dart';
 import 'related_section.dart';
 import 'work_edit_screen.dart';
@@ -356,14 +357,30 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
               color: theme.colorScheme.onSurfaceVariant,
             ),
           ),
-        if (fandom != null)
+        if (fandom != null || item.crossovers.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 8),
-            child: Row(
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                const Icon(Icons.category_outlined, size: 18),
-                const SizedBox(width: 6),
-                Flexible(child: Text(fandom.name)),
+                for (final (i, f) in [?fandom, ...item.crossovers].indexed)
+                  ActionChip(
+                    avatar: Icon(
+                      i == 0 && fandom != null
+                          ? Icons.category_outlined
+                          : Icons.join_inner,
+                      size: 18,
+                    ),
+                    label: Text(f.name),
+                    tooltip: l10n.openFranchise(f.name),
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => FranchiseScreen(fandom: f),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),

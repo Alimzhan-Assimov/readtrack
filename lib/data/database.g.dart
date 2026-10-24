@@ -3,191 +3,6 @@
 part of 'database.dart';
 
 // ignore_for_file: type=lint
-class $SeriesTable extends Series with TableInfo<$SeriesTable, SeriesItem> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $SeriesTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-    'id',
-    aliasedName,
-    false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
-  );
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
-  @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-    'name',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
-  );
-  @override
-  List<GeneratedColumn> get $columns => [id, name];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'series';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<SeriesItem> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('name')) {
-      context.handle(
-        _nameMeta,
-        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_nameMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  SeriesItem map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return SeriesItem(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}id'],
-      )!,
-      name: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}name'],
-      )!,
-    );
-  }
-
-  @override
-  $SeriesTable createAlias(String alias) {
-    return $SeriesTable(attachedDatabase, alias);
-  }
-}
-
-class SeriesItem extends DataClass implements Insertable<SeriesItem> {
-  final int id;
-  final String name;
-  const SeriesItem({required this.id, required this.name});
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['name'] = Variable<String>(name);
-    return map;
-  }
-
-  SeriesCompanion toCompanion(bool nullToAbsent) {
-    return SeriesCompanion(id: Value(id), name: Value(name));
-  }
-
-  factory SeriesItem.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return SeriesItem(
-      id: serializer.fromJson<int>(json['id']),
-      name: serializer.fromJson<String>(json['name']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
-      'name': serializer.toJson<String>(name),
-    };
-  }
-
-  SeriesItem copyWith({int? id, String? name}) =>
-      SeriesItem(id: id ?? this.id, name: name ?? this.name);
-  SeriesItem copyWithCompanion(SeriesCompanion data) {
-    return SeriesItem(
-      id: data.id.present ? data.id.value : this.id,
-      name: data.name.present ? data.name.value : this.name,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('SeriesItem(')
-          ..write('id: $id, ')
-          ..write('name: $name')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(id, name);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is SeriesItem && other.id == this.id && other.name == this.name);
-}
-
-class SeriesCompanion extends UpdateCompanion<SeriesItem> {
-  final Value<int> id;
-  final Value<String> name;
-  const SeriesCompanion({
-    this.id = const Value.absent(),
-    this.name = const Value.absent(),
-  });
-  SeriesCompanion.insert({this.id = const Value.absent(), required String name})
-    : name = Value(name);
-  static Insertable<SeriesItem> custom({
-    Expression<int>? id,
-    Expression<String>? name,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (name != null) 'name': name,
-    });
-  }
-
-  SeriesCompanion copyWith({Value<int>? id, Value<String>? name}) {
-    return SeriesCompanion(id: id ?? this.id, name: name ?? this.name);
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
-    if (name.present) {
-      map['name'] = Variable<String>(name.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('SeriesCompanion(')
-          ..write('id: $id, ')
-          ..write('name: $name')
-          ..write(')'))
-        .toString();
-  }
-}
-
 class $FandomsTable extends Fandoms with TableInfo<$FandomsTable, Fandom> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -368,6 +183,191 @@ class FandomsCompanion extends UpdateCompanion<Fandom> {
   @override
   String toString() {
     return (StringBuffer('FandomsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SeriesTable extends Series with TableInfo<$SeriesTable, SeriesItem> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SeriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, name];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'series';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SeriesItem> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SeriesItem map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SeriesItem(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+    );
+  }
+
+  @override
+  $SeriesTable createAlias(String alias) {
+    return $SeriesTable(attachedDatabase, alias);
+  }
+}
+
+class SeriesItem extends DataClass implements Insertable<SeriesItem> {
+  final int id;
+  final String name;
+  const SeriesItem({required this.id, required this.name});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    return map;
+  }
+
+  SeriesCompanion toCompanion(bool nullToAbsent) {
+    return SeriesCompanion(id: Value(id), name: Value(name));
+  }
+
+  factory SeriesItem.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SeriesItem(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+    };
+  }
+
+  SeriesItem copyWith({int? id, String? name}) =>
+      SeriesItem(id: id ?? this.id, name: name ?? this.name);
+  SeriesItem copyWithCompanion(SeriesCompanion data) {
+    return SeriesItem(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SeriesItem(')
+          ..write('id: $id, ')
+          ..write('name: $name')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SeriesItem && other.id == this.id && other.name == this.name);
+}
+
+class SeriesCompanion extends UpdateCompanion<SeriesItem> {
+  final Value<int> id;
+  final Value<String> name;
+  const SeriesCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+  });
+  SeriesCompanion.insert({this.id = const Value.absent(), required String name})
+    : name = Value(name);
+  static Insertable<SeriesItem> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+    });
+  }
+
+  SeriesCompanion copyWith({Value<int>? id, Value<String>? name}) {
+    return SeriesCompanion(id: id ?? this.id, name: name ?? this.name);
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SeriesCompanion(')
           ..write('id: $id, ')
           ..write('name: $name')
           ..write(')'))
@@ -2125,6 +2125,281 @@ class WorksCompanion extends UpdateCompanion<Work> {
           ..write('wordsEstimated: $wordsEstimated, ')
           ..write('pagesEstimated: $pagesEstimated, ')
           ..write('characterCount: $characterCount')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $WorkFandomsTable extends WorkFandoms
+    with TableInfo<$WorkFandomsTable, WorkFandom> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $WorkFandomsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _workIdMeta = const VerificationMeta('workId');
+  @override
+  late final GeneratedColumn<int> workId = GeneratedColumn<int>(
+    'work_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES works (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _fandomIdMeta = const VerificationMeta(
+    'fandomId',
+  );
+  @override
+  late final GeneratedColumn<int> fandomId = GeneratedColumn<int>(
+    'fandom_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES fandoms (id) ON DELETE CASCADE',
+    ),
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<FandomRole, String> role =
+      GeneratedColumn<String>(
+        'role',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('crossover'),
+      ).withConverter<FandomRole>($WorkFandomsTable.$converterrole);
+  @override
+  List<GeneratedColumn> get $columns => [workId, fandomId, role];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'work_fandoms';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<WorkFandom> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('work_id')) {
+      context.handle(
+        _workIdMeta,
+        workId.isAcceptableOrUnknown(data['work_id']!, _workIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_workIdMeta);
+    }
+    if (data.containsKey('fandom_id')) {
+      context.handle(
+        _fandomIdMeta,
+        fandomId.isAcceptableOrUnknown(data['fandom_id']!, _fandomIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_fandomIdMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {workId, fandomId};
+  @override
+  WorkFandom map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return WorkFandom(
+      workId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}work_id'],
+      )!,
+      fandomId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}fandom_id'],
+      )!,
+      role: $WorkFandomsTable.$converterrole.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}role'],
+        )!,
+      ),
+    );
+  }
+
+  @override
+  $WorkFandomsTable createAlias(String alias) {
+    return $WorkFandomsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<FandomRole, String, String> $converterrole =
+      const EnumNameConverter<FandomRole>(FandomRole.values);
+}
+
+class WorkFandom extends DataClass implements Insertable<WorkFandom> {
+  final int workId;
+  final int fandomId;
+  final FandomRole role;
+  const WorkFandom({
+    required this.workId,
+    required this.fandomId,
+    required this.role,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['work_id'] = Variable<int>(workId);
+    map['fandom_id'] = Variable<int>(fandomId);
+    {
+      map['role'] = Variable<String>(
+        $WorkFandomsTable.$converterrole.toSql(role),
+      );
+    }
+    return map;
+  }
+
+  WorkFandomsCompanion toCompanion(bool nullToAbsent) {
+    return WorkFandomsCompanion(
+      workId: Value(workId),
+      fandomId: Value(fandomId),
+      role: Value(role),
+    );
+  }
+
+  factory WorkFandom.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return WorkFandom(
+      workId: serializer.fromJson<int>(json['workId']),
+      fandomId: serializer.fromJson<int>(json['fandomId']),
+      role: $WorkFandomsTable.$converterrole.fromJson(
+        serializer.fromJson<String>(json['role']),
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'workId': serializer.toJson<int>(workId),
+      'fandomId': serializer.toJson<int>(fandomId),
+      'role': serializer.toJson<String>(
+        $WorkFandomsTable.$converterrole.toJson(role),
+      ),
+    };
+  }
+
+  WorkFandom copyWith({int? workId, int? fandomId, FandomRole? role}) =>
+      WorkFandom(
+        workId: workId ?? this.workId,
+        fandomId: fandomId ?? this.fandomId,
+        role: role ?? this.role,
+      );
+  WorkFandom copyWithCompanion(WorkFandomsCompanion data) {
+    return WorkFandom(
+      workId: data.workId.present ? data.workId.value : this.workId,
+      fandomId: data.fandomId.present ? data.fandomId.value : this.fandomId,
+      role: data.role.present ? data.role.value : this.role,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WorkFandom(')
+          ..write('workId: $workId, ')
+          ..write('fandomId: $fandomId, ')
+          ..write('role: $role')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(workId, fandomId, role);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is WorkFandom &&
+          other.workId == this.workId &&
+          other.fandomId == this.fandomId &&
+          other.role == this.role);
+}
+
+class WorkFandomsCompanion extends UpdateCompanion<WorkFandom> {
+  final Value<int> workId;
+  final Value<int> fandomId;
+  final Value<FandomRole> role;
+  final Value<int> rowid;
+  const WorkFandomsCompanion({
+    this.workId = const Value.absent(),
+    this.fandomId = const Value.absent(),
+    this.role = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  WorkFandomsCompanion.insert({
+    required int workId,
+    required int fandomId,
+    this.role = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : workId = Value(workId),
+       fandomId = Value(fandomId);
+  static Insertable<WorkFandom> custom({
+    Expression<int>? workId,
+    Expression<int>? fandomId,
+    Expression<String>? role,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (workId != null) 'work_id': workId,
+      if (fandomId != null) 'fandom_id': fandomId,
+      if (role != null) 'role': role,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  WorkFandomsCompanion copyWith({
+    Value<int>? workId,
+    Value<int>? fandomId,
+    Value<FandomRole>? role,
+    Value<int>? rowid,
+  }) {
+    return WorkFandomsCompanion(
+      workId: workId ?? this.workId,
+      fandomId: fandomId ?? this.fandomId,
+      role: role ?? this.role,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (workId.present) {
+      map['work_id'] = Variable<int>(workId.value);
+    }
+    if (fandomId.present) {
+      map['fandom_id'] = Variable<int>(fandomId.value);
+    }
+    if (role.present) {
+      map['role'] = Variable<String>(
+        $WorkFandomsTable.$converterrole.toSql(role.value),
+      );
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WorkFandomsCompanion(')
+          ..write('workId: $workId, ')
+          ..write('fandomId: $fandomId, ')
+          ..write('role: $role, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
@@ -5464,9 +5739,10 @@ class AnnotationsCompanion extends UpdateCompanion<Annotation> {
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
-  late final $SeriesTable series = $SeriesTable(this);
   late final $FandomsTable fandoms = $FandomsTable(this);
+  late final $SeriesTable series = $SeriesTable(this);
   late final $WorksTable works = $WorksTable(this);
+  late final $WorkFandomsTable workFandoms = $WorkFandomsTable(this);
   late final $WorkRelationsTable workRelations = $WorkRelationsTable(this);
   late final $ReadingDaysTable readingDays = $ReadingDaysTable(this);
   late final $TagsTable tags = $TagsTable(this);
@@ -5482,9 +5758,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
-    series,
     fandoms,
+    series,
     works,
+    workFandoms,
     workRelations,
     readingDays,
     tags,
@@ -5511,6 +5788,20 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('works', kind: UpdateKind.update)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'works',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('work_fandoms', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'fandoms',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('work_fandoms', kind: UpdateKind.delete)],
     ),
     WritePropagation(
       on: TableUpdateQuery.onTableName(
@@ -5585,6 +5876,322 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   ]);
 }
 
+typedef $$FandomsTableCreateCompanionBuilder = FandomsCompanion Function({
+  Value<int> id,
+  required String name,
+});
+typedef $$FandomsTableUpdateCompanionBuilder = FandomsCompanion Function({
+  Value<int> id,
+  Value<String> name,
+});
+
+final class $$FandomsTableReferences
+    extends BaseReferences<_$AppDatabase, $FandomsTable, Fandom> {
+  $$FandomsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$WorksTable, List<Work>> _worksRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.works,
+    aliasName: 'fandoms__id__works__fandom_id',
+  );
+
+  $$WorksTableProcessedTableManager get worksRefs {
+    final manager = $$WorksTableTableManager(
+      $_db,
+      $_db.works,
+    ).filter((f) => f.fandomId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_worksRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$WorkFandomsTable, List<WorkFandom>>
+  _workFandomsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.workFandoms,
+    aliasName: 'fandoms__id__work_fandoms__fandom_id',
+  );
+
+  $$WorkFandomsTableProcessedTableManager get workFandomsRefs {
+    final manager = $$WorkFandomsTableTableManager(
+      $_db,
+      $_db.workFandoms,
+    ).filter((f) => f.fandomId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_workFandomsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$FandomsTableFilterComposer
+    extends Composer<_$AppDatabase, $FandomsTable> {
+  $$FandomsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> worksRefs(
+    Expression<bool> Function($$WorksTableFilterComposer f) f,
+  ) {
+    final $$WorksTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.fandomId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableFilterComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> workFandomsRefs(
+    Expression<bool> Function($$WorkFandomsTableFilterComposer f) f,
+  ) {
+    final $$WorkFandomsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workFandoms,
+      getReferencedColumn: (t) => t.fandomId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkFandomsTableFilterComposer(
+            $db: $db,
+            $table: $db.workFandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$FandomsTableOrderingComposer
+    extends Composer<_$AppDatabase, $FandomsTable> {
+  $$FandomsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$FandomsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $FandomsTable> {
+  $$FandomsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  Expression<T> worksRefs<T extends Object>(
+    Expression<T> Function($$WorksTableAnnotationComposer a) f,
+  ) {
+    final $$WorksTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.fandomId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableAnnotationComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> workFandomsRefs<T extends Object>(
+    Expression<T> Function($$WorkFandomsTableAnnotationComposer a) f,
+  ) {
+    final $$WorkFandomsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workFandoms,
+      getReferencedColumn: (t) => t.fandomId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkFandomsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.workFandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$FandomsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $FandomsTable,
+          Fandom,
+          $$FandomsTableFilterComposer,
+          $$FandomsTableOrderingComposer,
+          $$FandomsTableAnnotationComposer,
+          $$FandomsTableCreateCompanionBuilder,
+          $$FandomsTableUpdateCompanionBuilder,
+          (Fandom, $$FandomsTableReferences),
+          Fandom,
+          PrefetchHooks Function({bool worksRefs, bool workFandomsRefs})
+        > {
+  $$FandomsTableTableManager(_$AppDatabase db, $FandomsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FandomsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FandomsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FandomsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> name = const Value.absent(),
+          }) => FandomsCompanion(id: id, name: name),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String name,
+          }) => FandomsCompanion.insert(id: id, name: name),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$FandomsTable, Fandom>(table),
+                  $$FandomsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({worksRefs = false, workFandomsRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (worksRefs) db.works,
+                    if (workFandomsRefs) db.workFandoms,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (worksRefs)
+                        await $_getPrefetchedData<Fandom, $FandomsTable, Work>(
+                          currentTable: table,
+                          referencedTable: $$FandomsTableReferences
+                              ._worksRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$FandomsTableReferences(db, table, p0).worksRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.fandomId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (workFandomsRefs)
+                        await $_getPrefetchedData<
+                          Fandom,
+                          $FandomsTable,
+                          WorkFandom
+                        >(
+                          currentTable: table,
+                          referencedTable: $$FandomsTableReferences
+                              ._workFandomsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$FandomsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).workFandomsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.fandomId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$FandomsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $FandomsTable,
+      Fandom,
+      $$FandomsTableFilterComposer,
+      $$FandomsTableOrderingComposer,
+      $$FandomsTableAnnotationComposer,
+      $$FandomsTableCreateCompanionBuilder,
+      $$FandomsTableUpdateCompanionBuilder,
+      (Fandom, $$FandomsTableReferences),
+      Fandom,
+      PrefetchHooks Function({bool worksRefs, bool workFandomsRefs})
+    >;
 typedef $$SeriesTableCreateCompanionBuilder = SeriesCompanion Function({
   Value<int> id,
   required String name,
@@ -5807,228 +6414,6 @@ typedef $$SeriesTableProcessedTableManager =
       SeriesItem,
       PrefetchHooks Function({bool worksRefs})
     >;
-typedef $$FandomsTableCreateCompanionBuilder = FandomsCompanion Function({
-  Value<int> id,
-  required String name,
-});
-typedef $$FandomsTableUpdateCompanionBuilder = FandomsCompanion Function({
-  Value<int> id,
-  Value<String> name,
-});
-
-final class $$FandomsTableReferences
-    extends BaseReferences<_$AppDatabase, $FandomsTable, Fandom> {
-  $$FandomsTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static MultiTypedResultKey<$WorksTable, List<Work>> _worksRefsTable(
-    _$AppDatabase db,
-  ) => MultiTypedResultKey.fromTable(
-    db.works,
-    aliasName: 'fandoms__id__works__fandom_id',
-  );
-
-  $$WorksTableProcessedTableManager get worksRefs {
-    final manager = $$WorksTableTableManager(
-      $_db,
-      $_db.works,
-    ).filter((f) => f.fandomId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_worksRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-}
-
-class $$FandomsTableFilterComposer
-    extends Composer<_$AppDatabase, $FandomsTable> {
-  $$FandomsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  Expression<bool> worksRefs(
-    Expression<bool> Function($$WorksTableFilterComposer f) f,
-  ) {
-    final $$WorksTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.works,
-      getReferencedColumn: (t) => t.fandomId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$WorksTableFilterComposer(
-            $db: $db,
-            $table: $db.works,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $$FandomsTableOrderingComposer
-    extends Composer<_$AppDatabase, $FandomsTable> {
-  $$FandomsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $$FandomsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $FandomsTable> {
-  $$FandomsTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get name =>
-      $composableBuilder(column: $table.name, builder: (column) => column);
-
-  Expression<T> worksRefs<T extends Object>(
-    Expression<T> Function($$WorksTableAnnotationComposer a) f,
-  ) {
-    final $$WorksTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.works,
-      getReferencedColumn: (t) => t.fandomId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$WorksTableAnnotationComposer(
-            $db: $db,
-            $table: $db.works,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $$FandomsTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $FandomsTable,
-          Fandom,
-          $$FandomsTableFilterComposer,
-          $$FandomsTableOrderingComposer,
-          $$FandomsTableAnnotationComposer,
-          $$FandomsTableCreateCompanionBuilder,
-          $$FandomsTableUpdateCompanionBuilder,
-          (Fandom, $$FandomsTableReferences),
-          Fandom,
-          PrefetchHooks Function({bool worksRefs})
-        > {
-  $$FandomsTableTableManager(_$AppDatabase db, $FandomsTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$FandomsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$FandomsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$FandomsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String> name = const Value.absent(),
-          }) => FandomsCompanion(id: id, name: name),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            required String name,
-          }) => FandomsCompanion.insert(id: id, name: name),
-          withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable<$FandomsTable, Fandom>(table),
-                  $$FandomsTableReferences(db, table, e),
-                ),
-              )
-              .toList(),
-          prefetchHooksCallback: ({worksRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [if (worksRefs) db.works],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (worksRefs)
-                    await $_getPrefetchedData<Fandom, $FandomsTable, Work>(
-                      currentTable: table,
-                      referencedTable: $$FandomsTableReferences._worksRefsTable(
-                        db,
-                      ),
-                      managerFromTypedResult: (p0) =>
-                          $$FandomsTableReferences(db, table, p0).worksRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.fandomId == item.id),
-                      typedResults: items,
-                    ),
-                ];
-              },
-            );
-          },
-        ),
-      );
-}
-
-typedef $$FandomsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $FandomsTable,
-      Fandom,
-      $$FandomsTableFilterComposer,
-      $$FandomsTableOrderingComposer,
-      $$FandomsTableAnnotationComposer,
-      $$FandomsTableCreateCompanionBuilder,
-      $$FandomsTableUpdateCompanionBuilder,
-      (Fandom, $$FandomsTableReferences),
-      Fandom,
-      PrefetchHooks Function({bool worksRefs})
-    >;
 typedef $$WorksTableCreateCompanionBuilder = WorksCompanion Function({
   Value<int> id,
   required WorkType type,
@@ -6133,6 +6518,24 @@ final class $$WorksTableReferences
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$WorkFandomsTable, List<WorkFandom>>
+  _workFandomsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.workFandoms,
+    aliasName: 'works__id__work_fandoms__work_id',
+  );
+
+  $$WorkFandomsTableProcessedTableManager get workFandomsRefs {
+    final manager = $$WorkFandomsTableTableManager(
+      $_db,
+      $_db.workFandoms,
+    ).filter((f) => f.workId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_workFandomsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
     );
   }
 
@@ -6452,6 +6855,31 @@ class $$WorksTableFilterComposer extends Composer<_$AppDatabase, $WorksTable> {
           ),
     );
     return composer;
+  }
+
+  Expression<bool> workFandomsRefs(
+    Expression<bool> Function($$WorkFandomsTableFilterComposer f) f,
+  ) {
+    final $$WorkFandomsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workFandoms,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkFandomsTableFilterComposer(
+            $db: $db,
+            $table: $db.workFandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
   }
 
   Expression<bool> readingDaysRefs(
@@ -6978,6 +7406,31 @@ class $$WorksTableAnnotationComposer
     return composer;
   }
 
+  Expression<T> workFandomsRefs<T extends Object>(
+    Expression<T> Function($$WorkFandomsTableAnnotationComposer a) f,
+  ) {
+    final $$WorkFandomsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workFandoms,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkFandomsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.workFandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
   Expression<T> readingDaysRefs<T extends Object>(
     Expression<T> Function($$ReadingDaysTableAnnotationComposer a) f,
   ) {
@@ -7145,6 +7598,7 @@ class $$WorksTableTableManager
           PrefetchHooks Function({
             bool fandomId,
             bool seriesId,
+            bool workFandomsRefs,
             bool readingDaysRefs,
             bool workTagsRefs,
             bool chaptersRefs,
@@ -7312,6 +7766,7 @@ class $$WorksTableTableManager
               ({
                 fandomId = false,
                 seriesId = false,
+                workFandomsRefs = false,
                 readingDaysRefs = false,
                 workTagsRefs = false,
                 chaptersRefs = false,
@@ -7322,6 +7777,7 @@ class $$WorksTableTableManager
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
+                    if (workFandomsRefs) db.workFandoms,
                     if (readingDaysRefs) db.readingDays,
                     if (workTagsRefs) db.workTags,
                     if (chaptersRefs) db.chapters,
@@ -7372,6 +7828,27 @@ class $$WorksTableTableManager
                       },
                   getPrefetchedDataCallback: (items) async {
                     return [
+                      if (workFandomsRefs)
+                        await $_getPrefetchedData<
+                          Work,
+                          $WorksTable,
+                          WorkFandom
+                        >(
+                          currentTable: table,
+                          referencedTable: $$WorksTableReferences
+                              ._workFandomsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WorksTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).workFandomsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.workId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (readingDaysRefs)
                         await $_getPrefetchedData<
                           Work,
@@ -7509,6 +7986,7 @@ typedef $$WorksTableProcessedTableManager =
       PrefetchHooks Function({
         bool fandomId,
         bool seriesId,
+        bool workFandomsRefs,
         bool readingDaysRefs,
         bool workTagsRefs,
         bool chaptersRefs,
@@ -7516,6 +7994,368 @@ typedef $$WorksTableProcessedTableManager =
         bool workPairingsRefs,
         bool annotationsRefs,
       })
+    >;
+typedef $$WorkFandomsTableCreateCompanionBuilder =
+    WorkFandomsCompanion Function({
+      required int workId,
+      required int fandomId,
+      Value<FandomRole> role,
+      Value<int> rowid,
+    });
+typedef $$WorkFandomsTableUpdateCompanionBuilder =
+    WorkFandomsCompanion Function({
+      Value<int> workId,
+      Value<int> fandomId,
+      Value<FandomRole> role,
+      Value<int> rowid,
+    });
+
+final class $$WorkFandomsTableReferences
+    extends BaseReferences<_$AppDatabase, $WorkFandomsTable, WorkFandom> {
+  $$WorkFandomsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $WorksTable _workIdTable(_$AppDatabase db) =>
+      db.works.createAlias('work_fandoms__work_id__works__id');
+
+  $$WorksTableProcessedTableManager get workId {
+    final $_column = $_itemColumn<int>('work_id')!;
+
+    final manager = $$WorksTableTableManager(
+      $_db,
+      $_db.works,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_workIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $FandomsTable _fandomIdTable(_$AppDatabase db) =>
+      db.fandoms.createAlias('work_fandoms__fandom_id__fandoms__id');
+
+  $$FandomsTableProcessedTableManager get fandomId {
+    final $_column = $_itemColumn<int>('fandom_id')!;
+
+    final manager = $$FandomsTableTableManager(
+      $_db,
+      $_db.fandoms,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_fandomIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$WorkFandomsTableFilterComposer
+    extends Composer<_$AppDatabase, $WorkFandomsTable> {
+  $$WorkFandomsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnWithTypeConverterFilters<FandomRole, FandomRole, String> get role =>
+      $composableBuilder(
+        column: $table.role,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  $$WorksTableFilterComposer get workId {
+    final $$WorksTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workId,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableFilterComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$FandomsTableFilterComposer get fandomId {
+    final $$FandomsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.fandomId,
+      referencedTable: $db.fandoms,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FandomsTableFilterComposer(
+            $db: $db,
+            $table: $db.fandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WorkFandomsTableOrderingComposer
+    extends Composer<_$AppDatabase, $WorkFandomsTable> {
+  $$WorkFandomsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get role => $composableBuilder(
+    column: $table.role,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$WorksTableOrderingComposer get workId {
+    final $$WorksTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workId,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableOrderingComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$FandomsTableOrderingComposer get fandomId {
+    final $$FandomsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.fandomId,
+      referencedTable: $db.fandoms,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FandomsTableOrderingComposer(
+            $db: $db,
+            $table: $db.fandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WorkFandomsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $WorkFandomsTable> {
+  $$WorkFandomsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumnWithTypeConverter<FandomRole, String> get role =>
+      $composableBuilder(column: $table.role, builder: (column) => column);
+
+  $$WorksTableAnnotationComposer get workId {
+    final $$WorksTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workId,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableAnnotationComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$FandomsTableAnnotationComposer get fandomId {
+    final $$FandomsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.fandomId,
+      referencedTable: $db.fandoms,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FandomsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.fandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WorkFandomsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $WorkFandomsTable,
+          WorkFandom,
+          $$WorkFandomsTableFilterComposer,
+          $$WorkFandomsTableOrderingComposer,
+          $$WorkFandomsTableAnnotationComposer,
+          $$WorkFandomsTableCreateCompanionBuilder,
+          $$WorkFandomsTableUpdateCompanionBuilder,
+          (WorkFandom, $$WorkFandomsTableReferences),
+          WorkFandom,
+          PrefetchHooks Function({bool workId, bool fandomId})
+        > {
+  $$WorkFandomsTableTableManager(_$AppDatabase db, $WorkFandomsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$WorkFandomsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WorkFandomsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$WorkFandomsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> workId = const Value.absent(),
+                Value<int> fandomId = const Value.absent(),
+                Value<FandomRole> role = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => WorkFandomsCompanion(
+                workId: workId,
+                fandomId: fandomId,
+                role: role,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required int workId,
+                required int fandomId,
+                Value<FandomRole> role = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => WorkFandomsCompanion.insert(
+                workId: workId,
+                fandomId: fandomId,
+                role: role,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$WorkFandomsTable, WorkFandom>(table),
+                  $$WorkFandomsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({workId = false, fandomId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (workId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.workId,
+                        referencedTable: $$WorkFandomsTableReferences
+                            ._workIdTable(db),
+                        referencedColumn: $$WorkFandomsTableReferences
+                            ._workIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+                    if (fandomId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.fandomId,
+                        referencedTable: $$WorkFandomsTableReferences
+                            ._fandomIdTable(db),
+                        referencedColumn: $$WorkFandomsTableReferences
+                            ._fandomIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$WorkFandomsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $WorkFandomsTable,
+      WorkFandom,
+      $$WorkFandomsTableFilterComposer,
+      $$WorkFandomsTableOrderingComposer,
+      $$WorkFandomsTableAnnotationComposer,
+      $$WorkFandomsTableCreateCompanionBuilder,
+      $$WorkFandomsTableUpdateCompanionBuilder,
+      (WorkFandom, $$WorkFandomsTableReferences),
+      WorkFandom,
+      PrefetchHooks Function({bool workId, bool fandomId})
     >;
 typedef $$WorkRelationsTableCreateCompanionBuilder =
     WorkRelationsCompanion Function({
@@ -10621,12 +11461,14 @@ typedef $$AnnotationsTableProcessedTableManager =
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
-  $$SeriesTableTableManager get series =>
-      $$SeriesTableTableManager(_db, _db.series);
   $$FandomsTableTableManager get fandoms =>
       $$FandomsTableTableManager(_db, _db.fandoms);
+  $$SeriesTableTableManager get series =>
+      $$SeriesTableTableManager(_db, _db.series);
   $$WorksTableTableManager get works =>
       $$WorksTableTableManager(_db, _db.works);
+  $$WorkFandomsTableTableManager get workFandoms =>
+      $$WorkFandomsTableTableManager(_db, _db.workFandoms);
   $$WorkRelationsTableTableManager get workRelations =>
       $$WorkRelationsTableTableManager(_db, _db.workRelations);
   $$ReadingDaysTableTableManager get readingDays =>

@@ -44,6 +44,7 @@ class StoryInfo {
     this.pageCount,
     this.characterCount,
     this.series,
+    this.crossovers = const [],
     this.isComplete,
     this.updatedOn,
     this._chapterCount,
@@ -70,6 +71,9 @@ class StoryInfo {
 
   /// Size in characters, for sites that give neither words nor pages.
   final int? characterCount;
+
+  /// Further fandoms of a crossover, besides [fandom].
+  final List<String> crossovers;
 
   /// The series the story is part of, and its position there.
   final ({String name, double? index})? series;
