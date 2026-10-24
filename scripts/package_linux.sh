@@ -41,7 +41,7 @@ Priority: optional
 Architecture: amd64
 Maintainer: ReadTrack <readtrack@users.noreply.github.com>
 Homepage: https://github.com/Alimzhan-Assimov/readtrack
-Depends: libc6 (>= 2.35), libstdc++6, libgtk-3-0 | libgtk-3-0t64, libwebkit2gtk-4.1-0, libsoup-3.0-0
+Depends: libc6 (>= 2.35), libstdc++6, libgtk-3-0 | libgtk-3-0t64, libwebkit2gtk-4.1-0, libsoup-3.0-0, libsecret-1-0
 Description: Personal reading library and offline reader
  Track books, web novels, fanfiction, manga and comics.
 CONTROL

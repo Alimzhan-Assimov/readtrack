@@ -40,9 +40,10 @@ Other distributions: extract `readtrack-VERSION-linux-x64.tar.gz`, open the
 without root access; it uses `~/.local/opt/readtrack`, like the development installer.
 You can also run `./app/readtrack` directly from the extracted folder.
 
-The archive needs glibc 2.35+, GTK 3, WebKitGTK 4.1 and libsoup 3 from your system.
-On Arch/Omarchy: `sudo pacman -S gtk3 webkit2gtk-4.1 libsoup3`.
-On Fedora: `sudo dnf install gtk3 webkit2gtk4.1 libsoup3`.
+The archive needs glibc 2.35+, GTK 3, WebKitGTK 4.1, libsoup 3 and libsecret
+(for AI keys in the keyring) from your system.
+On Arch/Omarchy: `sudo pacman -S gtk3 webkit2gtk-4.1 libsoup3 libsecret`.
+On Fedora: `sudo dnf install gtk3 webkit2gtk4.1 libsoup3 libsecret`.
 The Debian package installs its dependencies through apt. This is not a Flatpak or
 fully self-contained AppImage.
 
