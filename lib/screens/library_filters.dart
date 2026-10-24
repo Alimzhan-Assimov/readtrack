@@ -14,6 +14,7 @@ class LibraryFilters {
     this.tag,
     this.pairing,
     this.series,
+    this.character,
     this.status,
     this.minWords,
     this.complete,
@@ -25,6 +26,7 @@ class LibraryFilters {
   Tag? tag;
   Pairing? pairing;
   SeriesItem? series;
+  Character? character;
   ReadingStatus? status;
   int? minWords;
   bool? complete;
@@ -39,6 +41,7 @@ class LibraryFilters {
     tag: tag,
     pairing: pairing,
     series: series,
+    character: character,
     status: status,
     minWords: minWords,
     complete: complete,
@@ -52,6 +55,7 @@ class LibraryFilters {
     tag,
     pairing,
     series,
+    character,
     status,
     minWords,
     complete,
@@ -63,6 +67,7 @@ class LibraryFilters {
     tag = null;
     pairing = null;
     series = null;
+    character = null;
     status = null;
     minWords = null;
     complete = null;
@@ -76,6 +81,7 @@ class LibraryFilters {
         tagId: tag?.id,
         pairingId: pairing?.id,
         seriesId: series?.id,
+        characterId: character?.id,
         status: status,
         minWords: minWords,
         complete: complete,
@@ -159,6 +165,8 @@ class ActiveFilters extends StatelessWidget {
             active(Icons.sell_outlined, x.name, (f) => f.tag = null),
           if (f.pairing case final x?)
             active(Icons.favorite_border, x.name, (f) => f.pairing = null),
+          if (f.character case final x?)
+            active(Icons.person_outline, x.name, (f) => f.character = null),
           if (f.series case final x?)
             active(
               Icons.collections_bookmark_outlined,
@@ -362,6 +370,16 @@ class _FilterPanelState extends State<FilterPanel> {
                   load: widget.db.usedPairings,
                   counts: () => widget.db.usageCounts(UsageKind.pairing),
                   onSelected: (x) => _set((f) => f.pairing = x),
+                ),
+                _PickerTile<Character>(
+                  icon: Icons.person_outline,
+                  label: l10n.filterCharacter,
+                  selected: _f.character,
+                  nameOf: (x) => x.name,
+                  idOf: (x) => x.id,
+                  load: widget.db.usedCharacters,
+                  counts: () => widget.db.usageCounts(UsageKind.character),
+                  onSelected: (x) => _set((f) => f.character = x),
                 ),
                 _PickerTile<SeriesItem>(
                   icon: Icons.collections_bookmark_outlined,

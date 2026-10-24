@@ -32,6 +32,8 @@ class BookImporter {
     WorksCompanion? work,
     String? fandomName,
     String? seriesName,
+    List<String>? crossoverNames,
+    List<String>? characterNames,
     List<String>? tagNames,
     List<String> pairingNames = const [],
     Set<String> adultTags = const {},
@@ -54,6 +56,8 @@ class BookImporter {
       ),
       fandomName: fandomName,
       seriesName: seriesName,
+      crossoverNames: crossoverNames,
+      characterNames: characterNames,
       tagNames: tagNames ?? book.tags,
       pairingNames: pairingNames,
       adultTags: adultTags,
@@ -149,7 +153,8 @@ class BookImporter {
 
   /// The entry fields the file itself provides.
   static WorksCompanion metadataOf(ImportedBook book) => WorksCompanion.insert(
-    type: book.isFanfiction ? WorkType.fanfiction : WorkType.book,
+    type:
+        book.type ?? (book.isFanfiction ? WorkType.fanfiction : WorkType.book),
     format: WorkFormat.digital,
     title: book.title,
     author: Value(book.author),

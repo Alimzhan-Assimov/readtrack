@@ -57,6 +57,11 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
   final _author = TextEditingController();
   final _fandom = TextEditingController();
   final _series = TextEditingController();
+  final _crossoverInput = TextEditingController();
+  final _characterInput = TextEditingController();
+  List<String> _characters = const [];
+  List<String> _characterSuggestions = const [];
+  List<String> _crossovers = const [];
   final _seriesIndex = TextEditingController();
   final _url = TextEditingController();
   final _chapters = TextEditingController();
@@ -73,6 +78,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
   late WorkFormat _format;
   late ReadingStatus _status;
   late bool _isComplete;
+  bool _ownsPaperCopy = false;
   int? _rating;
   late List<String> _tags;
   late List<String> _pairings;
@@ -99,6 +105,8 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _fandom,
     _series,
     _seriesIndex,
+    _crossoverInput,
+    _characterInput,
     _url,
     _chapters,
     _currentChapter,
@@ -120,6 +128,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _format = w?.format ?? _type.defaultFormat;
     _status = w?.status ?? ReadingStatus.planned;
     _isComplete = w?.isComplete ?? false;
+    _ownsPaperCopy = w?.ownsPhysicalCopy ?? false;
     _rating = w?.rating;
     _tags = [for (final t in existing?.tags ?? const <Tag>[]) t.name];
     _pairings = [
@@ -133,6 +142,13 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _author.text = w?.author ?? '';
     _fandom.text = existing?.fandom?.name ?? '';
     _series.text = existing?.series?.name ?? '';
+    _crossovers = [
+      for (final f in existing?.crossovers ?? const <Fandom>[]) f.name,
+    ];
+    _characters = [
+      for (final c in existing?.confirmedCharacters ?? const <Character>[])
+        c.name,
+    ];
     _seriesIndex.text = _formatIndex(w?.seriesIndex);
     _url.text = w?.sourceUrl ?? '';
     _chapters.text = w?.chapterCount?.toString() ?? '';
@@ -172,6 +188,8 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _author.text = info.author ?? '';
     _fandom.text = info.fandom ?? '';
     _series.text = info.series?.name ?? '';
+    _crossovers = info.crossovers;
+    _characters = info.characters;
     _seriesIndex.text = _formatIndex(info.series?.index);
     _url.text = info.url.toString();
     _chapters.text = '${info.chapterCount}';
@@ -266,6 +284,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
   Future<void> _loadSuggestions() async {
     final fandoms = await _db.fandomNames();
     final seriesNames = await _db.seriesNames();
+    final characterNames = await _db.characterNames();
     final authors = await _db.authorNames();
     final tags = await _db.tagNames();
     final frequent = await _db.frequentTags();
@@ -281,6 +300,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
       };
       _fandomSuggestions = fandoms;
       _seriesSuggestions = seriesNames;
+      _characterSuggestions = characterNames;
       _authorSuggestions = authors;
       _frequentTags = frequent;
       _tagSuggestions = TagInput.merge(tags, kDefaultTags.join(','))
@@ -354,6 +374,8 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     // Include a tag that was typed but not confirmed yet.
     final tags = TagInput.merge(_tags, _tagInput.text);
     final pairings = TagInput.merge(_pairings, _pairingInput.text);
+    final crossovers = TagInput.merge(_crossovers, _crossoverInput.text);
+    final characterList = TagInput.merge(_characters, _characterInput.text);
     final w = widget.existing?.work;
     final data = WorksCompanion(
       id: w == null ? const Value.absent() : Value(w.id),
@@ -382,6 +404,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
           : Value(widget.imported!.characterCount),
       rating: Value(_rating),
       notes: Value(_text(_notes)),
+      ownsPhysicalCopy: Value(_format != WorkFormat.physical && _ownsPaperCopy),
       seriesIndex: Value(
         _series.text.trim().isEmpty ? null : _parseIndex(_seriesIndex.text),
       ),
@@ -407,6 +430,8 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
               work: data,
               fandomName: _fandom.text,
               seriesName: _series.text,
+              crossoverNames: crossovers,
+              characterNames: characterList,
               tagNames: tags,
               pairingNames: pairings,
             )
@@ -414,6 +439,8 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
               data,
               fandomName: _fandom.text,
               seriesName: _series.text,
+              crossoverNames: crossovers,
+              characterNames: characterList,
               tagNames: tags,
               pairingNames: pairings,
               adultTags: widget.imported?.adultTags ?? const {},
@@ -422,6 +449,9 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
         await _db.saveChapterList(id, chapterListing(info));
       }
       await _db.fillMissingCounts(id);
+      if (widget.existing == null) {
+        await suggestKeywordTags(_db, id, '${_title.text}\n${_summary.text}');
+      }
     } catch (e, stack) {
       logError('save', 'Saving an entry failed', error: e, stack: stack);
       // Never leave the button stuck without saying why.
@@ -728,6 +758,13 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
           Expanded(child: _numberField(l10n, _pages, l10n.fieldPages)),
         ],
       ),
+      if (_format != WorkFormat.physical)
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(l10n.ownsPaperCopy),
+          value: _ownsPaperCopy,
+          onChanged: (v) => _change(() => _ownsPaperCopy = v),
+        ),
       SwitchListTile(
         contentPadding: EdgeInsets.zero,
         title: Text(l10n.completeTitle),
@@ -772,6 +809,26 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
         ],
         isHidden: _isHiddenTag,
         onChanged: (tags) => _change(() => _tags = tags),
+      ),
+      _Heading(l10n.sectionCrossovers),
+      TagInput(
+        controller: _crossoverInput,
+        tags: _crossovers,
+        suggestions: _fandomSuggestions,
+        label: l10n.addCrossover,
+        hint: l10n.addCrossoverHint,
+        pickerTitle: l10n.pickCategory,
+        onChanged: (c) => _change(() => _crossovers = c),
+      ),
+      _Heading(l10n.sectionCharacters),
+      TagInput(
+        controller: _characterInput,
+        tags: _characters,
+        suggestions: _characterSuggestions,
+        label: l10n.addCharacter,
+        hint: l10n.addCharacterHint,
+        pickerTitle: l10n.pickCharacters,
+        onChanged: (c) => _change(() => _characters = c),
       ),
       _Heading(l10n.sectionPairings),
       TagInput(

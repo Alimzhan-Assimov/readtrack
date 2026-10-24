@@ -586,6 +586,243 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteDownload => 'Delete download';
 
   @override
+  String get suggestTags => 'Suggest tags';
+
+  @override
+  String tagSuggestionWhy(String reason) {
+    return '$reason. Tap to add the tag.';
+  }
+
+  @override
+  String tagReasonKeyword(String word) {
+    return 'The summary mentions “$word”';
+  }
+
+  @override
+  String tagsSuggested(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tags suggested',
+      one: '1 tag suggested',
+      zero: 'No new tag suggestions',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get findCharacters => 'Find in the text';
+
+  @override
+  String get suggestedCharacter => 'Found in the text. Tap to confirm.';
+
+  @override
+  String get dismissSuggestion => 'Not in this story';
+
+  @override
+  String get noKnownCharacters =>
+      'No characters are known for this category yet. Add some, or look the franchise up on AniList.';
+
+  @override
+  String get noTextToSearch => 'There is no downloaded text to search yet.';
+
+  @override
+  String charactersFound(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Found $count characters; confirm them with a tap',
+      one: 'Found 1 character; confirm it with a tap',
+      zero: 'No more known characters found',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aniListLookUp => 'Look up on AniList';
+
+  @override
+  String get aniListTitle => 'AniList';
+
+  @override
+  String get aniListHint =>
+      'Pick the matching one. Empty fields are filled in; tags, characters and links to sequels or prequels in your library are added.';
+
+  @override
+  String aniListApplied(int characters, int relations) {
+    String _temp0 = intl.Intl.pluralLogic(
+      characters,
+      locale: localeName,
+      other: '$characters new characters',
+      one: '1 new character',
+      zero: 'no new characters',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      relations,
+      locale: localeName,
+      other: '$relations links',
+      one: '1 link',
+      zero: 'no links',
+    );
+    return 'Took AniList\'s details: $_temp0, $_temp1';
+  }
+
+  @override
+  String get categoriesTitle => 'Categories';
+
+  @override
+  String get categoriesTileHint => 'Rename or merge franchises';
+
+  @override
+  String get categoriesHint =>
+      'Merging a category into another moves its entries, crossovers and characters, and remembers its name, so stories imported later with that name land in the right place.';
+
+  @override
+  String get renameCategory => 'Rename';
+
+  @override
+  String get mergeCategoryInto => 'Merge into another category…';
+
+  @override
+  String mergeCategoryTitle(String name) {
+    return 'Merge “$name” into';
+  }
+
+  @override
+  String categoryAliases(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count other names',
+      one: '1 other name',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String pageCurrent(int current) {
+    return 'Page $current';
+  }
+
+  @override
+  String pageProgress(int current, int total) {
+    return 'Page $current of $total';
+  }
+
+  @override
+  String get setPage => 'Set page';
+
+  @override
+  String get currentPageTitle => 'Which page are you on?';
+
+  @override
+  String get autoDownload => 'Download new chapters';
+
+  @override
+  String get autoDownloadHint =>
+      'When a check finds new chapters, stories you have downloaded get them too, in the same file.';
+
+  @override
+  String autoDownloaded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Downloaded $count new chapters',
+      one: 'Downloaded 1 new chapter',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get mangaMode => 'Page layout';
+
+  @override
+  String get mangaPages => 'Pages, left to right';
+
+  @override
+  String get mangaPagesRtl => 'Pages, right to left (manga)';
+
+  @override
+  String get mangaScroll => 'Long strip (webtoon)';
+
+  @override
+  String get mangaDoublePage => 'Two pages side by side (wide windows)';
+
+  @override
+  String get ownsPaperCopy => 'I also own it on paper';
+
+  @override
+  String get paperCopy => 'Paper copy';
+
+  @override
+  String get mergeTagInto => 'Merge into another tag…';
+
+  @override
+  String mergeTagTitle(String name) {
+    return 'Merge “$name” into';
+  }
+
+  @override
+  String tagAlsoCalled(String names) {
+    return 'Also: $names';
+  }
+
+  @override
+  String removeSynonym(String name) {
+    return 'Forget “$name”';
+  }
+
+  @override
+  String get sectionCharacters => 'Characters';
+
+  @override
+  String get addCharacter => 'Add a character';
+
+  @override
+  String get addCharacterHint => 'e.g. Fujiwara Chika';
+
+  @override
+  String get pickCharacters => 'Choose characters';
+
+  @override
+  String get filterCharacter => 'Character';
+
+  @override
+  String get sectionCrossovers => 'Crossover with';
+
+  @override
+  String get addCrossover => 'Add a category';
+
+  @override
+  String get addCrossoverHint => 'The other franchises of a crossover';
+
+  @override
+  String openFranchise(String name) {
+    return 'Everything for $name';
+  }
+
+  @override
+  String franchiseSummary(int own, int crossovers) {
+    String _temp0 = intl.Intl.pluralLogic(
+      own,
+      locale: localeName,
+      other: '$own entries',
+      one: '1 entry',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      crossovers,
+      locale: localeName,
+      other: '$crossovers crossovers',
+      one: '1 crossover',
+      zero: 'no crossovers',
+    );
+    return '$_temp0, $_temp1';
+  }
+
+  @override
+  String get franchiseCrossovers => 'Crossovers from other categories';
+
+  @override
   String get fieldSeries => 'Series';
 
   @override

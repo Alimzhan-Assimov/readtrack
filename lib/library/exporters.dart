@@ -16,7 +16,10 @@ enum ExportFormat {
   txt('TXT', 'txt'),
   epub('EPUB', 'epub'),
   fb2('FB2', 'fb2'),
-  html('HTML', 'html');
+  html('HTML', 'html'),
+
+  /// Comic book archive: only the images, for manga and comics.
+  cbz('CBZ', 'cbz');
 
   const ExportFormat(this.label, this.extension);
   final String label;
@@ -24,6 +27,12 @@ enum ExportFormat {
 
   static ExportFormat fromName(String name) =>
       values.firstWhere((f) => f.name == name, orElse: () => txt);
+
+  /// The formats that suit a work of [type]: CBZ only for manga and comics.
+  static List<ExportFormat> forType(WorkType type) => [
+    for (final f in values)
+      if (f != cbz || type == WorkType.manga || type == WorkType.comic) f,
+  ];
 }
 
 /// Everything an exporter needs about the book.
@@ -116,8 +125,39 @@ Future<void> writeExport(
       await file.writeAsBytes(buildEpub(book));
     case ExportFormat.fb2:
       await file.writeAsString(buildFb2(book));
+    case ExportFormat.cbz:
+      await file.writeAsBytes(buildCbz(book));
   }
 }
+
+/// The downloaded images of the chapters in order, as a CBZ: one folder per
+/// chapter, pages numbered so readers sort them right. Text is left out.
+List<int> buildCbz(ExportBook book) {
+  final archive = Archive();
+  final chapters = book.inRange;
+  final width = '${chapters.length}'.length;
+  for (final (i, c) in chapters.indexed) {
+    final folder =
+        '${'${i + 1}'.padLeft(width, '0')} ${book.chapterTitle(c).replaceAll(RegExp(r'[\\/:*?"<>|]'), '_')}';
+    var page = 0;
+    for (final m in RegExp(
+      r'<img[^>]+src="([^"]+)"',
+    ).allMatches(c.content ?? '')) {
+      final bytes = book.imageBytes(m.group(1)!);
+      if (bytes == null) continue;
+      final name = '${'${++page}'.padLeft(3, '0')}.${_extensionOf(bytes)}';
+      archive.addFile(ArchiveFile('$folder/$name', bytes.length, bytes));
+    }
+  }
+  return ZipEncoder().encode(archive);
+}
+
+String _extensionOf(Uint8List bytes) => switch (_mime(bytes)) {
+  'image/png' => 'png',
+  'image/gif' => 'gif',
+  'image/webp' => 'webp',
+  _ => 'jpg',
+};
 
 String _xml(String text) => text
     .replaceAll('&', '&amp;')

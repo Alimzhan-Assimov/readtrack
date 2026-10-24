@@ -3,191 +3,6 @@
 part of 'database.dart';
 
 // ignore_for_file: type=lint
-class $SeriesTable extends Series with TableInfo<$SeriesTable, SeriesItem> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $SeriesTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-    'id',
-    aliasedName,
-    false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
-  );
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
-  @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-    'name',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
-  );
-  @override
-  List<GeneratedColumn> get $columns => [id, name];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'series';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<SeriesItem> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('name')) {
-      context.handle(
-        _nameMeta,
-        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_nameMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  SeriesItem map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return SeriesItem(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}id'],
-      )!,
-      name: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}name'],
-      )!,
-    );
-  }
-
-  @override
-  $SeriesTable createAlias(String alias) {
-    return $SeriesTable(attachedDatabase, alias);
-  }
-}
-
-class SeriesItem extends DataClass implements Insertable<SeriesItem> {
-  final int id;
-  final String name;
-  const SeriesItem({required this.id, required this.name});
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['name'] = Variable<String>(name);
-    return map;
-  }
-
-  SeriesCompanion toCompanion(bool nullToAbsent) {
-    return SeriesCompanion(id: Value(id), name: Value(name));
-  }
-
-  factory SeriesItem.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return SeriesItem(
-      id: serializer.fromJson<int>(json['id']),
-      name: serializer.fromJson<String>(json['name']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
-      'name': serializer.toJson<String>(name),
-    };
-  }
-
-  SeriesItem copyWith({int? id, String? name}) =>
-      SeriesItem(id: id ?? this.id, name: name ?? this.name);
-  SeriesItem copyWithCompanion(SeriesCompanion data) {
-    return SeriesItem(
-      id: data.id.present ? data.id.value : this.id,
-      name: data.name.present ? data.name.value : this.name,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('SeriesItem(')
-          ..write('id: $id, ')
-          ..write('name: $name')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(id, name);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is SeriesItem && other.id == this.id && other.name == this.name);
-}
-
-class SeriesCompanion extends UpdateCompanion<SeriesItem> {
-  final Value<int> id;
-  final Value<String> name;
-  const SeriesCompanion({
-    this.id = const Value.absent(),
-    this.name = const Value.absent(),
-  });
-  SeriesCompanion.insert({this.id = const Value.absent(), required String name})
-    : name = Value(name);
-  static Insertable<SeriesItem> custom({
-    Expression<int>? id,
-    Expression<String>? name,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (name != null) 'name': name,
-    });
-  }
-
-  SeriesCompanion copyWith({Value<int>? id, Value<String>? name}) {
-    return SeriesCompanion(id: id ?? this.id, name: name ?? this.name);
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
-    if (name.present) {
-      map['name'] = Variable<String>(name.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('SeriesCompanion(')
-          ..write('id: $id, ')
-          ..write('name: $name')
-          ..write(')'))
-        .toString();
-  }
-}
-
 class $FandomsTable extends Fandoms with TableInfo<$FandomsTable, Fandom> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -368,6 +183,191 @@ class FandomsCompanion extends UpdateCompanion<Fandom> {
   @override
   String toString() {
     return (StringBuffer('FandomsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SeriesTable extends Series with TableInfo<$SeriesTable, SeriesItem> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SeriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, name];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'series';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SeriesItem> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SeriesItem map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SeriesItem(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+    );
+  }
+
+  @override
+  $SeriesTable createAlias(String alias) {
+    return $SeriesTable(attachedDatabase, alias);
+  }
+}
+
+class SeriesItem extends DataClass implements Insertable<SeriesItem> {
+  final int id;
+  final String name;
+  const SeriesItem({required this.id, required this.name});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    return map;
+  }
+
+  SeriesCompanion toCompanion(bool nullToAbsent) {
+    return SeriesCompanion(id: Value(id), name: Value(name));
+  }
+
+  factory SeriesItem.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SeriesItem(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+    };
+  }
+
+  SeriesItem copyWith({int? id, String? name}) =>
+      SeriesItem(id: id ?? this.id, name: name ?? this.name);
+  SeriesItem copyWithCompanion(SeriesCompanion data) {
+    return SeriesItem(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SeriesItem(')
+          ..write('id: $id, ')
+          ..write('name: $name')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SeriesItem && other.id == this.id && other.name == this.name);
+}
+
+class SeriesCompanion extends UpdateCompanion<SeriesItem> {
+  final Value<int> id;
+  final Value<String> name;
+  const SeriesCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+  });
+  SeriesCompanion.insert({this.id = const Value.absent(), required String name})
+    : name = Value(name);
+  static Insertable<SeriesItem> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+    });
+  }
+
+  SeriesCompanion copyWith({Value<int>? id, Value<String>? name}) {
+    return SeriesCompanion(id: id ?? this.id, name: name ?? this.name);
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SeriesCompanion(')
           ..write('id: $id, ')
           ..write('name: $name')
           ..write(')'))
@@ -675,6 +675,43 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _currentPageMeta = const VerificationMeta(
+    'currentPage',
+  );
+  @override
+  late final GeneratedColumn<int> currentPage = GeneratedColumn<int>(
+    'current_page',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _anilistIdMeta = const VerificationMeta(
+    'anilistId',
+  );
+  @override
+  late final GeneratedColumn<int> anilistId = GeneratedColumn<int>(
+    'anilist_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _ownsPhysicalCopyMeta = const VerificationMeta(
+    'ownsPhysicalCopy',
+  );
+  @override
+  late final GeneratedColumn<bool> ownsPhysicalCopy = GeneratedColumn<bool>(
+    'owns_physical_copy',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("owns_physical_copy" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _seriesIdMeta = const VerificationMeta(
     'seriesId',
   );
@@ -770,6 +807,9 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
     newChapters,
     deletedAt,
     finishedAt,
+    currentPage,
+    anilistId,
+    ownsPhysicalCopy,
     seriesId,
     seriesIndex,
     wordsEstimated,
@@ -943,6 +983,30 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
         finishedAt.isAcceptableOrUnknown(data['finished_at']!, _finishedAtMeta),
       );
     }
+    if (data.containsKey('current_page')) {
+      context.handle(
+        _currentPageMeta,
+        currentPage.isAcceptableOrUnknown(
+          data['current_page']!,
+          _currentPageMeta,
+        ),
+      );
+    }
+    if (data.containsKey('anilist_id')) {
+      context.handle(
+        _anilistIdMeta,
+        anilistId.isAcceptableOrUnknown(data['anilist_id']!, _anilistIdMeta),
+      );
+    }
+    if (data.containsKey('owns_physical_copy')) {
+      context.handle(
+        _ownsPhysicalCopyMeta,
+        ownsPhysicalCopy.isAcceptableOrUnknown(
+          data['owns_physical_copy']!,
+          _ownsPhysicalCopyMeta,
+        ),
+      );
+    }
     if (data.containsKey('series_id')) {
       context.handle(
         _seriesIdMeta,
@@ -1108,6 +1172,18 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}finished_at'],
       ),
+      currentPage: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}current_page'],
+      ),
+      anilistId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}anilist_id'],
+      ),
+      ownsPhysicalCopy: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}owns_physical_copy'],
+      )!,
       seriesId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}series_id'],
@@ -1191,6 +1267,15 @@ class Work extends DataClass implements Insertable<Work> {
 
   /// When the status last became "finished" (kept by a trigger).
   final DateTime? finishedAt;
+
+  /// Where the reader is in a paper book.
+  final int? currentPage;
+
+  /// The work's id on AniList, once looked up there.
+  final int? anilistId;
+
+  /// The user also has the book on paper (for digital or online entries).
+  final bool ownsPhysicalCopy;
   final int? seriesId;
 
   /// Position in the series; may be fractional (2.5 for a side story).
@@ -1231,6 +1316,9 @@ class Work extends DataClass implements Insertable<Work> {
     required this.newChapters,
     this.deletedAt,
     this.finishedAt,
+    this.currentPage,
+    this.anilistId,
+    required this.ownsPhysicalCopy,
     this.seriesId,
     this.seriesIndex,
     required this.wordsEstimated,
@@ -1313,6 +1401,13 @@ class Work extends DataClass implements Insertable<Work> {
     if (!nullToAbsent || finishedAt != null) {
       map['finished_at'] = Variable<DateTime>(finishedAt);
     }
+    if (!nullToAbsent || currentPage != null) {
+      map['current_page'] = Variable<int>(currentPage);
+    }
+    if (!nullToAbsent || anilistId != null) {
+      map['anilist_id'] = Variable<int>(anilistId);
+    }
+    map['owns_physical_copy'] = Variable<bool>(ownsPhysicalCopy);
     if (!nullToAbsent || seriesId != null) {
       map['series_id'] = Variable<int>(seriesId);
     }
@@ -1390,6 +1485,13 @@ class Work extends DataClass implements Insertable<Work> {
       finishedAt: finishedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(finishedAt),
+      currentPage: currentPage == null && nullToAbsent
+          ? const Value.absent()
+          : Value(currentPage),
+      anilistId: anilistId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(anilistId),
+      ownsPhysicalCopy: Value(ownsPhysicalCopy),
       seriesId: seriesId == null && nullToAbsent
           ? const Value.absent()
           : Value(seriesId),
@@ -1443,6 +1545,9 @@ class Work extends DataClass implements Insertable<Work> {
       newChapters: serializer.fromJson<int>(json['newChapters']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
       finishedAt: serializer.fromJson<DateTime?>(json['finishedAt']),
+      currentPage: serializer.fromJson<int?>(json['currentPage']),
+      anilistId: serializer.fromJson<int?>(json['anilistId']),
+      ownsPhysicalCopy: serializer.fromJson<bool>(json['ownsPhysicalCopy']),
       seriesId: serializer.fromJson<int?>(json['seriesId']),
       seriesIndex: serializer.fromJson<double?>(json['seriesIndex']),
       wordsEstimated: serializer.fromJson<bool>(json['wordsEstimated']),
@@ -1487,6 +1592,9 @@ class Work extends DataClass implements Insertable<Work> {
       'newChapters': serializer.toJson<int>(newChapters),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
       'finishedAt': serializer.toJson<DateTime?>(finishedAt),
+      'currentPage': serializer.toJson<int?>(currentPage),
+      'anilistId': serializer.toJson<int?>(anilistId),
+      'ownsPhysicalCopy': serializer.toJson<bool>(ownsPhysicalCopy),
       'seriesId': serializer.toJson<int?>(seriesId),
       'seriesIndex': serializer.toJson<double?>(seriesIndex),
       'wordsEstimated': serializer.toJson<bool>(wordsEstimated),
@@ -1523,6 +1631,9 @@ class Work extends DataClass implements Insertable<Work> {
     int? newChapters,
     Value<DateTime?> deletedAt = const Value.absent(),
     Value<DateTime?> finishedAt = const Value.absent(),
+    Value<int?> currentPage = const Value.absent(),
+    Value<int?> anilistId = const Value.absent(),
+    bool? ownsPhysicalCopy,
     Value<int?> seriesId = const Value.absent(),
     Value<double?> seriesIndex = const Value.absent(),
     bool? wordsEstimated,
@@ -1560,6 +1671,9 @@ class Work extends DataClass implements Insertable<Work> {
     newChapters: newChapters ?? this.newChapters,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
     finishedAt: finishedAt.present ? finishedAt.value : this.finishedAt,
+    currentPage: currentPage.present ? currentPage.value : this.currentPage,
+    anilistId: anilistId.present ? anilistId.value : this.anilistId,
+    ownsPhysicalCopy: ownsPhysicalCopy ?? this.ownsPhysicalCopy,
     seriesId: seriesId.present ? seriesId.value : this.seriesId,
     seriesIndex: seriesIndex.present ? seriesIndex.value : this.seriesIndex,
     wordsEstimated: wordsEstimated ?? this.wordsEstimated,
@@ -1611,6 +1725,13 @@ class Work extends DataClass implements Insertable<Work> {
       finishedAt: data.finishedAt.present
           ? data.finishedAt.value
           : this.finishedAt,
+      currentPage: data.currentPage.present
+          ? data.currentPage.value
+          : this.currentPage,
+      anilistId: data.anilistId.present ? data.anilistId.value : this.anilistId,
+      ownsPhysicalCopy: data.ownsPhysicalCopy.present
+          ? data.ownsPhysicalCopy.value
+          : this.ownsPhysicalCopy,
       seriesId: data.seriesId.present ? data.seriesId.value : this.seriesId,
       seriesIndex: data.seriesIndex.present
           ? data.seriesIndex.value
@@ -1657,6 +1778,9 @@ class Work extends DataClass implements Insertable<Work> {
           ..write('newChapters: $newChapters, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('finishedAt: $finishedAt, ')
+          ..write('currentPage: $currentPage, ')
+          ..write('anilistId: $anilistId, ')
+          ..write('ownsPhysicalCopy: $ownsPhysicalCopy, ')
           ..write('seriesId: $seriesId, ')
           ..write('seriesIndex: $seriesIndex, ')
           ..write('wordsEstimated: $wordsEstimated, ')
@@ -1695,6 +1819,9 @@ class Work extends DataClass implements Insertable<Work> {
     newChapters,
     deletedAt,
     finishedAt,
+    currentPage,
+    anilistId,
+    ownsPhysicalCopy,
     seriesId,
     seriesIndex,
     wordsEstimated,
@@ -1732,6 +1859,9 @@ class Work extends DataClass implements Insertable<Work> {
           other.newChapters == this.newChapters &&
           other.deletedAt == this.deletedAt &&
           other.finishedAt == this.finishedAt &&
+          other.currentPage == this.currentPage &&
+          other.anilistId == this.anilistId &&
+          other.ownsPhysicalCopy == this.ownsPhysicalCopy &&
           other.seriesId == this.seriesId &&
           other.seriesIndex == this.seriesIndex &&
           other.wordsEstimated == this.wordsEstimated &&
@@ -1767,6 +1897,9 @@ class WorksCompanion extends UpdateCompanion<Work> {
   final Value<int> newChapters;
   final Value<DateTime?> deletedAt;
   final Value<DateTime?> finishedAt;
+  final Value<int?> currentPage;
+  final Value<int?> anilistId;
+  final Value<bool> ownsPhysicalCopy;
   final Value<int?> seriesId;
   final Value<double?> seriesIndex;
   final Value<bool> wordsEstimated;
@@ -1800,6 +1933,9 @@ class WorksCompanion extends UpdateCompanion<Work> {
     this.newChapters = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.finishedAt = const Value.absent(),
+    this.currentPage = const Value.absent(),
+    this.anilistId = const Value.absent(),
+    this.ownsPhysicalCopy = const Value.absent(),
     this.seriesId = const Value.absent(),
     this.seriesIndex = const Value.absent(),
     this.wordsEstimated = const Value.absent(),
@@ -1834,6 +1970,9 @@ class WorksCompanion extends UpdateCompanion<Work> {
     this.newChapters = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.finishedAt = const Value.absent(),
+    this.currentPage = const Value.absent(),
+    this.anilistId = const Value.absent(),
+    this.ownsPhysicalCopy = const Value.absent(),
     this.seriesId = const Value.absent(),
     this.seriesIndex = const Value.absent(),
     this.wordsEstimated = const Value.absent(),
@@ -1870,6 +2009,9 @@ class WorksCompanion extends UpdateCompanion<Work> {
     Expression<int>? newChapters,
     Expression<DateTime>? deletedAt,
     Expression<DateTime>? finishedAt,
+    Expression<int>? currentPage,
+    Expression<int>? anilistId,
+    Expression<bool>? ownsPhysicalCopy,
     Expression<int>? seriesId,
     Expression<double>? seriesIndex,
     Expression<bool>? wordsEstimated,
@@ -1904,6 +2046,9 @@ class WorksCompanion extends UpdateCompanion<Work> {
       if (newChapters != null) 'new_chapters': newChapters,
       if (deletedAt != null) 'deleted_at': deletedAt,
       if (finishedAt != null) 'finished_at': finishedAt,
+      if (currentPage != null) 'current_page': currentPage,
+      if (anilistId != null) 'anilist_id': anilistId,
+      if (ownsPhysicalCopy != null) 'owns_physical_copy': ownsPhysicalCopy,
       if (seriesId != null) 'series_id': seriesId,
       if (seriesIndex != null) 'series_index': seriesIndex,
       if (wordsEstimated != null) 'words_estimated': wordsEstimated,
@@ -1940,6 +2085,9 @@ class WorksCompanion extends UpdateCompanion<Work> {
     Value<int>? newChapters,
     Value<DateTime?>? deletedAt,
     Value<DateTime?>? finishedAt,
+    Value<int?>? currentPage,
+    Value<int?>? anilistId,
+    Value<bool>? ownsPhysicalCopy,
     Value<int?>? seriesId,
     Value<double?>? seriesIndex,
     Value<bool>? wordsEstimated,
@@ -1974,6 +2122,9 @@ class WorksCompanion extends UpdateCompanion<Work> {
       newChapters: newChapters ?? this.newChapters,
       deletedAt: deletedAt ?? this.deletedAt,
       finishedAt: finishedAt ?? this.finishedAt,
+      currentPage: currentPage ?? this.currentPage,
+      anilistId: anilistId ?? this.anilistId,
+      ownsPhysicalCopy: ownsPhysicalCopy ?? this.ownsPhysicalCopy,
       seriesId: seriesId ?? this.seriesId,
       seriesIndex: seriesIndex ?? this.seriesIndex,
       wordsEstimated: wordsEstimated ?? this.wordsEstimated,
@@ -2072,6 +2223,15 @@ class WorksCompanion extends UpdateCompanion<Work> {
     if (finishedAt.present) {
       map['finished_at'] = Variable<DateTime>(finishedAt.value);
     }
+    if (currentPage.present) {
+      map['current_page'] = Variable<int>(currentPage.value);
+    }
+    if (anilistId.present) {
+      map['anilist_id'] = Variable<int>(anilistId.value);
+    }
+    if (ownsPhysicalCopy.present) {
+      map['owns_physical_copy'] = Variable<bool>(ownsPhysicalCopy.value);
+    }
     if (seriesId.present) {
       map['series_id'] = Variable<int>(seriesId.value);
     }
@@ -2120,11 +2280,2146 @@ class WorksCompanion extends UpdateCompanion<Work> {
           ..write('newChapters: $newChapters, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('finishedAt: $finishedAt, ')
+          ..write('currentPage: $currentPage, ')
+          ..write('anilistId: $anilistId, ')
+          ..write('ownsPhysicalCopy: $ownsPhysicalCopy, ')
           ..write('seriesId: $seriesId, ')
           ..write('seriesIndex: $seriesIndex, ')
           ..write('wordsEstimated: $wordsEstimated, ')
           ..write('pagesEstimated: $pagesEstimated, ')
           ..write('characterCount: $characterCount')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TagsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _isAdultMeta = const VerificationMeta(
+    'isAdult',
+  );
+  @override
+  late final GeneratedColumn<bool> isAdult = GeneratedColumn<bool>(
+    'is_adult',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_adult" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, name, isAdult];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'tags';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Tag> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('is_adult')) {
+      context.handle(
+        _isAdultMeta,
+        isAdult.isAcceptableOrUnknown(data['is_adult']!, _isAdultMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Tag map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Tag(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      isAdult: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_adult'],
+      )!,
+    );
+  }
+
+  @override
+  $TagsTable createAlias(String alias) {
+    return $TagsTable(attachedDatabase, alias);
+  }
+}
+
+class Tag extends DataClass implements Insertable<Tag> {
+  final int id;
+  final String name;
+
+  /// Adult content; hidden when the "hide 18+ tags" setting is on.
+  final bool isAdult;
+  const Tag({required this.id, required this.name, required this.isAdult});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['is_adult'] = Variable<bool>(isAdult);
+    return map;
+  }
+
+  TagsCompanion toCompanion(bool nullToAbsent) {
+    return TagsCompanion(
+      id: Value(id),
+      name: Value(name),
+      isAdult: Value(isAdult),
+    );
+  }
+
+  factory Tag.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Tag(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      isAdult: serializer.fromJson<bool>(json['isAdult']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'isAdult': serializer.toJson<bool>(isAdult),
+    };
+  }
+
+  Tag copyWith({int? id, String? name, bool? isAdult}) => Tag(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    isAdult: isAdult ?? this.isAdult,
+  );
+  Tag copyWithCompanion(TagsCompanion data) {
+    return Tag(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      isAdult: data.isAdult.present ? data.isAdult.value : this.isAdult,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Tag(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('isAdult: $isAdult')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name, isAdult);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Tag &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.isAdult == this.isAdult);
+}
+
+class TagsCompanion extends UpdateCompanion<Tag> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<bool> isAdult;
+  const TagsCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.isAdult = const Value.absent(),
+  });
+  TagsCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.isAdult = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<Tag> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<bool>? isAdult,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (isAdult != null) 'is_adult': isAdult,
+    });
+  }
+
+  TagsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<bool>? isAdult,
+  }) {
+    return TagsCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      isAdult: isAdult ?? this.isAdult,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (isAdult.present) {
+      map['is_adult'] = Variable<bool>(isAdult.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TagsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('isAdult: $isAdult')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $TagSuggestionsTable extends TagSuggestions
+    with TableInfo<$TagSuggestionsTable, TagSuggestion> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TagSuggestionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _workIdMeta = const VerificationMeta('workId');
+  @override
+  late final GeneratedColumn<int> workId = GeneratedColumn<int>(
+    'work_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES works (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _tagIdMeta = const VerificationMeta('tagId');
+  @override
+  late final GeneratedColumn<int> tagId = GeneratedColumn<int>(
+    'tag_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES tags (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _reasonMeta = const VerificationMeta('reason');
+  @override
+  late final GeneratedColumn<String> reason = GeneratedColumn<String>(
+    'reason',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sourceMeta = const VerificationMeta('source');
+  @override
+  late final GeneratedColumn<String> source = GeneratedColumn<String>(
+    'source',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('keywords'),
+  );
+  static const VerificationMeta _dismissedMeta = const VerificationMeta(
+    'dismissed',
+  );
+  @override
+  late final GeneratedColumn<bool> dismissed = GeneratedColumn<bool>(
+    'dismissed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("dismissed" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    workId,
+    tagId,
+    reason,
+    source,
+    dismissed,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'tag_suggestions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TagSuggestion> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('work_id')) {
+      context.handle(
+        _workIdMeta,
+        workId.isAcceptableOrUnknown(data['work_id']!, _workIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_workIdMeta);
+    }
+    if (data.containsKey('tag_id')) {
+      context.handle(
+        _tagIdMeta,
+        tagId.isAcceptableOrUnknown(data['tag_id']!, _tagIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_tagIdMeta);
+    }
+    if (data.containsKey('reason')) {
+      context.handle(
+        _reasonMeta,
+        reason.isAcceptableOrUnknown(data['reason']!, _reasonMeta),
+      );
+    }
+    if (data.containsKey('source')) {
+      context.handle(
+        _sourceMeta,
+        source.isAcceptableOrUnknown(data['source']!, _sourceMeta),
+      );
+    }
+    if (data.containsKey('dismissed')) {
+      context.handle(
+        _dismissedMeta,
+        dismissed.isAcceptableOrUnknown(data['dismissed']!, _dismissedMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {workId, tagId};
+  @override
+  TagSuggestion map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TagSuggestion(
+      workId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}work_id'],
+      )!,
+      tagId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}tag_id'],
+      )!,
+      reason: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reason'],
+      ),
+      source: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source'],
+      )!,
+      dismissed: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}dismissed'],
+      )!,
+    );
+  }
+
+  @override
+  $TagSuggestionsTable createAlias(String alias) {
+    return $TagSuggestionsTable(attachedDatabase, alias);
+  }
+}
+
+class TagSuggestion extends DataClass implements Insertable<TagSuggestion> {
+  final int workId;
+  final int tagId;
+
+  /// e.g. "The summary mentions “reborn”".
+  final String? reason;
+
+  /// "keywords", or the AI provider's name.
+  final String source;
+  final bool dismissed;
+  const TagSuggestion({
+    required this.workId,
+    required this.tagId,
+    this.reason,
+    required this.source,
+    required this.dismissed,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['work_id'] = Variable<int>(workId);
+    map['tag_id'] = Variable<int>(tagId);
+    if (!nullToAbsent || reason != null) {
+      map['reason'] = Variable<String>(reason);
+    }
+    map['source'] = Variable<String>(source);
+    map['dismissed'] = Variable<bool>(dismissed);
+    return map;
+  }
+
+  TagSuggestionsCompanion toCompanion(bool nullToAbsent) {
+    return TagSuggestionsCompanion(
+      workId: Value(workId),
+      tagId: Value(tagId),
+      reason: reason == null && nullToAbsent
+          ? const Value.absent()
+          : Value(reason),
+      source: Value(source),
+      dismissed: Value(dismissed),
+    );
+  }
+
+  factory TagSuggestion.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TagSuggestion(
+      workId: serializer.fromJson<int>(json['workId']),
+      tagId: serializer.fromJson<int>(json['tagId']),
+      reason: serializer.fromJson<String?>(json['reason']),
+      source: serializer.fromJson<String>(json['source']),
+      dismissed: serializer.fromJson<bool>(json['dismissed']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'workId': serializer.toJson<int>(workId),
+      'tagId': serializer.toJson<int>(tagId),
+      'reason': serializer.toJson<String?>(reason),
+      'source': serializer.toJson<String>(source),
+      'dismissed': serializer.toJson<bool>(dismissed),
+    };
+  }
+
+  TagSuggestion copyWith({
+    int? workId,
+    int? tagId,
+    Value<String?> reason = const Value.absent(),
+    String? source,
+    bool? dismissed,
+  }) => TagSuggestion(
+    workId: workId ?? this.workId,
+    tagId: tagId ?? this.tagId,
+    reason: reason.present ? reason.value : this.reason,
+    source: source ?? this.source,
+    dismissed: dismissed ?? this.dismissed,
+  );
+  TagSuggestion copyWithCompanion(TagSuggestionsCompanion data) {
+    return TagSuggestion(
+      workId: data.workId.present ? data.workId.value : this.workId,
+      tagId: data.tagId.present ? data.tagId.value : this.tagId,
+      reason: data.reason.present ? data.reason.value : this.reason,
+      source: data.source.present ? data.source.value : this.source,
+      dismissed: data.dismissed.present ? data.dismissed.value : this.dismissed,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TagSuggestion(')
+          ..write('workId: $workId, ')
+          ..write('tagId: $tagId, ')
+          ..write('reason: $reason, ')
+          ..write('source: $source, ')
+          ..write('dismissed: $dismissed')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(workId, tagId, reason, source, dismissed);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TagSuggestion &&
+          other.workId == this.workId &&
+          other.tagId == this.tagId &&
+          other.reason == this.reason &&
+          other.source == this.source &&
+          other.dismissed == this.dismissed);
+}
+
+class TagSuggestionsCompanion extends UpdateCompanion<TagSuggestion> {
+  final Value<int> workId;
+  final Value<int> tagId;
+  final Value<String?> reason;
+  final Value<String> source;
+  final Value<bool> dismissed;
+  final Value<int> rowid;
+  const TagSuggestionsCompanion({
+    this.workId = const Value.absent(),
+    this.tagId = const Value.absent(),
+    this.reason = const Value.absent(),
+    this.source = const Value.absent(),
+    this.dismissed = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TagSuggestionsCompanion.insert({
+    required int workId,
+    required int tagId,
+    this.reason = const Value.absent(),
+    this.source = const Value.absent(),
+    this.dismissed = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : workId = Value(workId),
+       tagId = Value(tagId);
+  static Insertable<TagSuggestion> custom({
+    Expression<int>? workId,
+    Expression<int>? tagId,
+    Expression<String>? reason,
+    Expression<String>? source,
+    Expression<bool>? dismissed,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (workId != null) 'work_id': workId,
+      if (tagId != null) 'tag_id': tagId,
+      if (reason != null) 'reason': reason,
+      if (source != null) 'source': source,
+      if (dismissed != null) 'dismissed': dismissed,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TagSuggestionsCompanion copyWith({
+    Value<int>? workId,
+    Value<int>? tagId,
+    Value<String?>? reason,
+    Value<String>? source,
+    Value<bool>? dismissed,
+    Value<int>? rowid,
+  }) {
+    return TagSuggestionsCompanion(
+      workId: workId ?? this.workId,
+      tagId: tagId ?? this.tagId,
+      reason: reason ?? this.reason,
+      source: source ?? this.source,
+      dismissed: dismissed ?? this.dismissed,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (workId.present) {
+      map['work_id'] = Variable<int>(workId.value);
+    }
+    if (tagId.present) {
+      map['tag_id'] = Variable<int>(tagId.value);
+    }
+    if (reason.present) {
+      map['reason'] = Variable<String>(reason.value);
+    }
+    if (source.present) {
+      map['source'] = Variable<String>(source.value);
+    }
+    if (dismissed.present) {
+      map['dismissed'] = Variable<bool>(dismissed.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TagSuggestionsCompanion(')
+          ..write('workId: $workId, ')
+          ..write('tagId: $tagId, ')
+          ..write('reason: $reason, ')
+          ..write('source: $source, ')
+          ..write('dismissed: $dismissed, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $FandomAliasesTable extends FandomAliases
+    with TableInfo<$FandomAliasesTable, FandomAliase> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FandomAliasesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _aliasKeyMeta = const VerificationMeta(
+    'aliasKey',
+  );
+  @override
+  late final GeneratedColumn<String> aliasKey = GeneratedColumn<String>(
+    'alias_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fandomIdMeta = const VerificationMeta(
+    'fandomId',
+  );
+  @override
+  late final GeneratedColumn<int> fandomId = GeneratedColumn<int>(
+    'fandom_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES fandoms (id) ON DELETE CASCADE',
+    ),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [aliasKey, fandomId];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'fandom_aliases';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<FandomAliase> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('alias_key')) {
+      context.handle(
+        _aliasKeyMeta,
+        aliasKey.isAcceptableOrUnknown(data['alias_key']!, _aliasKeyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_aliasKeyMeta);
+    }
+    if (data.containsKey('fandom_id')) {
+      context.handle(
+        _fandomIdMeta,
+        fandomId.isAcceptableOrUnknown(data['fandom_id']!, _fandomIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_fandomIdMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {aliasKey};
+  @override
+  FandomAliase map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FandomAliase(
+      aliasKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}alias_key'],
+      )!,
+      fandomId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}fandom_id'],
+      )!,
+    );
+  }
+
+  @override
+  $FandomAliasesTable createAlias(String alias) {
+    return $FandomAliasesTable(attachedDatabase, alias);
+  }
+}
+
+class FandomAliase extends DataClass implements Insertable<FandomAliase> {
+  /// [fandomKey] of the other name.
+  final String aliasKey;
+  final int fandomId;
+  const FandomAliase({required this.aliasKey, required this.fandomId});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['alias_key'] = Variable<String>(aliasKey);
+    map['fandom_id'] = Variable<int>(fandomId);
+    return map;
+  }
+
+  FandomAliasesCompanion toCompanion(bool nullToAbsent) {
+    return FandomAliasesCompanion(
+      aliasKey: Value(aliasKey),
+      fandomId: Value(fandomId),
+    );
+  }
+
+  factory FandomAliase.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FandomAliase(
+      aliasKey: serializer.fromJson<String>(json['aliasKey']),
+      fandomId: serializer.fromJson<int>(json['fandomId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'aliasKey': serializer.toJson<String>(aliasKey),
+      'fandomId': serializer.toJson<int>(fandomId),
+    };
+  }
+
+  FandomAliase copyWith({String? aliasKey, int? fandomId}) => FandomAliase(
+    aliasKey: aliasKey ?? this.aliasKey,
+    fandomId: fandomId ?? this.fandomId,
+  );
+  FandomAliase copyWithCompanion(FandomAliasesCompanion data) {
+    return FandomAliase(
+      aliasKey: data.aliasKey.present ? data.aliasKey.value : this.aliasKey,
+      fandomId: data.fandomId.present ? data.fandomId.value : this.fandomId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FandomAliase(')
+          ..write('aliasKey: $aliasKey, ')
+          ..write('fandomId: $fandomId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(aliasKey, fandomId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is FandomAliase &&
+          other.aliasKey == this.aliasKey &&
+          other.fandomId == this.fandomId);
+}
+
+class FandomAliasesCompanion extends UpdateCompanion<FandomAliase> {
+  final Value<String> aliasKey;
+  final Value<int> fandomId;
+  final Value<int> rowid;
+  const FandomAliasesCompanion({
+    this.aliasKey = const Value.absent(),
+    this.fandomId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  FandomAliasesCompanion.insert({
+    required String aliasKey,
+    required int fandomId,
+    this.rowid = const Value.absent(),
+  }) : aliasKey = Value(aliasKey),
+       fandomId = Value(fandomId);
+  static Insertable<FandomAliase> custom({
+    Expression<String>? aliasKey,
+    Expression<int>? fandomId,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (aliasKey != null) 'alias_key': aliasKey,
+      if (fandomId != null) 'fandom_id': fandomId,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  FandomAliasesCompanion copyWith({
+    Value<String>? aliasKey,
+    Value<int>? fandomId,
+    Value<int>? rowid,
+  }) {
+    return FandomAliasesCompanion(
+      aliasKey: aliasKey ?? this.aliasKey,
+      fandomId: fandomId ?? this.fandomId,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (aliasKey.present) {
+      map['alias_key'] = Variable<String>(aliasKey.value);
+    }
+    if (fandomId.present) {
+      map['fandom_id'] = Variable<int>(fandomId.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FandomAliasesCompanion(')
+          ..write('aliasKey: $aliasKey, ')
+          ..write('fandomId: $fandomId, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $TagSynonymsTable extends TagSynonyms
+    with TableInfo<$TagSynonymsTable, TagSynonym> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TagSynonymsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _synonymMeta = const VerificationMeta(
+    'synonym',
+  );
+  @override
+  late final GeneratedColumn<String> synonym = GeneratedColumn<String>(
+    'synonym',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _tagIdMeta = const VerificationMeta('tagId');
+  @override
+  late final GeneratedColumn<int> tagId = GeneratedColumn<int>(
+    'tag_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES tags (id) ON DELETE CASCADE',
+    ),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [synonym, tagId];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'tag_synonyms';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TagSynonym> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('synonym')) {
+      context.handle(
+        _synonymMeta,
+        synonym.isAcceptableOrUnknown(data['synonym']!, _synonymMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_synonymMeta);
+    }
+    if (data.containsKey('tag_id')) {
+      context.handle(
+        _tagIdMeta,
+        tagId.isAcceptableOrUnknown(data['tag_id']!, _tagIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_tagIdMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {synonym};
+  @override
+  TagSynonym map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TagSynonym(
+      synonym: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}synonym'],
+      )!,
+      tagId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}tag_id'],
+      )!,
+    );
+  }
+
+  @override
+  $TagSynonymsTable createAlias(String alias) {
+    return $TagSynonymsTable(attachedDatabase, alias);
+  }
+}
+
+class TagSynonym extends DataClass implements Insertable<TagSynonym> {
+  /// Lowercase.
+  final String synonym;
+  final int tagId;
+  const TagSynonym({required this.synonym, required this.tagId});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['synonym'] = Variable<String>(synonym);
+    map['tag_id'] = Variable<int>(tagId);
+    return map;
+  }
+
+  TagSynonymsCompanion toCompanion(bool nullToAbsent) {
+    return TagSynonymsCompanion(synonym: Value(synonym), tagId: Value(tagId));
+  }
+
+  factory TagSynonym.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TagSynonym(
+      synonym: serializer.fromJson<String>(json['synonym']),
+      tagId: serializer.fromJson<int>(json['tagId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'synonym': serializer.toJson<String>(synonym),
+      'tagId': serializer.toJson<int>(tagId),
+    };
+  }
+
+  TagSynonym copyWith({String? synonym, int? tagId}) =>
+      TagSynonym(synonym: synonym ?? this.synonym, tagId: tagId ?? this.tagId);
+  TagSynonym copyWithCompanion(TagSynonymsCompanion data) {
+    return TagSynonym(
+      synonym: data.synonym.present ? data.synonym.value : this.synonym,
+      tagId: data.tagId.present ? data.tagId.value : this.tagId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TagSynonym(')
+          ..write('synonym: $synonym, ')
+          ..write('tagId: $tagId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(synonym, tagId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TagSynonym &&
+          other.synonym == this.synonym &&
+          other.tagId == this.tagId);
+}
+
+class TagSynonymsCompanion extends UpdateCompanion<TagSynonym> {
+  final Value<String> synonym;
+  final Value<int> tagId;
+  final Value<int> rowid;
+  const TagSynonymsCompanion({
+    this.synonym = const Value.absent(),
+    this.tagId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TagSynonymsCompanion.insert({
+    required String synonym,
+    required int tagId,
+    this.rowid = const Value.absent(),
+  }) : synonym = Value(synonym),
+       tagId = Value(tagId);
+  static Insertable<TagSynonym> custom({
+    Expression<String>? synonym,
+    Expression<int>? tagId,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (synonym != null) 'synonym': synonym,
+      if (tagId != null) 'tag_id': tagId,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TagSynonymsCompanion copyWith({
+    Value<String>? synonym,
+    Value<int>? tagId,
+    Value<int>? rowid,
+  }) {
+    return TagSynonymsCompanion(
+      synonym: synonym ?? this.synonym,
+      tagId: tagId ?? this.tagId,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (synonym.present) {
+      map['synonym'] = Variable<String>(synonym.value);
+    }
+    if (tagId.present) {
+      map['tag_id'] = Variable<int>(tagId.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TagSynonymsCompanion(')
+          ..write('synonym: $synonym, ')
+          ..write('tagId: $tagId, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $CharactersTable extends Characters
+    with TableInfo<$CharactersTable, Character> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CharactersTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fandomIdMeta = const VerificationMeta(
+    'fandomId',
+  );
+  @override
+  late final GeneratedColumn<int> fandomId = GeneratedColumn<int>(
+    'fandom_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES fandoms (id) ON DELETE SET NULL',
+    ),
+  );
+  static const VerificationMeta _anilistIdMeta = const VerificationMeta(
+    'anilistId',
+  );
+  @override
+  late final GeneratedColumn<int> anilistId = GeneratedColumn<int>(
+    'anilist_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, name, fandomId, anilistId];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'characters';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Character> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('fandom_id')) {
+      context.handle(
+        _fandomIdMeta,
+        fandomId.isAcceptableOrUnknown(data['fandom_id']!, _fandomIdMeta),
+      );
+    }
+    if (data.containsKey('anilist_id')) {
+      context.handle(
+        _anilistIdMeta,
+        anilistId.isAcceptableOrUnknown(data['anilist_id']!, _anilistIdMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Character map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Character(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      fandomId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}fandom_id'],
+      ),
+      anilistId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}anilist_id'],
+      ),
+    );
+  }
+
+  @override
+  $CharactersTable createAlias(String alias) {
+    return $CharactersTable(attachedDatabase, alias);
+  }
+}
+
+class Character extends DataClass implements Insertable<Character> {
+  final int id;
+  final String name;
+  final int? fandomId;
+
+  /// The character's AniList id, once looked up there.
+  final int? anilistId;
+  const Character({
+    required this.id,
+    required this.name,
+    this.fandomId,
+    this.anilistId,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    if (!nullToAbsent || fandomId != null) {
+      map['fandom_id'] = Variable<int>(fandomId);
+    }
+    if (!nullToAbsent || anilistId != null) {
+      map['anilist_id'] = Variable<int>(anilistId);
+    }
+    return map;
+  }
+
+  CharactersCompanion toCompanion(bool nullToAbsent) {
+    return CharactersCompanion(
+      id: Value(id),
+      name: Value(name),
+      fandomId: fandomId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fandomId),
+      anilistId: anilistId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(anilistId),
+    );
+  }
+
+  factory Character.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Character(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      fandomId: serializer.fromJson<int?>(json['fandomId']),
+      anilistId: serializer.fromJson<int?>(json['anilistId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'fandomId': serializer.toJson<int?>(fandomId),
+      'anilistId': serializer.toJson<int?>(anilistId),
+    };
+  }
+
+  Character copyWith({
+    int? id,
+    String? name,
+    Value<int?> fandomId = const Value.absent(),
+    Value<int?> anilistId = const Value.absent(),
+  }) => Character(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    fandomId: fandomId.present ? fandomId.value : this.fandomId,
+    anilistId: anilistId.present ? anilistId.value : this.anilistId,
+  );
+  Character copyWithCompanion(CharactersCompanion data) {
+    return Character(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      fandomId: data.fandomId.present ? data.fandomId.value : this.fandomId,
+      anilistId: data.anilistId.present ? data.anilistId.value : this.anilistId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Character(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('fandomId: $fandomId, ')
+          ..write('anilistId: $anilistId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name, fandomId, anilistId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Character &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.fandomId == this.fandomId &&
+          other.anilistId == this.anilistId);
+}
+
+class CharactersCompanion extends UpdateCompanion<Character> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<int?> fandomId;
+  final Value<int?> anilistId;
+  const CharactersCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.fandomId = const Value.absent(),
+    this.anilistId = const Value.absent(),
+  });
+  CharactersCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.fandomId = const Value.absent(),
+    this.anilistId = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<Character> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<int>? fandomId,
+    Expression<int>? anilistId,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (fandomId != null) 'fandom_id': fandomId,
+      if (anilistId != null) 'anilist_id': anilistId,
+    });
+  }
+
+  CharactersCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<int?>? fandomId,
+    Value<int?>? anilistId,
+  }) {
+    return CharactersCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      fandomId: fandomId ?? this.fandomId,
+      anilistId: anilistId ?? this.anilistId,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (fandomId.present) {
+      map['fandom_id'] = Variable<int>(fandomId.value);
+    }
+    if (anilistId.present) {
+      map['anilist_id'] = Variable<int>(anilistId.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CharactersCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('fandomId: $fandomId, ')
+          ..write('anilistId: $anilistId')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $CharacterAliasesTable extends CharacterAliases
+    with TableInfo<$CharacterAliasesTable, CharacterAliase> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CharacterAliasesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _characterIdMeta = const VerificationMeta(
+    'characterId',
+  );
+  @override
+  late final GeneratedColumn<int> characterId = GeneratedColumn<int>(
+    'character_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES characters (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _aliasMeta = const VerificationMeta('alias');
+  @override
+  late final GeneratedColumn<String> alias = GeneratedColumn<String>(
+    'alias',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [characterId, alias];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'character_aliases';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CharacterAliase> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('character_id')) {
+      context.handle(
+        _characterIdMeta,
+        characterId.isAcceptableOrUnknown(
+          data['character_id']!,
+          _characterIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_characterIdMeta);
+    }
+    if (data.containsKey('alias')) {
+      context.handle(
+        _aliasMeta,
+        alias.isAcceptableOrUnknown(data['alias']!, _aliasMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_aliasMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {characterId, alias};
+  @override
+  CharacterAliase map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CharacterAliase(
+      characterId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}character_id'],
+      )!,
+      alias: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}alias'],
+      )!,
+    );
+  }
+
+  @override
+  $CharacterAliasesTable createAlias(String alias) {
+    return $CharacterAliasesTable(attachedDatabase, alias);
+  }
+}
+
+class CharacterAliase extends DataClass implements Insertable<CharacterAliase> {
+  final int characterId;
+  final String alias;
+  const CharacterAliase({required this.characterId, required this.alias});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['character_id'] = Variable<int>(characterId);
+    map['alias'] = Variable<String>(alias);
+    return map;
+  }
+
+  CharacterAliasesCompanion toCompanion(bool nullToAbsent) {
+    return CharacterAliasesCompanion(
+      characterId: Value(characterId),
+      alias: Value(alias),
+    );
+  }
+
+  factory CharacterAliase.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CharacterAliase(
+      characterId: serializer.fromJson<int>(json['characterId']),
+      alias: serializer.fromJson<String>(json['alias']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'characterId': serializer.toJson<int>(characterId),
+      'alias': serializer.toJson<String>(alias),
+    };
+  }
+
+  CharacterAliase copyWith({int? characterId, String? alias}) =>
+      CharacterAliase(
+        characterId: characterId ?? this.characterId,
+        alias: alias ?? this.alias,
+      );
+  CharacterAliase copyWithCompanion(CharacterAliasesCompanion data) {
+    return CharacterAliase(
+      characterId: data.characterId.present
+          ? data.characterId.value
+          : this.characterId,
+      alias: data.alias.present ? data.alias.value : this.alias,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CharacterAliase(')
+          ..write('characterId: $characterId, ')
+          ..write('alias: $alias')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(characterId, alias);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CharacterAliase &&
+          other.characterId == this.characterId &&
+          other.alias == this.alias);
+}
+
+class CharacterAliasesCompanion extends UpdateCompanion<CharacterAliase> {
+  final Value<int> characterId;
+  final Value<String> alias;
+  final Value<int> rowid;
+  const CharacterAliasesCompanion({
+    this.characterId = const Value.absent(),
+    this.alias = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CharacterAliasesCompanion.insert({
+    required int characterId,
+    required String alias,
+    this.rowid = const Value.absent(),
+  }) : characterId = Value(characterId),
+       alias = Value(alias);
+  static Insertable<CharacterAliase> custom({
+    Expression<int>? characterId,
+    Expression<String>? alias,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (characterId != null) 'character_id': characterId,
+      if (alias != null) 'alias': alias,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CharacterAliasesCompanion copyWith({
+    Value<int>? characterId,
+    Value<String>? alias,
+    Value<int>? rowid,
+  }) {
+    return CharacterAliasesCompanion(
+      characterId: characterId ?? this.characterId,
+      alias: alias ?? this.alias,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (characterId.present) {
+      map['character_id'] = Variable<int>(characterId.value);
+    }
+    if (alias.present) {
+      map['alias'] = Variable<String>(alias.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CharacterAliasesCompanion(')
+          ..write('characterId: $characterId, ')
+          ..write('alias: $alias, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $WorkCharactersTable extends WorkCharacters
+    with TableInfo<$WorkCharactersTable, WorkCharacter> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $WorkCharactersTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _workIdMeta = const VerificationMeta('workId');
+  @override
+  late final GeneratedColumn<int> workId = GeneratedColumn<int>(
+    'work_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES works (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _characterIdMeta = const VerificationMeta(
+    'characterId',
+  );
+  @override
+  late final GeneratedColumn<int> characterId = GeneratedColumn<int>(
+    'character_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES characters (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _confidenceMeta = const VerificationMeta(
+    'confidence',
+  );
+  @override
+  late final GeneratedColumn<double> confidence = GeneratedColumn<double>(
+    'confidence',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1.0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [workId, characterId, confidence];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'work_characters';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<WorkCharacter> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('work_id')) {
+      context.handle(
+        _workIdMeta,
+        workId.isAcceptableOrUnknown(data['work_id']!, _workIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_workIdMeta);
+    }
+    if (data.containsKey('character_id')) {
+      context.handle(
+        _characterIdMeta,
+        characterId.isAcceptableOrUnknown(
+          data['character_id']!,
+          _characterIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_characterIdMeta);
+    }
+    if (data.containsKey('confidence')) {
+      context.handle(
+        _confidenceMeta,
+        confidence.isAcceptableOrUnknown(data['confidence']!, _confidenceMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {workId, characterId};
+  @override
+  WorkCharacter map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return WorkCharacter(
+      workId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}work_id'],
+      )!,
+      characterId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}character_id'],
+      )!,
+      confidence: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}confidence'],
+      )!,
+    );
+  }
+
+  @override
+  $WorkCharactersTable createAlias(String alias) {
+    return $WorkCharactersTable(attachedDatabase, alias);
+  }
+}
+
+class WorkCharacter extends DataClass implements Insertable<WorkCharacter> {
+  final int workId;
+  final int characterId;
+
+  /// 1 when the site or the user names the character; lower when guessed.
+  final double confidence;
+  const WorkCharacter({
+    required this.workId,
+    required this.characterId,
+    required this.confidence,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['work_id'] = Variable<int>(workId);
+    map['character_id'] = Variable<int>(characterId);
+    map['confidence'] = Variable<double>(confidence);
+    return map;
+  }
+
+  WorkCharactersCompanion toCompanion(bool nullToAbsent) {
+    return WorkCharactersCompanion(
+      workId: Value(workId),
+      characterId: Value(characterId),
+      confidence: Value(confidence),
+    );
+  }
+
+  factory WorkCharacter.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return WorkCharacter(
+      workId: serializer.fromJson<int>(json['workId']),
+      characterId: serializer.fromJson<int>(json['characterId']),
+      confidence: serializer.fromJson<double>(json['confidence']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'workId': serializer.toJson<int>(workId),
+      'characterId': serializer.toJson<int>(characterId),
+      'confidence': serializer.toJson<double>(confidence),
+    };
+  }
+
+  WorkCharacter copyWith({int? workId, int? characterId, double? confidence}) =>
+      WorkCharacter(
+        workId: workId ?? this.workId,
+        characterId: characterId ?? this.characterId,
+        confidence: confidence ?? this.confidence,
+      );
+  WorkCharacter copyWithCompanion(WorkCharactersCompanion data) {
+    return WorkCharacter(
+      workId: data.workId.present ? data.workId.value : this.workId,
+      characterId: data.characterId.present
+          ? data.characterId.value
+          : this.characterId,
+      confidence: data.confidence.present
+          ? data.confidence.value
+          : this.confidence,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WorkCharacter(')
+          ..write('workId: $workId, ')
+          ..write('characterId: $characterId, ')
+          ..write('confidence: $confidence')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(workId, characterId, confidence);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is WorkCharacter &&
+          other.workId == this.workId &&
+          other.characterId == this.characterId &&
+          other.confidence == this.confidence);
+}
+
+class WorkCharactersCompanion extends UpdateCompanion<WorkCharacter> {
+  final Value<int> workId;
+  final Value<int> characterId;
+  final Value<double> confidence;
+  final Value<int> rowid;
+  const WorkCharactersCompanion({
+    this.workId = const Value.absent(),
+    this.characterId = const Value.absent(),
+    this.confidence = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  WorkCharactersCompanion.insert({
+    required int workId,
+    required int characterId,
+    this.confidence = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : workId = Value(workId),
+       characterId = Value(characterId);
+  static Insertable<WorkCharacter> custom({
+    Expression<int>? workId,
+    Expression<int>? characterId,
+    Expression<double>? confidence,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (workId != null) 'work_id': workId,
+      if (characterId != null) 'character_id': characterId,
+      if (confidence != null) 'confidence': confidence,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  WorkCharactersCompanion copyWith({
+    Value<int>? workId,
+    Value<int>? characterId,
+    Value<double>? confidence,
+    Value<int>? rowid,
+  }) {
+    return WorkCharactersCompanion(
+      workId: workId ?? this.workId,
+      characterId: characterId ?? this.characterId,
+      confidence: confidence ?? this.confidence,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (workId.present) {
+      map['work_id'] = Variable<int>(workId.value);
+    }
+    if (characterId.present) {
+      map['character_id'] = Variable<int>(characterId.value);
+    }
+    if (confidence.present) {
+      map['confidence'] = Variable<double>(confidence.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WorkCharactersCompanion(')
+          ..write('workId: $workId, ')
+          ..write('characterId: $characterId, ')
+          ..write('confidence: $confidence, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $WorkFandomsTable extends WorkFandoms
+    with TableInfo<$WorkFandomsTable, WorkFandom> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $WorkFandomsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _workIdMeta = const VerificationMeta('workId');
+  @override
+  late final GeneratedColumn<int> workId = GeneratedColumn<int>(
+    'work_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES works (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _fandomIdMeta = const VerificationMeta(
+    'fandomId',
+  );
+  @override
+  late final GeneratedColumn<int> fandomId = GeneratedColumn<int>(
+    'fandom_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES fandoms (id) ON DELETE CASCADE',
+    ),
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<FandomRole, String> role =
+      GeneratedColumn<String>(
+        'role',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('crossover'),
+      ).withConverter<FandomRole>($WorkFandomsTable.$converterrole);
+  @override
+  List<GeneratedColumn> get $columns => [workId, fandomId, role];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'work_fandoms';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<WorkFandom> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('work_id')) {
+      context.handle(
+        _workIdMeta,
+        workId.isAcceptableOrUnknown(data['work_id']!, _workIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_workIdMeta);
+    }
+    if (data.containsKey('fandom_id')) {
+      context.handle(
+        _fandomIdMeta,
+        fandomId.isAcceptableOrUnknown(data['fandom_id']!, _fandomIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_fandomIdMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {workId, fandomId};
+  @override
+  WorkFandom map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return WorkFandom(
+      workId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}work_id'],
+      )!,
+      fandomId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}fandom_id'],
+      )!,
+      role: $WorkFandomsTable.$converterrole.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}role'],
+        )!,
+      ),
+    );
+  }
+
+  @override
+  $WorkFandomsTable createAlias(String alias) {
+    return $WorkFandomsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<FandomRole, String, String> $converterrole =
+      const EnumNameConverter<FandomRole>(FandomRole.values);
+}
+
+class WorkFandom extends DataClass implements Insertable<WorkFandom> {
+  final int workId;
+  final int fandomId;
+  final FandomRole role;
+  const WorkFandom({
+    required this.workId,
+    required this.fandomId,
+    required this.role,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['work_id'] = Variable<int>(workId);
+    map['fandom_id'] = Variable<int>(fandomId);
+    {
+      map['role'] = Variable<String>(
+        $WorkFandomsTable.$converterrole.toSql(role),
+      );
+    }
+    return map;
+  }
+
+  WorkFandomsCompanion toCompanion(bool nullToAbsent) {
+    return WorkFandomsCompanion(
+      workId: Value(workId),
+      fandomId: Value(fandomId),
+      role: Value(role),
+    );
+  }
+
+  factory WorkFandom.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return WorkFandom(
+      workId: serializer.fromJson<int>(json['workId']),
+      fandomId: serializer.fromJson<int>(json['fandomId']),
+      role: $WorkFandomsTable.$converterrole.fromJson(
+        serializer.fromJson<String>(json['role']),
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'workId': serializer.toJson<int>(workId),
+      'fandomId': serializer.toJson<int>(fandomId),
+      'role': serializer.toJson<String>(
+        $WorkFandomsTable.$converterrole.toJson(role),
+      ),
+    };
+  }
+
+  WorkFandom copyWith({int? workId, int? fandomId, FandomRole? role}) =>
+      WorkFandom(
+        workId: workId ?? this.workId,
+        fandomId: fandomId ?? this.fandomId,
+        role: role ?? this.role,
+      );
+  WorkFandom copyWithCompanion(WorkFandomsCompanion data) {
+    return WorkFandom(
+      workId: data.workId.present ? data.workId.value : this.workId,
+      fandomId: data.fandomId.present ? data.fandomId.value : this.fandomId,
+      role: data.role.present ? data.role.value : this.role,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WorkFandom(')
+          ..write('workId: $workId, ')
+          ..write('fandomId: $fandomId, ')
+          ..write('role: $role')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(workId, fandomId, role);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is WorkFandom &&
+          other.workId == this.workId &&
+          other.fandomId == this.fandomId &&
+          other.role == this.role);
+}
+
+class WorkFandomsCompanion extends UpdateCompanion<WorkFandom> {
+  final Value<int> workId;
+  final Value<int> fandomId;
+  final Value<FandomRole> role;
+  final Value<int> rowid;
+  const WorkFandomsCompanion({
+    this.workId = const Value.absent(),
+    this.fandomId = const Value.absent(),
+    this.role = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  WorkFandomsCompanion.insert({
+    required int workId,
+    required int fandomId,
+    this.role = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : workId = Value(workId),
+       fandomId = Value(fandomId);
+  static Insertable<WorkFandom> custom({
+    Expression<int>? workId,
+    Expression<int>? fandomId,
+    Expression<String>? role,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (workId != null) 'work_id': workId,
+      if (fandomId != null) 'fandom_id': fandomId,
+      if (role != null) 'role': role,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  WorkFandomsCompanion copyWith({
+    Value<int>? workId,
+    Value<int>? fandomId,
+    Value<FandomRole>? role,
+    Value<int>? rowid,
+  }) {
+    return WorkFandomsCompanion(
+      workId: workId ?? this.workId,
+      fandomId: fandomId ?? this.fandomId,
+      role: role ?? this.role,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (workId.present) {
+      map['work_id'] = Variable<int>(workId.value);
+    }
+    if (fandomId.present) {
+      map['fandom_id'] = Variable<int>(fandomId.value);
+    }
+    if (role.present) {
+      map['role'] = Variable<String>(
+        $WorkFandomsTable.$converterrole.toSql(role.value),
+      );
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WorkFandomsCompanion(')
+          ..write('workId: $workId, ')
+          ..write('fandomId: $fandomId, ')
+          ..write('role: $role, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
@@ -2761,253 +5056,6 @@ class ReadingDaysCompanion extends UpdateCompanion<ReadingDay> {
           ..write('words: $words, ')
           ..write('chapters: $chapters, ')
           ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $TagsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-    'id',
-    aliasedName,
-    false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
-  );
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
-  @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-    'name',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
-  );
-  static const VerificationMeta _isAdultMeta = const VerificationMeta(
-    'isAdult',
-  );
-  @override
-  late final GeneratedColumn<bool> isAdult = GeneratedColumn<bool>(
-    'is_adult',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("is_adult" IN (0, 1))',
-    ),
-    defaultValue: const Constant(false),
-  );
-  @override
-  List<GeneratedColumn> get $columns => [id, name, isAdult];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'tags';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<Tag> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('name')) {
-      context.handle(
-        _nameMeta,
-        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_nameMeta);
-    }
-    if (data.containsKey('is_adult')) {
-      context.handle(
-        _isAdultMeta,
-        isAdult.isAcceptableOrUnknown(data['is_adult']!, _isAdultMeta),
-      );
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  Tag map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Tag(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}id'],
-      )!,
-      name: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}name'],
-      )!,
-      isAdult: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}is_adult'],
-      )!,
-    );
-  }
-
-  @override
-  $TagsTable createAlias(String alias) {
-    return $TagsTable(attachedDatabase, alias);
-  }
-}
-
-class Tag extends DataClass implements Insertable<Tag> {
-  final int id;
-  final String name;
-
-  /// Adult content; hidden when the "hide 18+ tags" setting is on.
-  final bool isAdult;
-  const Tag({required this.id, required this.name, required this.isAdult});
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['name'] = Variable<String>(name);
-    map['is_adult'] = Variable<bool>(isAdult);
-    return map;
-  }
-
-  TagsCompanion toCompanion(bool nullToAbsent) {
-    return TagsCompanion(
-      id: Value(id),
-      name: Value(name),
-      isAdult: Value(isAdult),
-    );
-  }
-
-  factory Tag.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Tag(
-      id: serializer.fromJson<int>(json['id']),
-      name: serializer.fromJson<String>(json['name']),
-      isAdult: serializer.fromJson<bool>(json['isAdult']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
-      'name': serializer.toJson<String>(name),
-      'isAdult': serializer.toJson<bool>(isAdult),
-    };
-  }
-
-  Tag copyWith({int? id, String? name, bool? isAdult}) => Tag(
-    id: id ?? this.id,
-    name: name ?? this.name,
-    isAdult: isAdult ?? this.isAdult,
-  );
-  Tag copyWithCompanion(TagsCompanion data) {
-    return Tag(
-      id: data.id.present ? data.id.value : this.id,
-      name: data.name.present ? data.name.value : this.name,
-      isAdult: data.isAdult.present ? data.isAdult.value : this.isAdult,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('Tag(')
-          ..write('id: $id, ')
-          ..write('name: $name, ')
-          ..write('isAdult: $isAdult')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(id, name, isAdult);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is Tag &&
-          other.id == this.id &&
-          other.name == this.name &&
-          other.isAdult == this.isAdult);
-}
-
-class TagsCompanion extends UpdateCompanion<Tag> {
-  final Value<int> id;
-  final Value<String> name;
-  final Value<bool> isAdult;
-  const TagsCompanion({
-    this.id = const Value.absent(),
-    this.name = const Value.absent(),
-    this.isAdult = const Value.absent(),
-  });
-  TagsCompanion.insert({
-    this.id = const Value.absent(),
-    required String name,
-    this.isAdult = const Value.absent(),
-  }) : name = Value(name);
-  static Insertable<Tag> custom({
-    Expression<int>? id,
-    Expression<String>? name,
-    Expression<bool>? isAdult,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (name != null) 'name': name,
-      if (isAdult != null) 'is_adult': isAdult,
-    });
-  }
-
-  TagsCompanion copyWith({
-    Value<int>? id,
-    Value<String>? name,
-    Value<bool>? isAdult,
-  }) {
-    return TagsCompanion(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      isAdult: isAdult ?? this.isAdult,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
-    if (name.present) {
-      map['name'] = Variable<String>(name.value);
-    }
-    if (isAdult.present) {
-      map['is_adult'] = Variable<bool>(isAdult.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('TagsCompanion(')
-          ..write('id: $id, ')
-          ..write('name: $name, ')
-          ..write('isAdult: $isAdult')
           ..write(')'))
         .toString();
   }
@@ -5464,12 +7512,21 @@ class AnnotationsCompanion extends UpdateCompanion<Annotation> {
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
-  late final $SeriesTable series = $SeriesTable(this);
   late final $FandomsTable fandoms = $FandomsTable(this);
+  late final $SeriesTable series = $SeriesTable(this);
   late final $WorksTable works = $WorksTable(this);
+  late final $TagsTable tags = $TagsTable(this);
+  late final $TagSuggestionsTable tagSuggestions = $TagSuggestionsTable(this);
+  late final $FandomAliasesTable fandomAliases = $FandomAliasesTable(this);
+  late final $TagSynonymsTable tagSynonyms = $TagSynonymsTable(this);
+  late final $CharactersTable characters = $CharactersTable(this);
+  late final $CharacterAliasesTable characterAliases = $CharacterAliasesTable(
+    this,
+  );
+  late final $WorkCharactersTable workCharacters = $WorkCharactersTable(this);
+  late final $WorkFandomsTable workFandoms = $WorkFandomsTable(this);
   late final $WorkRelationsTable workRelations = $WorkRelationsTable(this);
   late final $ReadingDaysTable readingDays = $ReadingDaysTable(this);
-  late final $TagsTable tags = $TagsTable(this);
   late final $WorkTagsTable workTags = $WorkTagsTable(this);
   late final $ChaptersTable chapters = $ChaptersTable(this);
   late final $DownloadsTable downloads = $DownloadsTable(this);
@@ -5482,12 +7539,19 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
-    series,
     fandoms,
+    series,
     works,
+    tags,
+    tagSuggestions,
+    fandomAliases,
+    tagSynonyms,
+    characters,
+    characterAliases,
+    workCharacters,
+    workFandoms,
     workRelations,
     readingDays,
-    tags,
     workTags,
     chapters,
     downloads,
@@ -5511,6 +7575,76 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('works', kind: UpdateKind.update)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'works',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('tag_suggestions', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'tags',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('tag_suggestions', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'fandoms',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('fandom_aliases', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'tags',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('tag_synonyms', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'fandoms',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('characters', kind: UpdateKind.update)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'characters',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('character_aliases', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'works',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('work_characters', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'characters',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('work_characters', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'works',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('work_fandoms', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'fandoms',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('work_fandoms', kind: UpdateKind.delete)],
     ),
     WritePropagation(
       on: TableUpdateQuery.onTableName(
@@ -5585,6 +7719,517 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   ]);
 }
 
+typedef $$FandomsTableCreateCompanionBuilder = FandomsCompanion Function({
+  Value<int> id,
+  required String name,
+});
+typedef $$FandomsTableUpdateCompanionBuilder = FandomsCompanion Function({
+  Value<int> id,
+  Value<String> name,
+});
+
+final class $$FandomsTableReferences
+    extends BaseReferences<_$AppDatabase, $FandomsTable, Fandom> {
+  $$FandomsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$WorksTable, List<Work>> _worksRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.works,
+    aliasName: 'fandoms__id__works__fandom_id',
+  );
+
+  $$WorksTableProcessedTableManager get worksRefs {
+    final manager = $$WorksTableTableManager(
+      $_db,
+      $_db.works,
+    ).filter((f) => f.fandomId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_worksRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$FandomAliasesTable, List<FandomAliase>>
+  _fandomAliasesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.fandomAliases,
+    aliasName: 'fandoms__id__fandom_aliases__fandom_id',
+  );
+
+  $$FandomAliasesTableProcessedTableManager get fandomAliasesRefs {
+    final manager = $$FandomAliasesTableTableManager(
+      $_db,
+      $_db.fandomAliases,
+    ).filter((f) => f.fandomId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_fandomAliasesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$CharactersTable, List<Character>>
+  _charactersRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.characters,
+    aliasName: 'fandoms__id__characters__fandom_id',
+  );
+
+  $$CharactersTableProcessedTableManager get charactersRefs {
+    final manager = $$CharactersTableTableManager(
+      $_db,
+      $_db.characters,
+    ).filter((f) => f.fandomId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_charactersRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$WorkFandomsTable, List<WorkFandom>>
+  _workFandomsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.workFandoms,
+    aliasName: 'fandoms__id__work_fandoms__fandom_id',
+  );
+
+  $$WorkFandomsTableProcessedTableManager get workFandomsRefs {
+    final manager = $$WorkFandomsTableTableManager(
+      $_db,
+      $_db.workFandoms,
+    ).filter((f) => f.fandomId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_workFandomsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$FandomsTableFilterComposer
+    extends Composer<_$AppDatabase, $FandomsTable> {
+  $$FandomsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> worksRefs(
+    Expression<bool> Function($$WorksTableFilterComposer f) f,
+  ) {
+    final $$WorksTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.fandomId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableFilterComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> fandomAliasesRefs(
+    Expression<bool> Function($$FandomAliasesTableFilterComposer f) f,
+  ) {
+    final $$FandomAliasesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.fandomAliases,
+      getReferencedColumn: (t) => t.fandomId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FandomAliasesTableFilterComposer(
+            $db: $db,
+            $table: $db.fandomAliases,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> charactersRefs(
+    Expression<bool> Function($$CharactersTableFilterComposer f) f,
+  ) {
+    final $$CharactersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.characters,
+      getReferencedColumn: (t) => t.fandomId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharactersTableFilterComposer(
+            $db: $db,
+            $table: $db.characters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> workFandomsRefs(
+    Expression<bool> Function($$WorkFandomsTableFilterComposer f) f,
+  ) {
+    final $$WorkFandomsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workFandoms,
+      getReferencedColumn: (t) => t.fandomId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkFandomsTableFilterComposer(
+            $db: $db,
+            $table: $db.workFandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$FandomsTableOrderingComposer
+    extends Composer<_$AppDatabase, $FandomsTable> {
+  $$FandomsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$FandomsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $FandomsTable> {
+  $$FandomsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  Expression<T> worksRefs<T extends Object>(
+    Expression<T> Function($$WorksTableAnnotationComposer a) f,
+  ) {
+    final $$WorksTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.fandomId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableAnnotationComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> fandomAliasesRefs<T extends Object>(
+    Expression<T> Function($$FandomAliasesTableAnnotationComposer a) f,
+  ) {
+    final $$FandomAliasesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.fandomAliases,
+      getReferencedColumn: (t) => t.fandomId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FandomAliasesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.fandomAliases,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> charactersRefs<T extends Object>(
+    Expression<T> Function($$CharactersTableAnnotationComposer a) f,
+  ) {
+    final $$CharactersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.characters,
+      getReferencedColumn: (t) => t.fandomId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharactersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.characters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> workFandomsRefs<T extends Object>(
+    Expression<T> Function($$WorkFandomsTableAnnotationComposer a) f,
+  ) {
+    final $$WorkFandomsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workFandoms,
+      getReferencedColumn: (t) => t.fandomId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkFandomsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.workFandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$FandomsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $FandomsTable,
+          Fandom,
+          $$FandomsTableFilterComposer,
+          $$FandomsTableOrderingComposer,
+          $$FandomsTableAnnotationComposer,
+          $$FandomsTableCreateCompanionBuilder,
+          $$FandomsTableUpdateCompanionBuilder,
+          (Fandom, $$FandomsTableReferences),
+          Fandom,
+          PrefetchHooks Function({
+            bool worksRefs,
+            bool fandomAliasesRefs,
+            bool charactersRefs,
+            bool workFandomsRefs,
+          })
+        > {
+  $$FandomsTableTableManager(_$AppDatabase db, $FandomsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FandomsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FandomsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FandomsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> name = const Value.absent(),
+          }) => FandomsCompanion(id: id, name: name),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String name,
+          }) => FandomsCompanion.insert(id: id, name: name),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$FandomsTable, Fandom>(table),
+                  $$FandomsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({
+                worksRefs = false,
+                fandomAliasesRefs = false,
+                charactersRefs = false,
+                workFandomsRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (worksRefs) db.works,
+                    if (fandomAliasesRefs) db.fandomAliases,
+                    if (charactersRefs) db.characters,
+                    if (workFandomsRefs) db.workFandoms,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (worksRefs)
+                        await $_getPrefetchedData<Fandom, $FandomsTable, Work>(
+                          currentTable: table,
+                          referencedTable: $$FandomsTableReferences
+                              ._worksRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$FandomsTableReferences(db, table, p0).worksRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.fandomId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (fandomAliasesRefs)
+                        await $_getPrefetchedData<
+                          Fandom,
+                          $FandomsTable,
+                          FandomAliase
+                        >(
+                          currentTable: table,
+                          referencedTable: $$FandomsTableReferences
+                              ._fandomAliasesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$FandomsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).fandomAliasesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.fandomId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (charactersRefs)
+                        await $_getPrefetchedData<
+                          Fandom,
+                          $FandomsTable,
+                          Character
+                        >(
+                          currentTable: table,
+                          referencedTable: $$FandomsTableReferences
+                              ._charactersRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$FandomsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).charactersRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.fandomId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (workFandomsRefs)
+                        await $_getPrefetchedData<
+                          Fandom,
+                          $FandomsTable,
+                          WorkFandom
+                        >(
+                          currentTable: table,
+                          referencedTable: $$FandomsTableReferences
+                              ._workFandomsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$FandomsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).workFandomsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.fandomId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$FandomsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $FandomsTable,
+      Fandom,
+      $$FandomsTableFilterComposer,
+      $$FandomsTableOrderingComposer,
+      $$FandomsTableAnnotationComposer,
+      $$FandomsTableCreateCompanionBuilder,
+      $$FandomsTableUpdateCompanionBuilder,
+      (Fandom, $$FandomsTableReferences),
+      Fandom,
+      PrefetchHooks Function({
+        bool worksRefs,
+        bool fandomAliasesRefs,
+        bool charactersRefs,
+        bool workFandomsRefs,
+      })
+    >;
 typedef $$SeriesTableCreateCompanionBuilder = SeriesCompanion Function({
   Value<int> id,
   required String name,
@@ -5807,228 +8452,6 @@ typedef $$SeriesTableProcessedTableManager =
       SeriesItem,
       PrefetchHooks Function({bool worksRefs})
     >;
-typedef $$FandomsTableCreateCompanionBuilder = FandomsCompanion Function({
-  Value<int> id,
-  required String name,
-});
-typedef $$FandomsTableUpdateCompanionBuilder = FandomsCompanion Function({
-  Value<int> id,
-  Value<String> name,
-});
-
-final class $$FandomsTableReferences
-    extends BaseReferences<_$AppDatabase, $FandomsTable, Fandom> {
-  $$FandomsTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static MultiTypedResultKey<$WorksTable, List<Work>> _worksRefsTable(
-    _$AppDatabase db,
-  ) => MultiTypedResultKey.fromTable(
-    db.works,
-    aliasName: 'fandoms__id__works__fandom_id',
-  );
-
-  $$WorksTableProcessedTableManager get worksRefs {
-    final manager = $$WorksTableTableManager(
-      $_db,
-      $_db.works,
-    ).filter((f) => f.fandomId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_worksRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-}
-
-class $$FandomsTableFilterComposer
-    extends Composer<_$AppDatabase, $FandomsTable> {
-  $$FandomsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  Expression<bool> worksRefs(
-    Expression<bool> Function($$WorksTableFilterComposer f) f,
-  ) {
-    final $$WorksTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.works,
-      getReferencedColumn: (t) => t.fandomId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$WorksTableFilterComposer(
-            $db: $db,
-            $table: $db.works,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $$FandomsTableOrderingComposer
-    extends Composer<_$AppDatabase, $FandomsTable> {
-  $$FandomsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $$FandomsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $FandomsTable> {
-  $$FandomsTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get name =>
-      $composableBuilder(column: $table.name, builder: (column) => column);
-
-  Expression<T> worksRefs<T extends Object>(
-    Expression<T> Function($$WorksTableAnnotationComposer a) f,
-  ) {
-    final $$WorksTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.works,
-      getReferencedColumn: (t) => t.fandomId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$WorksTableAnnotationComposer(
-            $db: $db,
-            $table: $db.works,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $$FandomsTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $FandomsTable,
-          Fandom,
-          $$FandomsTableFilterComposer,
-          $$FandomsTableOrderingComposer,
-          $$FandomsTableAnnotationComposer,
-          $$FandomsTableCreateCompanionBuilder,
-          $$FandomsTableUpdateCompanionBuilder,
-          (Fandom, $$FandomsTableReferences),
-          Fandom,
-          PrefetchHooks Function({bool worksRefs})
-        > {
-  $$FandomsTableTableManager(_$AppDatabase db, $FandomsTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$FandomsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$FandomsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$FandomsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String> name = const Value.absent(),
-          }) => FandomsCompanion(id: id, name: name),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            required String name,
-          }) => FandomsCompanion.insert(id: id, name: name),
-          withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable<$FandomsTable, Fandom>(table),
-                  $$FandomsTableReferences(db, table, e),
-                ),
-              )
-              .toList(),
-          prefetchHooksCallback: ({worksRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [if (worksRefs) db.works],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (worksRefs)
-                    await $_getPrefetchedData<Fandom, $FandomsTable, Work>(
-                      currentTable: table,
-                      referencedTable: $$FandomsTableReferences._worksRefsTable(
-                        db,
-                      ),
-                      managerFromTypedResult: (p0) =>
-                          $$FandomsTableReferences(db, table, p0).worksRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.fandomId == item.id),
-                      typedResults: items,
-                    ),
-                ];
-              },
-            );
-          },
-        ),
-      );
-}
-
-typedef $$FandomsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $FandomsTable,
-      Fandom,
-      $$FandomsTableFilterComposer,
-      $$FandomsTableOrderingComposer,
-      $$FandomsTableAnnotationComposer,
-      $$FandomsTableCreateCompanionBuilder,
-      $$FandomsTableUpdateCompanionBuilder,
-      (Fandom, $$FandomsTableReferences),
-      Fandom,
-      PrefetchHooks Function({bool worksRefs})
-    >;
 typedef $$WorksTableCreateCompanionBuilder = WorksCompanion Function({
   Value<int> id,
   required WorkType type,
@@ -6057,6 +8480,9 @@ typedef $$WorksTableCreateCompanionBuilder = WorksCompanion Function({
   Value<int> newChapters,
   Value<DateTime?> deletedAt,
   Value<DateTime?> finishedAt,
+  Value<int?> currentPage,
+  Value<int?> anilistId,
+  Value<bool> ownsPhysicalCopy,
   Value<int?> seriesId,
   Value<double?> seriesIndex,
   Value<bool> wordsEstimated,
@@ -6091,6 +8517,9 @@ typedef $$WorksTableUpdateCompanionBuilder = WorksCompanion Function({
   Value<int> newChapters,
   Value<DateTime?> deletedAt,
   Value<DateTime?> finishedAt,
+  Value<int?> currentPage,
+  Value<int?> anilistId,
+  Value<bool> ownsPhysicalCopy,
   Value<int?> seriesId,
   Value<double?> seriesIndex,
   Value<bool> wordsEstimated,
@@ -6133,6 +8562,60 @@ final class $$WorksTableReferences
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$TagSuggestionsTable, List<TagSuggestion>>
+  _tagSuggestionsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.tagSuggestions,
+    aliasName: 'works__id__tag_suggestions__work_id',
+  );
+
+  $$TagSuggestionsTableProcessedTableManager get tagSuggestionsRefs {
+    final manager = $$TagSuggestionsTableTableManager(
+      $_db,
+      $_db.tagSuggestions,
+    ).filter((f) => f.workId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_tagSuggestionsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$WorkCharactersTable, List<WorkCharacter>>
+  _workCharactersRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.workCharacters,
+    aliasName: 'works__id__work_characters__work_id',
+  );
+
+  $$WorkCharactersTableProcessedTableManager get workCharactersRefs {
+    final manager = $$WorkCharactersTableTableManager(
+      $_db,
+      $_db.workCharacters,
+    ).filter((f) => f.workId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_workCharactersRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$WorkFandomsTable, List<WorkFandom>>
+  _workFandomsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.workFandoms,
+    aliasName: 'works__id__work_fandoms__work_id',
+  );
+
+  $$WorkFandomsTableProcessedTableManager get workFandomsRefs {
+    final manager = $$WorkFandomsTableTableManager(
+      $_db,
+      $_db.workFandoms,
+    ).filter((f) => f.workId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_workFandomsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
     );
   }
 
@@ -6388,6 +8871,21 @@ class $$WorksTableFilterComposer extends Composer<_$AppDatabase, $WorksTable> {
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<int> get currentPage => $composableBuilder(
+    column: $table.currentPage,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get anilistId => $composableBuilder(
+    column: $table.anilistId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get ownsPhysicalCopy => $composableBuilder(
+    column: $table.ownsPhysicalCopy,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<double> get seriesIndex => $composableBuilder(
     column: $table.seriesIndex,
     builder: (column) => ColumnFilters(column),
@@ -6452,6 +8950,81 @@ class $$WorksTableFilterComposer extends Composer<_$AppDatabase, $WorksTable> {
           ),
     );
     return composer;
+  }
+
+  Expression<bool> tagSuggestionsRefs(
+    Expression<bool> Function($$TagSuggestionsTableFilterComposer f) f,
+  ) {
+    final $$TagSuggestionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.tagSuggestions,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TagSuggestionsTableFilterComposer(
+            $db: $db,
+            $table: $db.tagSuggestions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> workCharactersRefs(
+    Expression<bool> Function($$WorkCharactersTableFilterComposer f) f,
+  ) {
+    final $$WorkCharactersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workCharacters,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkCharactersTableFilterComposer(
+            $db: $db,
+            $table: $db.workCharacters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> workFandomsRefs(
+    Expression<bool> Function($$WorkFandomsTableFilterComposer f) f,
+  ) {
+    final $$WorkFandomsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workFandoms,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkFandomsTableFilterComposer(
+            $db: $db,
+            $table: $db.workFandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
   }
 
   Expression<bool> readingDaysRefs(
@@ -6744,6 +9317,21 @@ class $$WorksTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get currentPage => $composableBuilder(
+    column: $table.currentPage,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get anilistId => $composableBuilder(
+    column: $table.anilistId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get ownsPhysicalCopy => $composableBuilder(
+    column: $table.ownsPhysicalCopy,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<double> get seriesIndex => $composableBuilder(
     column: $table.seriesIndex,
     builder: (column) => ColumnOrderings(column),
@@ -6912,6 +9500,19 @@ class $$WorksTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<int> get currentPage => $composableBuilder(
+    column: $table.currentPage,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get anilistId =>
+      $composableBuilder(column: $table.anilistId, builder: (column) => column);
+
+  GeneratedColumn<bool> get ownsPhysicalCopy => $composableBuilder(
+    column: $table.ownsPhysicalCopy,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<double> get seriesIndex => $composableBuilder(
     column: $table.seriesIndex,
     builder: (column) => column,
@@ -6976,6 +9577,81 @@ class $$WorksTableAnnotationComposer
           ),
     );
     return composer;
+  }
+
+  Expression<T> tagSuggestionsRefs<T extends Object>(
+    Expression<T> Function($$TagSuggestionsTableAnnotationComposer a) f,
+  ) {
+    final $$TagSuggestionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.tagSuggestions,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TagSuggestionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.tagSuggestions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> workCharactersRefs<T extends Object>(
+    Expression<T> Function($$WorkCharactersTableAnnotationComposer a) f,
+  ) {
+    final $$WorkCharactersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workCharacters,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkCharactersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.workCharacters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> workFandomsRefs<T extends Object>(
+    Expression<T> Function($$WorkFandomsTableAnnotationComposer a) f,
+  ) {
+    final $$WorkFandomsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workFandoms,
+      getReferencedColumn: (t) => t.workId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkFandomsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.workFandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
   }
 
   Expression<T> readingDaysRefs<T extends Object>(
@@ -7145,6 +9821,9 @@ class $$WorksTableTableManager
           PrefetchHooks Function({
             bool fandomId,
             bool seriesId,
+            bool tagSuggestionsRefs,
+            bool workCharactersRefs,
+            bool workFandomsRefs,
             bool readingDaysRefs,
             bool workTagsRefs,
             bool chaptersRefs,
@@ -7193,6 +9872,9 @@ class $$WorksTableTableManager
                 Value<int> newChapters = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<DateTime?> finishedAt = const Value.absent(),
+                Value<int?> currentPage = const Value.absent(),
+                Value<int?> anilistId = const Value.absent(),
+                Value<bool> ownsPhysicalCopy = const Value.absent(),
                 Value<int?> seriesId = const Value.absent(),
                 Value<double?> seriesIndex = const Value.absent(),
                 Value<bool> wordsEstimated = const Value.absent(),
@@ -7226,6 +9908,9 @@ class $$WorksTableTableManager
                 newChapters: newChapters,
                 deletedAt: deletedAt,
                 finishedAt: finishedAt,
+                currentPage: currentPage,
+                anilistId: anilistId,
+                ownsPhysicalCopy: ownsPhysicalCopy,
                 seriesId: seriesId,
                 seriesIndex: seriesIndex,
                 wordsEstimated: wordsEstimated,
@@ -7261,6 +9946,9 @@ class $$WorksTableTableManager
                 Value<int> newChapters = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<DateTime?> finishedAt = const Value.absent(),
+                Value<int?> currentPage = const Value.absent(),
+                Value<int?> anilistId = const Value.absent(),
+                Value<bool> ownsPhysicalCopy = const Value.absent(),
                 Value<int?> seriesId = const Value.absent(),
                 Value<double?> seriesIndex = const Value.absent(),
                 Value<bool> wordsEstimated = const Value.absent(),
@@ -7294,6 +9982,9 @@ class $$WorksTableTableManager
                 newChapters: newChapters,
                 deletedAt: deletedAt,
                 finishedAt: finishedAt,
+                currentPage: currentPage,
+                anilistId: anilistId,
+                ownsPhysicalCopy: ownsPhysicalCopy,
                 seriesId: seriesId,
                 seriesIndex: seriesIndex,
                 wordsEstimated: wordsEstimated,
@@ -7312,6 +10003,9 @@ class $$WorksTableTableManager
               ({
                 fandomId = false,
                 seriesId = false,
+                tagSuggestionsRefs = false,
+                workCharactersRefs = false,
+                workFandomsRefs = false,
                 readingDaysRefs = false,
                 workTagsRefs = false,
                 chaptersRefs = false,
@@ -7322,6 +10016,9 @@ class $$WorksTableTableManager
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
+                    if (tagSuggestionsRefs) db.tagSuggestions,
+                    if (workCharactersRefs) db.workCharacters,
+                    if (workFandomsRefs) db.workFandoms,
                     if (readingDaysRefs) db.readingDays,
                     if (workTagsRefs) db.workTags,
                     if (chaptersRefs) db.chapters,
@@ -7372,6 +10069,69 @@ class $$WorksTableTableManager
                       },
                   getPrefetchedDataCallback: (items) async {
                     return [
+                      if (tagSuggestionsRefs)
+                        await $_getPrefetchedData<
+                          Work,
+                          $WorksTable,
+                          TagSuggestion
+                        >(
+                          currentTable: table,
+                          referencedTable: $$WorksTableReferences
+                              ._tagSuggestionsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WorksTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).tagSuggestionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.workId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (workCharactersRefs)
+                        await $_getPrefetchedData<
+                          Work,
+                          $WorksTable,
+                          WorkCharacter
+                        >(
+                          currentTable: table,
+                          referencedTable: $$WorksTableReferences
+                              ._workCharactersRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WorksTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).workCharactersRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.workId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (workFandomsRefs)
+                        await $_getPrefetchedData<
+                          Work,
+                          $WorksTable,
+                          WorkFandom
+                        >(
+                          currentTable: table,
+                          referencedTable: $$WorksTableReferences
+                              ._workFandomsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WorksTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).workFandomsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.workId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (readingDaysRefs)
                         await $_getPrefetchedData<
                           Work,
@@ -7509,6 +10269,9 @@ typedef $$WorksTableProcessedTableManager =
       PrefetchHooks Function({
         bool fandomId,
         bool seriesId,
+        bool tagSuggestionsRefs,
+        bool workCharactersRefs,
+        bool workFandomsRefs,
         bool readingDaysRefs,
         bool workTagsRefs,
         bool chaptersRefs,
@@ -7516,6 +10279,2839 @@ typedef $$WorksTableProcessedTableManager =
         bool workPairingsRefs,
         bool annotationsRefs,
       })
+    >;
+typedef $$TagsTableCreateCompanionBuilder = TagsCompanion Function({
+  Value<int> id,
+  required String name,
+  Value<bool> isAdult,
+});
+typedef $$TagsTableUpdateCompanionBuilder = TagsCompanion Function({
+  Value<int> id,
+  Value<String> name,
+  Value<bool> isAdult,
+});
+
+final class $$TagsTableReferences
+    extends BaseReferences<_$AppDatabase, $TagsTable, Tag> {
+  $$TagsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$TagSuggestionsTable, List<TagSuggestion>>
+  _tagSuggestionsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.tagSuggestions,
+    aliasName: 'tags__id__tag_suggestions__tag_id',
+  );
+
+  $$TagSuggestionsTableProcessedTableManager get tagSuggestionsRefs {
+    final manager = $$TagSuggestionsTableTableManager(
+      $_db,
+      $_db.tagSuggestions,
+    ).filter((f) => f.tagId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_tagSuggestionsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$TagSynonymsTable, List<TagSynonym>>
+  _tagSynonymsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.tagSynonyms,
+    aliasName: 'tags__id__tag_synonyms__tag_id',
+  );
+
+  $$TagSynonymsTableProcessedTableManager get tagSynonymsRefs {
+    final manager = $$TagSynonymsTableTableManager(
+      $_db,
+      $_db.tagSynonyms,
+    ).filter((f) => f.tagId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_tagSynonymsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$WorkTagsTable, List<WorkTag>> _workTagsRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.workTags,
+    aliasName: 'tags__id__work_tags__tag_id',
+  );
+
+  $$WorkTagsTableProcessedTableManager get workTagsRefs {
+    final manager = $$WorkTagsTableTableManager(
+      $_db,
+      $_db.workTags,
+    ).filter((f) => f.tagId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_workTagsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$TagsTableFilterComposer extends Composer<_$AppDatabase, $TagsTable> {
+  $$TagsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isAdult => $composableBuilder(
+    column: $table.isAdult,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> tagSuggestionsRefs(
+    Expression<bool> Function($$TagSuggestionsTableFilterComposer f) f,
+  ) {
+    final $$TagSuggestionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.tagSuggestions,
+      getReferencedColumn: (t) => t.tagId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TagSuggestionsTableFilterComposer(
+            $db: $db,
+            $table: $db.tagSuggestions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> tagSynonymsRefs(
+    Expression<bool> Function($$TagSynonymsTableFilterComposer f) f,
+  ) {
+    final $$TagSynonymsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.tagSynonyms,
+      getReferencedColumn: (t) => t.tagId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TagSynonymsTableFilterComposer(
+            $db: $db,
+            $table: $db.tagSynonyms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> workTagsRefs(
+    Expression<bool> Function($$WorkTagsTableFilterComposer f) f,
+  ) {
+    final $$WorkTagsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workTags,
+      getReferencedColumn: (t) => t.tagId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkTagsTableFilterComposer(
+            $db: $db,
+            $table: $db.workTags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$TagsTableOrderingComposer extends Composer<_$AppDatabase, $TagsTable> {
+  $$TagsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isAdult => $composableBuilder(
+    column: $table.isAdult,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$TagsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TagsTable> {
+  $$TagsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<bool> get isAdult =>
+      $composableBuilder(column: $table.isAdult, builder: (column) => column);
+
+  Expression<T> tagSuggestionsRefs<T extends Object>(
+    Expression<T> Function($$TagSuggestionsTableAnnotationComposer a) f,
+  ) {
+    final $$TagSuggestionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.tagSuggestions,
+      getReferencedColumn: (t) => t.tagId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TagSuggestionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.tagSuggestions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> tagSynonymsRefs<T extends Object>(
+    Expression<T> Function($$TagSynonymsTableAnnotationComposer a) f,
+  ) {
+    final $$TagSynonymsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.tagSynonyms,
+      getReferencedColumn: (t) => t.tagId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TagSynonymsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.tagSynonyms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> workTagsRefs<T extends Object>(
+    Expression<T> Function($$WorkTagsTableAnnotationComposer a) f,
+  ) {
+    final $$WorkTagsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workTags,
+      getReferencedColumn: (t) => t.tagId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkTagsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.workTags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$TagsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TagsTable,
+          Tag,
+          $$TagsTableFilterComposer,
+          $$TagsTableOrderingComposer,
+          $$TagsTableAnnotationComposer,
+          $$TagsTableCreateCompanionBuilder,
+          $$TagsTableUpdateCompanionBuilder,
+          (Tag, $$TagsTableReferences),
+          Tag,
+          PrefetchHooks Function({
+            bool tagSuggestionsRefs,
+            bool tagSynonymsRefs,
+            bool workTagsRefs,
+          })
+        > {
+  $$TagsTableTableManager(_$AppDatabase db, $TagsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TagsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TagsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TagsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<bool> isAdult = const Value.absent(),
+          }) => TagsCompanion(id: id, name: name, isAdult: isAdult),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String name,
+            Value<bool> isAdult = const Value.absent(),
+          }) => TagsCompanion.insert(id: id, name: name, isAdult: isAdult),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$TagsTable, Tag>(table),
+                  $$TagsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({
+                tagSuggestionsRefs = false,
+                tagSynonymsRefs = false,
+                workTagsRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (tagSuggestionsRefs) db.tagSuggestions,
+                    if (tagSynonymsRefs) db.tagSynonyms,
+                    if (workTagsRefs) db.workTags,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (tagSuggestionsRefs)
+                        await $_getPrefetchedData<
+                          Tag,
+                          $TagsTable,
+                          TagSuggestion
+                        >(
+                          currentTable: table,
+                          referencedTable: $$TagsTableReferences
+                              ._tagSuggestionsRefsTable(db),
+                          managerFromTypedResult: (p0) => $$TagsTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).tagSuggestionsRefs,
+                          referencedItemsForCurrentItem: (
+                            item,
+                            referencedItems,
+                          ) => referencedItems.where((e) => e.tagId == item.id),
+                          typedResults: items,
+                        ),
+                      if (tagSynonymsRefs)
+                        await $_getPrefetchedData<Tag, $TagsTable, TagSynonym>(
+                          currentTable: table,
+                          referencedTable: $$TagsTableReferences
+                              ._tagSynonymsRefsTable(db),
+                          managerFromTypedResult: (p0) => $$TagsTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).tagSynonymsRefs,
+                          referencedItemsForCurrentItem: (
+                            item,
+                            referencedItems,
+                          ) => referencedItems.where((e) => e.tagId == item.id),
+                          typedResults: items,
+                        ),
+                      if (workTagsRefs)
+                        await $_getPrefetchedData<Tag, $TagsTable, WorkTag>(
+                          currentTable: table,
+                          referencedTable: $$TagsTableReferences
+                              ._workTagsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$TagsTableReferences(db, table, p0).workTagsRefs,
+                          referencedItemsForCurrentItem: (
+                            item,
+                            referencedItems,
+                          ) => referencedItems.where((e) => e.tagId == item.id),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$TagsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TagsTable,
+      Tag,
+      $$TagsTableFilterComposer,
+      $$TagsTableOrderingComposer,
+      $$TagsTableAnnotationComposer,
+      $$TagsTableCreateCompanionBuilder,
+      $$TagsTableUpdateCompanionBuilder,
+      (Tag, $$TagsTableReferences),
+      Tag,
+      PrefetchHooks Function({
+        bool tagSuggestionsRefs,
+        bool tagSynonymsRefs,
+        bool workTagsRefs,
+      })
+    >;
+typedef $$TagSuggestionsTableCreateCompanionBuilder =
+    TagSuggestionsCompanion Function({
+      required int workId,
+      required int tagId,
+      Value<String?> reason,
+      Value<String> source,
+      Value<bool> dismissed,
+      Value<int> rowid,
+    });
+typedef $$TagSuggestionsTableUpdateCompanionBuilder =
+    TagSuggestionsCompanion Function({
+      Value<int> workId,
+      Value<int> tagId,
+      Value<String?> reason,
+      Value<String> source,
+      Value<bool> dismissed,
+      Value<int> rowid,
+    });
+
+final class $$TagSuggestionsTableReferences
+    extends BaseReferences<_$AppDatabase, $TagSuggestionsTable, TagSuggestion> {
+  $$TagSuggestionsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $WorksTable _workIdTable(_$AppDatabase db) =>
+      db.works.createAlias('tag_suggestions__work_id__works__id');
+
+  $$WorksTableProcessedTableManager get workId {
+    final $_column = $_itemColumn<int>('work_id')!;
+
+    final manager = $$WorksTableTableManager(
+      $_db,
+      $_db.works,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_workIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $TagsTable _tagIdTable(_$AppDatabase db) =>
+      db.tags.createAlias('tag_suggestions__tag_id__tags__id');
+
+  $$TagsTableProcessedTableManager get tagId {
+    final $_column = $_itemColumn<int>('tag_id')!;
+
+    final manager = $$TagsTableTableManager(
+      $_db,
+      $_db.tags,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_tagIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$TagSuggestionsTableFilterComposer
+    extends Composer<_$AppDatabase, $TagSuggestionsTable> {
+  $$TagSuggestionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get reason => $composableBuilder(
+    column: $table.reason,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get dismissed => $composableBuilder(
+    column: $table.dismissed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$WorksTableFilterComposer get workId {
+    final $$WorksTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workId,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableFilterComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$TagsTableFilterComposer get tagId {
+    final $$TagsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.tagId,
+      referencedTable: $db.tags,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TagsTableFilterComposer(
+            $db: $db,
+            $table: $db.tags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TagSuggestionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $TagSuggestionsTable> {
+  $$TagSuggestionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get reason => $composableBuilder(
+    column: $table.reason,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get dismissed => $composableBuilder(
+    column: $table.dismissed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$WorksTableOrderingComposer get workId {
+    final $$WorksTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workId,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableOrderingComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$TagsTableOrderingComposer get tagId {
+    final $$TagsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.tagId,
+      referencedTable: $db.tags,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TagsTableOrderingComposer(
+            $db: $db,
+            $table: $db.tags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TagSuggestionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TagSuggestionsTable> {
+  $$TagSuggestionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get reason =>
+      $composableBuilder(column: $table.reason, builder: (column) => column);
+
+  GeneratedColumn<String> get source =>
+      $composableBuilder(column: $table.source, builder: (column) => column);
+
+  GeneratedColumn<bool> get dismissed =>
+      $composableBuilder(column: $table.dismissed, builder: (column) => column);
+
+  $$WorksTableAnnotationComposer get workId {
+    final $$WorksTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workId,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableAnnotationComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$TagsTableAnnotationComposer get tagId {
+    final $$TagsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.tagId,
+      referencedTable: $db.tags,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TagsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.tags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TagSuggestionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TagSuggestionsTable,
+          TagSuggestion,
+          $$TagSuggestionsTableFilterComposer,
+          $$TagSuggestionsTableOrderingComposer,
+          $$TagSuggestionsTableAnnotationComposer,
+          $$TagSuggestionsTableCreateCompanionBuilder,
+          $$TagSuggestionsTableUpdateCompanionBuilder,
+          (TagSuggestion, $$TagSuggestionsTableReferences),
+          TagSuggestion,
+          PrefetchHooks Function({bool workId, bool tagId})
+        > {
+  $$TagSuggestionsTableTableManager(
+    _$AppDatabase db,
+    $TagSuggestionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TagSuggestionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TagSuggestionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TagSuggestionsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> workId = const Value.absent(),
+                Value<int> tagId = const Value.absent(),
+                Value<String?> reason = const Value.absent(),
+                Value<String> source = const Value.absent(),
+                Value<bool> dismissed = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TagSuggestionsCompanion(
+                workId: workId,
+                tagId: tagId,
+                reason: reason,
+                source: source,
+                dismissed: dismissed,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required int workId,
+                required int tagId,
+                Value<String?> reason = const Value.absent(),
+                Value<String> source = const Value.absent(),
+                Value<bool> dismissed = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TagSuggestionsCompanion.insert(
+                workId: workId,
+                tagId: tagId,
+                reason: reason,
+                source: source,
+                dismissed: dismissed,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$TagSuggestionsTable, TagSuggestion>(table),
+                  $$TagSuggestionsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({workId = false, tagId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (workId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.workId,
+                        referencedTable: $$TagSuggestionsTableReferences
+                            ._workIdTable(db),
+                        referencedColumn: $$TagSuggestionsTableReferences
+                            ._workIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+                    if (tagId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.tagId,
+                        referencedTable: $$TagSuggestionsTableReferences
+                            ._tagIdTable(db),
+                        referencedColumn: $$TagSuggestionsTableReferences
+                            ._tagIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$TagSuggestionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TagSuggestionsTable,
+      TagSuggestion,
+      $$TagSuggestionsTableFilterComposer,
+      $$TagSuggestionsTableOrderingComposer,
+      $$TagSuggestionsTableAnnotationComposer,
+      $$TagSuggestionsTableCreateCompanionBuilder,
+      $$TagSuggestionsTableUpdateCompanionBuilder,
+      (TagSuggestion, $$TagSuggestionsTableReferences),
+      TagSuggestion,
+      PrefetchHooks Function({bool workId, bool tagId})
+    >;
+typedef $$FandomAliasesTableCreateCompanionBuilder =
+    FandomAliasesCompanion Function({
+      required String aliasKey,
+      required int fandomId,
+      Value<int> rowid,
+    });
+typedef $$FandomAliasesTableUpdateCompanionBuilder =
+    FandomAliasesCompanion Function({
+      Value<String> aliasKey,
+      Value<int> fandomId,
+      Value<int> rowid,
+    });
+
+final class $$FandomAliasesTableReferences
+    extends BaseReferences<_$AppDatabase, $FandomAliasesTable, FandomAliase> {
+  $$FandomAliasesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $FandomsTable _fandomIdTable(_$AppDatabase db) =>
+      db.fandoms.createAlias('fandom_aliases__fandom_id__fandoms__id');
+
+  $$FandomsTableProcessedTableManager get fandomId {
+    final $_column = $_itemColumn<int>('fandom_id')!;
+
+    final manager = $$FandomsTableTableManager(
+      $_db,
+      $_db.fandoms,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_fandomIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$FandomAliasesTableFilterComposer
+    extends Composer<_$AppDatabase, $FandomAliasesTable> {
+  $$FandomAliasesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get aliasKey => $composableBuilder(
+    column: $table.aliasKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$FandomsTableFilterComposer get fandomId {
+    final $$FandomsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.fandomId,
+      referencedTable: $db.fandoms,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FandomsTableFilterComposer(
+            $db: $db,
+            $table: $db.fandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$FandomAliasesTableOrderingComposer
+    extends Composer<_$AppDatabase, $FandomAliasesTable> {
+  $$FandomAliasesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get aliasKey => $composableBuilder(
+    column: $table.aliasKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$FandomsTableOrderingComposer get fandomId {
+    final $$FandomsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.fandomId,
+      referencedTable: $db.fandoms,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FandomsTableOrderingComposer(
+            $db: $db,
+            $table: $db.fandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$FandomAliasesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $FandomAliasesTable> {
+  $$FandomAliasesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get aliasKey =>
+      $composableBuilder(column: $table.aliasKey, builder: (column) => column);
+
+  $$FandomsTableAnnotationComposer get fandomId {
+    final $$FandomsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.fandomId,
+      referencedTable: $db.fandoms,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FandomsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.fandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$FandomAliasesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $FandomAliasesTable,
+          FandomAliase,
+          $$FandomAliasesTableFilterComposer,
+          $$FandomAliasesTableOrderingComposer,
+          $$FandomAliasesTableAnnotationComposer,
+          $$FandomAliasesTableCreateCompanionBuilder,
+          $$FandomAliasesTableUpdateCompanionBuilder,
+          (FandomAliase, $$FandomAliasesTableReferences),
+          FandomAliase,
+          PrefetchHooks Function({bool fandomId})
+        > {
+  $$FandomAliasesTableTableManager(_$AppDatabase db, $FandomAliasesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FandomAliasesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FandomAliasesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FandomAliasesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> aliasKey = const Value.absent(),
+                Value<int> fandomId = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => FandomAliasesCompanion(
+                aliasKey: aliasKey,
+                fandomId: fandomId,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String aliasKey,
+                required int fandomId,
+                Value<int> rowid = const Value.absent(),
+              }) => FandomAliasesCompanion.insert(
+                aliasKey: aliasKey,
+                fandomId: fandomId,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$FandomAliasesTable, FandomAliase>(table),
+                  $$FandomAliasesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({fandomId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (fandomId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.fandomId,
+                        referencedTable: $$FandomAliasesTableReferences
+                            ._fandomIdTable(db),
+                        referencedColumn: $$FandomAliasesTableReferences
+                            ._fandomIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$FandomAliasesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $FandomAliasesTable,
+      FandomAliase,
+      $$FandomAliasesTableFilterComposer,
+      $$FandomAliasesTableOrderingComposer,
+      $$FandomAliasesTableAnnotationComposer,
+      $$FandomAliasesTableCreateCompanionBuilder,
+      $$FandomAliasesTableUpdateCompanionBuilder,
+      (FandomAliase, $$FandomAliasesTableReferences),
+      FandomAliase,
+      PrefetchHooks Function({bool fandomId})
+    >;
+typedef $$TagSynonymsTableCreateCompanionBuilder =
+    TagSynonymsCompanion Function({
+      required String synonym,
+      required int tagId,
+      Value<int> rowid,
+    });
+typedef $$TagSynonymsTableUpdateCompanionBuilder =
+    TagSynonymsCompanion Function({
+      Value<String> synonym,
+      Value<int> tagId,
+      Value<int> rowid,
+    });
+
+final class $$TagSynonymsTableReferences
+    extends BaseReferences<_$AppDatabase, $TagSynonymsTable, TagSynonym> {
+  $$TagSynonymsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $TagsTable _tagIdTable(_$AppDatabase db) =>
+      db.tags.createAlias('tag_synonyms__tag_id__tags__id');
+
+  $$TagsTableProcessedTableManager get tagId {
+    final $_column = $_itemColumn<int>('tag_id')!;
+
+    final manager = $$TagsTableTableManager(
+      $_db,
+      $_db.tags,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_tagIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$TagSynonymsTableFilterComposer
+    extends Composer<_$AppDatabase, $TagSynonymsTable> {
+  $$TagSynonymsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get synonym => $composableBuilder(
+    column: $table.synonym,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$TagsTableFilterComposer get tagId {
+    final $$TagsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.tagId,
+      referencedTable: $db.tags,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TagsTableFilterComposer(
+            $db: $db,
+            $table: $db.tags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TagSynonymsTableOrderingComposer
+    extends Composer<_$AppDatabase, $TagSynonymsTable> {
+  $$TagSynonymsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get synonym => $composableBuilder(
+    column: $table.synonym,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$TagsTableOrderingComposer get tagId {
+    final $$TagsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.tagId,
+      referencedTable: $db.tags,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TagsTableOrderingComposer(
+            $db: $db,
+            $table: $db.tags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TagSynonymsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TagSynonymsTable> {
+  $$TagSynonymsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get synonym =>
+      $composableBuilder(column: $table.synonym, builder: (column) => column);
+
+  $$TagsTableAnnotationComposer get tagId {
+    final $$TagsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.tagId,
+      referencedTable: $db.tags,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TagsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.tags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TagSynonymsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TagSynonymsTable,
+          TagSynonym,
+          $$TagSynonymsTableFilterComposer,
+          $$TagSynonymsTableOrderingComposer,
+          $$TagSynonymsTableAnnotationComposer,
+          $$TagSynonymsTableCreateCompanionBuilder,
+          $$TagSynonymsTableUpdateCompanionBuilder,
+          (TagSynonym, $$TagSynonymsTableReferences),
+          TagSynonym,
+          PrefetchHooks Function({bool tagId})
+        > {
+  $$TagSynonymsTableTableManager(_$AppDatabase db, $TagSynonymsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TagSynonymsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TagSynonymsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TagSynonymsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> synonym = const Value.absent(),
+                Value<int> tagId = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TagSynonymsCompanion(
+                synonym: synonym,
+                tagId: tagId,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String synonym,
+                required int tagId,
+                Value<int> rowid = const Value.absent(),
+              }) => TagSynonymsCompanion.insert(
+                synonym: synonym,
+                tagId: tagId,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$TagSynonymsTable, TagSynonym>(table),
+                  $$TagSynonymsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({tagId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (tagId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.tagId,
+                        referencedTable: $$TagSynonymsTableReferences
+                            ._tagIdTable(db),
+                        referencedColumn: $$TagSynonymsTableReferences
+                            ._tagIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$TagSynonymsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TagSynonymsTable,
+      TagSynonym,
+      $$TagSynonymsTableFilterComposer,
+      $$TagSynonymsTableOrderingComposer,
+      $$TagSynonymsTableAnnotationComposer,
+      $$TagSynonymsTableCreateCompanionBuilder,
+      $$TagSynonymsTableUpdateCompanionBuilder,
+      (TagSynonym, $$TagSynonymsTableReferences),
+      TagSynonym,
+      PrefetchHooks Function({bool tagId})
+    >;
+typedef $$CharactersTableCreateCompanionBuilder = CharactersCompanion Function({
+  Value<int> id,
+  required String name,
+  Value<int?> fandomId,
+  Value<int?> anilistId,
+});
+typedef $$CharactersTableUpdateCompanionBuilder = CharactersCompanion Function({
+  Value<int> id,
+  Value<String> name,
+  Value<int?> fandomId,
+  Value<int?> anilistId,
+});
+
+final class $$CharactersTableReferences
+    extends BaseReferences<_$AppDatabase, $CharactersTable, Character> {
+  $$CharactersTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $FandomsTable _fandomIdTable(_$AppDatabase db) =>
+      db.fandoms.createAlias('characters__fandom_id__fandoms__id');
+
+  $$FandomsTableProcessedTableManager? get fandomId {
+    final $_column = $_itemColumn<int>('fandom_id');
+    if ($_column == null) return null;
+    final manager = $$FandomsTableTableManager(
+      $_db,
+      $_db.fandoms,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_fandomIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$CharacterAliasesTable, List<CharacterAliase>>
+  _characterAliasesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.characterAliases,
+    aliasName: 'characters__id__character_aliases__character_id',
+  );
+
+  $$CharacterAliasesTableProcessedTableManager get characterAliasesRefs {
+    final manager = $$CharacterAliasesTableTableManager(
+      $_db,
+      $_db.characterAliases,
+    ).filter((f) => f.characterId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _characterAliasesRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$WorkCharactersTable, List<WorkCharacter>>
+  _workCharactersRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.workCharacters,
+    aliasName: 'characters__id__work_characters__character_id',
+  );
+
+  $$WorkCharactersTableProcessedTableManager get workCharactersRefs {
+    final manager = $$WorkCharactersTableTableManager(
+      $_db,
+      $_db.workCharacters,
+    ).filter((f) => f.characterId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_workCharactersRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$CharactersTableFilterComposer
+    extends Composer<_$AppDatabase, $CharactersTable> {
+  $$CharactersTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get anilistId => $composableBuilder(
+    column: $table.anilistId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$FandomsTableFilterComposer get fandomId {
+    final $$FandomsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.fandomId,
+      referencedTable: $db.fandoms,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FandomsTableFilterComposer(
+            $db: $db,
+            $table: $db.fandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> characterAliasesRefs(
+    Expression<bool> Function($$CharacterAliasesTableFilterComposer f) f,
+  ) {
+    final $$CharacterAliasesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.characterAliases,
+      getReferencedColumn: (t) => t.characterId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharacterAliasesTableFilterComposer(
+            $db: $db,
+            $table: $db.characterAliases,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> workCharactersRefs(
+    Expression<bool> Function($$WorkCharactersTableFilterComposer f) f,
+  ) {
+    final $$WorkCharactersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workCharacters,
+      getReferencedColumn: (t) => t.characterId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkCharactersTableFilterComposer(
+            $db: $db,
+            $table: $db.workCharacters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$CharactersTableOrderingComposer
+    extends Composer<_$AppDatabase, $CharactersTable> {
+  $$CharactersTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get anilistId => $composableBuilder(
+    column: $table.anilistId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$FandomsTableOrderingComposer get fandomId {
+    final $$FandomsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.fandomId,
+      referencedTable: $db.fandoms,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FandomsTableOrderingComposer(
+            $db: $db,
+            $table: $db.fandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CharactersTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CharactersTable> {
+  $$CharactersTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<int> get anilistId =>
+      $composableBuilder(column: $table.anilistId, builder: (column) => column);
+
+  $$FandomsTableAnnotationComposer get fandomId {
+    final $$FandomsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.fandomId,
+      referencedTable: $db.fandoms,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FandomsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.fandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> characterAliasesRefs<T extends Object>(
+    Expression<T> Function($$CharacterAliasesTableAnnotationComposer a) f,
+  ) {
+    final $$CharacterAliasesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.characterAliases,
+      getReferencedColumn: (t) => t.characterId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharacterAliasesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.characterAliases,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> workCharactersRefs<T extends Object>(
+    Expression<T> Function($$WorkCharactersTableAnnotationComposer a) f,
+  ) {
+    final $$WorkCharactersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workCharacters,
+      getReferencedColumn: (t) => t.characterId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkCharactersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.workCharacters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$CharactersTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CharactersTable,
+          Character,
+          $$CharactersTableFilterComposer,
+          $$CharactersTableOrderingComposer,
+          $$CharactersTableAnnotationComposer,
+          $$CharactersTableCreateCompanionBuilder,
+          $$CharactersTableUpdateCompanionBuilder,
+          (Character, $$CharactersTableReferences),
+          Character,
+          PrefetchHooks Function({
+            bool fandomId,
+            bool characterAliasesRefs,
+            bool workCharactersRefs,
+          })
+        > {
+  $$CharactersTableTableManager(_$AppDatabase db, $CharactersTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CharactersTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CharactersTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CharactersTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<int?> fandomId = const Value.absent(),
+                Value<int?> anilistId = const Value.absent(),
+              }) => CharactersCompanion(
+                id: id,
+                name: name,
+                fandomId: fandomId,
+                anilistId: anilistId,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<int?> fandomId = const Value.absent(),
+                Value<int?> anilistId = const Value.absent(),
+              }) => CharactersCompanion.insert(
+                id: id,
+                name: name,
+                fandomId: fandomId,
+                anilistId: anilistId,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$CharactersTable, Character>(table),
+                  $$CharactersTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({
+                fandomId = false,
+                characterAliasesRefs = false,
+                workCharactersRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (characterAliasesRefs) db.characterAliases,
+                    if (workCharactersRefs) db.workCharacters,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (fandomId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.fandomId,
+                            referencedTable: $$CharactersTableReferences
+                                ._fandomIdTable(db),
+                            referencedColumn: $$CharactersTableReferences
+                                ._fandomIdTable(db)
+                                .id,
+                          ) as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (characterAliasesRefs)
+                        await $_getPrefetchedData<
+                          Character,
+                          $CharactersTable,
+                          CharacterAliase
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CharactersTableReferences
+                              ._characterAliasesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CharactersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).characterAliasesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.characterId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (workCharactersRefs)
+                        await $_getPrefetchedData<
+                          Character,
+                          $CharactersTable,
+                          WorkCharacter
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CharactersTableReferences
+                              ._workCharactersRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CharactersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).workCharactersRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.characterId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$CharactersTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CharactersTable,
+      Character,
+      $$CharactersTableFilterComposer,
+      $$CharactersTableOrderingComposer,
+      $$CharactersTableAnnotationComposer,
+      $$CharactersTableCreateCompanionBuilder,
+      $$CharactersTableUpdateCompanionBuilder,
+      (Character, $$CharactersTableReferences),
+      Character,
+      PrefetchHooks Function({
+        bool fandomId,
+        bool characterAliasesRefs,
+        bool workCharactersRefs,
+      })
+    >;
+typedef $$CharacterAliasesTableCreateCompanionBuilder =
+    CharacterAliasesCompanion Function({
+      required int characterId,
+      required String alias,
+      Value<int> rowid,
+    });
+typedef $$CharacterAliasesTableUpdateCompanionBuilder =
+    CharacterAliasesCompanion Function({
+      Value<int> characterId,
+      Value<String> alias,
+      Value<int> rowid,
+    });
+
+final class $$CharacterAliasesTableReferences
+    extends
+        BaseReferences<_$AppDatabase, $CharacterAliasesTable, CharacterAliase> {
+  $$CharacterAliasesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $CharactersTable _characterIdTable(_$AppDatabase db) => db.characters
+      .createAlias('character_aliases__character_id__characters__id');
+
+  $$CharactersTableProcessedTableManager get characterId {
+    final $_column = $_itemColumn<int>('character_id')!;
+
+    final manager = $$CharactersTableTableManager(
+      $_db,
+      $_db.characters,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_characterIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$CharacterAliasesTableFilterComposer
+    extends Composer<_$AppDatabase, $CharacterAliasesTable> {
+  $$CharacterAliasesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get alias => $composableBuilder(
+    column: $table.alias,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$CharactersTableFilterComposer get characterId {
+    final $$CharactersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.characterId,
+      referencedTable: $db.characters,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharactersTableFilterComposer(
+            $db: $db,
+            $table: $db.characters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CharacterAliasesTableOrderingComposer
+    extends Composer<_$AppDatabase, $CharacterAliasesTable> {
+  $$CharacterAliasesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get alias => $composableBuilder(
+    column: $table.alias,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$CharactersTableOrderingComposer get characterId {
+    final $$CharactersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.characterId,
+      referencedTable: $db.characters,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharactersTableOrderingComposer(
+            $db: $db,
+            $table: $db.characters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CharacterAliasesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CharacterAliasesTable> {
+  $$CharacterAliasesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get alias =>
+      $composableBuilder(column: $table.alias, builder: (column) => column);
+
+  $$CharactersTableAnnotationComposer get characterId {
+    final $$CharactersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.characterId,
+      referencedTable: $db.characters,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharactersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.characters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CharacterAliasesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CharacterAliasesTable,
+          CharacterAliase,
+          $$CharacterAliasesTableFilterComposer,
+          $$CharacterAliasesTableOrderingComposer,
+          $$CharacterAliasesTableAnnotationComposer,
+          $$CharacterAliasesTableCreateCompanionBuilder,
+          $$CharacterAliasesTableUpdateCompanionBuilder,
+          (CharacterAliase, $$CharacterAliasesTableReferences),
+          CharacterAliase,
+          PrefetchHooks Function({bool characterId})
+        > {
+  $$CharacterAliasesTableTableManager(
+    _$AppDatabase db,
+    $CharacterAliasesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CharacterAliasesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CharacterAliasesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CharacterAliasesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> characterId = const Value.absent(),
+                Value<String> alias = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CharacterAliasesCompanion(
+                characterId: characterId,
+                alias: alias,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required int characterId,
+                required String alias,
+                Value<int> rowid = const Value.absent(),
+              }) => CharacterAliasesCompanion.insert(
+                characterId: characterId,
+                alias: alias,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$CharacterAliasesTable, CharacterAliase>(table),
+                  $$CharacterAliasesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({characterId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (characterId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.characterId,
+                        referencedTable: $$CharacterAliasesTableReferences
+                            ._characterIdTable(db),
+                        referencedColumn: $$CharacterAliasesTableReferences
+                            ._characterIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$CharacterAliasesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CharacterAliasesTable,
+      CharacterAliase,
+      $$CharacterAliasesTableFilterComposer,
+      $$CharacterAliasesTableOrderingComposer,
+      $$CharacterAliasesTableAnnotationComposer,
+      $$CharacterAliasesTableCreateCompanionBuilder,
+      $$CharacterAliasesTableUpdateCompanionBuilder,
+      (CharacterAliase, $$CharacterAliasesTableReferences),
+      CharacterAliase,
+      PrefetchHooks Function({bool characterId})
+    >;
+typedef $$WorkCharactersTableCreateCompanionBuilder =
+    WorkCharactersCompanion Function({
+      required int workId,
+      required int characterId,
+      Value<double> confidence,
+      Value<int> rowid,
+    });
+typedef $$WorkCharactersTableUpdateCompanionBuilder =
+    WorkCharactersCompanion Function({
+      Value<int> workId,
+      Value<int> characterId,
+      Value<double> confidence,
+      Value<int> rowid,
+    });
+
+final class $$WorkCharactersTableReferences
+    extends BaseReferences<_$AppDatabase, $WorkCharactersTable, WorkCharacter> {
+  $$WorkCharactersTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $WorksTable _workIdTable(_$AppDatabase db) =>
+      db.works.createAlias('work_characters__work_id__works__id');
+
+  $$WorksTableProcessedTableManager get workId {
+    final $_column = $_itemColumn<int>('work_id')!;
+
+    final manager = $$WorksTableTableManager(
+      $_db,
+      $_db.works,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_workIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $CharactersTable _characterIdTable(_$AppDatabase db) => db.characters
+      .createAlias('work_characters__character_id__characters__id');
+
+  $$CharactersTableProcessedTableManager get characterId {
+    final $_column = $_itemColumn<int>('character_id')!;
+
+    final manager = $$CharactersTableTableManager(
+      $_db,
+      $_db.characters,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_characterIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$WorkCharactersTableFilterComposer
+    extends Composer<_$AppDatabase, $WorkCharactersTable> {
+  $$WorkCharactersTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<double> get confidence => $composableBuilder(
+    column: $table.confidence,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$WorksTableFilterComposer get workId {
+    final $$WorksTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workId,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableFilterComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CharactersTableFilterComposer get characterId {
+    final $$CharactersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.characterId,
+      referencedTable: $db.characters,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharactersTableFilterComposer(
+            $db: $db,
+            $table: $db.characters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WorkCharactersTableOrderingComposer
+    extends Composer<_$AppDatabase, $WorkCharactersTable> {
+  $$WorkCharactersTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<double> get confidence => $composableBuilder(
+    column: $table.confidence,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$WorksTableOrderingComposer get workId {
+    final $$WorksTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workId,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableOrderingComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CharactersTableOrderingComposer get characterId {
+    final $$CharactersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.characterId,
+      referencedTable: $db.characters,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharactersTableOrderingComposer(
+            $db: $db,
+            $table: $db.characters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WorkCharactersTableAnnotationComposer
+    extends Composer<_$AppDatabase, $WorkCharactersTable> {
+  $$WorkCharactersTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<double> get confidence => $composableBuilder(
+    column: $table.confidence,
+    builder: (column) => column,
+  );
+
+  $$WorksTableAnnotationComposer get workId {
+    final $$WorksTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workId,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableAnnotationComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CharactersTableAnnotationComposer get characterId {
+    final $$CharactersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.characterId,
+      referencedTable: $db.characters,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharactersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.characters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WorkCharactersTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $WorkCharactersTable,
+          WorkCharacter,
+          $$WorkCharactersTableFilterComposer,
+          $$WorkCharactersTableOrderingComposer,
+          $$WorkCharactersTableAnnotationComposer,
+          $$WorkCharactersTableCreateCompanionBuilder,
+          $$WorkCharactersTableUpdateCompanionBuilder,
+          (WorkCharacter, $$WorkCharactersTableReferences),
+          WorkCharacter,
+          PrefetchHooks Function({bool workId, bool characterId})
+        > {
+  $$WorkCharactersTableTableManager(
+    _$AppDatabase db,
+    $WorkCharactersTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$WorkCharactersTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WorkCharactersTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$WorkCharactersTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> workId = const Value.absent(),
+                Value<int> characterId = const Value.absent(),
+                Value<double> confidence = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => WorkCharactersCompanion(
+                workId: workId,
+                characterId: characterId,
+                confidence: confidence,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required int workId,
+                required int characterId,
+                Value<double> confidence = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => WorkCharactersCompanion.insert(
+                workId: workId,
+                characterId: characterId,
+                confidence: confidence,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$WorkCharactersTable, WorkCharacter>(table),
+                  $$WorkCharactersTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({workId = false, characterId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (workId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.workId,
+                        referencedTable: $$WorkCharactersTableReferences
+                            ._workIdTable(db),
+                        referencedColumn: $$WorkCharactersTableReferences
+                            ._workIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+                    if (characterId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.characterId,
+                        referencedTable: $$WorkCharactersTableReferences
+                            ._characterIdTable(db),
+                        referencedColumn: $$WorkCharactersTableReferences
+                            ._characterIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$WorkCharactersTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $WorkCharactersTable,
+      WorkCharacter,
+      $$WorkCharactersTableFilterComposer,
+      $$WorkCharactersTableOrderingComposer,
+      $$WorkCharactersTableAnnotationComposer,
+      $$WorkCharactersTableCreateCompanionBuilder,
+      $$WorkCharactersTableUpdateCompanionBuilder,
+      (WorkCharacter, $$WorkCharactersTableReferences),
+      WorkCharacter,
+      PrefetchHooks Function({bool workId, bool characterId})
+    >;
+typedef $$WorkFandomsTableCreateCompanionBuilder =
+    WorkFandomsCompanion Function({
+      required int workId,
+      required int fandomId,
+      Value<FandomRole> role,
+      Value<int> rowid,
+    });
+typedef $$WorkFandomsTableUpdateCompanionBuilder =
+    WorkFandomsCompanion Function({
+      Value<int> workId,
+      Value<int> fandomId,
+      Value<FandomRole> role,
+      Value<int> rowid,
+    });
+
+final class $$WorkFandomsTableReferences
+    extends BaseReferences<_$AppDatabase, $WorkFandomsTable, WorkFandom> {
+  $$WorkFandomsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $WorksTable _workIdTable(_$AppDatabase db) =>
+      db.works.createAlias('work_fandoms__work_id__works__id');
+
+  $$WorksTableProcessedTableManager get workId {
+    final $_column = $_itemColumn<int>('work_id')!;
+
+    final manager = $$WorksTableTableManager(
+      $_db,
+      $_db.works,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_workIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $FandomsTable _fandomIdTable(_$AppDatabase db) =>
+      db.fandoms.createAlias('work_fandoms__fandom_id__fandoms__id');
+
+  $$FandomsTableProcessedTableManager get fandomId {
+    final $_column = $_itemColumn<int>('fandom_id')!;
+
+    final manager = $$FandomsTableTableManager(
+      $_db,
+      $_db.fandoms,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_fandomIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$WorkFandomsTableFilterComposer
+    extends Composer<_$AppDatabase, $WorkFandomsTable> {
+  $$WorkFandomsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnWithTypeConverterFilters<FandomRole, FandomRole, String> get role =>
+      $composableBuilder(
+        column: $table.role,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  $$WorksTableFilterComposer get workId {
+    final $$WorksTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workId,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableFilterComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$FandomsTableFilterComposer get fandomId {
+    final $$FandomsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.fandomId,
+      referencedTable: $db.fandoms,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FandomsTableFilterComposer(
+            $db: $db,
+            $table: $db.fandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WorkFandomsTableOrderingComposer
+    extends Composer<_$AppDatabase, $WorkFandomsTable> {
+  $$WorkFandomsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get role => $composableBuilder(
+    column: $table.role,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$WorksTableOrderingComposer get workId {
+    final $$WorksTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workId,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableOrderingComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$FandomsTableOrderingComposer get fandomId {
+    final $$FandomsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.fandomId,
+      referencedTable: $db.fandoms,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FandomsTableOrderingComposer(
+            $db: $db,
+            $table: $db.fandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WorkFandomsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $WorkFandomsTable> {
+  $$WorkFandomsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumnWithTypeConverter<FandomRole, String> get role =>
+      $composableBuilder(column: $table.role, builder: (column) => column);
+
+  $$WorksTableAnnotationComposer get workId {
+    final $$WorksTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workId,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableAnnotationComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$FandomsTableAnnotationComposer get fandomId {
+    final $$FandomsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.fandomId,
+      referencedTable: $db.fandoms,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FandomsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.fandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WorkFandomsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $WorkFandomsTable,
+          WorkFandom,
+          $$WorkFandomsTableFilterComposer,
+          $$WorkFandomsTableOrderingComposer,
+          $$WorkFandomsTableAnnotationComposer,
+          $$WorkFandomsTableCreateCompanionBuilder,
+          $$WorkFandomsTableUpdateCompanionBuilder,
+          (WorkFandom, $$WorkFandomsTableReferences),
+          WorkFandom,
+          PrefetchHooks Function({bool workId, bool fandomId})
+        > {
+  $$WorkFandomsTableTableManager(_$AppDatabase db, $WorkFandomsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$WorkFandomsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WorkFandomsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$WorkFandomsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> workId = const Value.absent(),
+                Value<int> fandomId = const Value.absent(),
+                Value<FandomRole> role = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => WorkFandomsCompanion(
+                workId: workId,
+                fandomId: fandomId,
+                role: role,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required int workId,
+                required int fandomId,
+                Value<FandomRole> role = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => WorkFandomsCompanion.insert(
+                workId: workId,
+                fandomId: fandomId,
+                role: role,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$WorkFandomsTable, WorkFandom>(table),
+                  $$WorkFandomsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({workId = false, fandomId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (workId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.workId,
+                        referencedTable: $$WorkFandomsTableReferences
+                            ._workIdTable(db),
+                        referencedColumn: $$WorkFandomsTableReferences
+                            ._workIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+                    if (fandomId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.fandomId,
+                        referencedTable: $$WorkFandomsTableReferences
+                            ._fandomIdTable(db),
+                        referencedColumn: $$WorkFandomsTableReferences
+                            ._fandomIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$WorkFandomsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $WorkFandomsTable,
+      WorkFandom,
+      $$WorkFandomsTableFilterComposer,
+      $$WorkFandomsTableOrderingComposer,
+      $$WorkFandomsTableAnnotationComposer,
+      $$WorkFandomsTableCreateCompanionBuilder,
+      $$WorkFandomsTableUpdateCompanionBuilder,
+      (WorkFandom, $$WorkFandomsTableReferences),
+      WorkFandom,
+      PrefetchHooks Function({bool workId, bool fandomId})
     >;
 typedef $$WorkRelationsTableCreateCompanionBuilder =
     WorkRelationsCompanion Function({
@@ -8197,243 +13793,6 @@ typedef $$ReadingDaysTableProcessedTableManager =
       (ReadingDay, $$ReadingDaysTableReferences),
       ReadingDay,
       PrefetchHooks Function({bool workId})
-    >;
-typedef $$TagsTableCreateCompanionBuilder = TagsCompanion Function({
-  Value<int> id,
-  required String name,
-  Value<bool> isAdult,
-});
-typedef $$TagsTableUpdateCompanionBuilder = TagsCompanion Function({
-  Value<int> id,
-  Value<String> name,
-  Value<bool> isAdult,
-});
-
-final class $$TagsTableReferences
-    extends BaseReferences<_$AppDatabase, $TagsTable, Tag> {
-  $$TagsTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static MultiTypedResultKey<$WorkTagsTable, List<WorkTag>> _workTagsRefsTable(
-    _$AppDatabase db,
-  ) => MultiTypedResultKey.fromTable(
-    db.workTags,
-    aliasName: 'tags__id__work_tags__tag_id',
-  );
-
-  $$WorkTagsTableProcessedTableManager get workTagsRefs {
-    final manager = $$WorkTagsTableTableManager(
-      $_db,
-      $_db.workTags,
-    ).filter((f) => f.tagId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_workTagsRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-}
-
-class $$TagsTableFilterComposer extends Composer<_$AppDatabase, $TagsTable> {
-  $$TagsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<bool> get isAdult => $composableBuilder(
-    column: $table.isAdult,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  Expression<bool> workTagsRefs(
-    Expression<bool> Function($$WorkTagsTableFilterComposer f) f,
-  ) {
-    final $$WorkTagsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.workTags,
-      getReferencedColumn: (t) => t.tagId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$WorkTagsTableFilterComposer(
-            $db: $db,
-            $table: $db.workTags,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $$TagsTableOrderingComposer extends Composer<_$AppDatabase, $TagsTable> {
-  $$TagsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<bool> get isAdult => $composableBuilder(
-    column: $table.isAdult,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $$TagsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $TagsTable> {
-  $$TagsTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get name =>
-      $composableBuilder(column: $table.name, builder: (column) => column);
-
-  GeneratedColumn<bool> get isAdult =>
-      $composableBuilder(column: $table.isAdult, builder: (column) => column);
-
-  Expression<T> workTagsRefs<T extends Object>(
-    Expression<T> Function($$WorkTagsTableAnnotationComposer a) f,
-  ) {
-    final $$WorkTagsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.workTags,
-      getReferencedColumn: (t) => t.tagId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$WorkTagsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.workTags,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $$TagsTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $TagsTable,
-          Tag,
-          $$TagsTableFilterComposer,
-          $$TagsTableOrderingComposer,
-          $$TagsTableAnnotationComposer,
-          $$TagsTableCreateCompanionBuilder,
-          $$TagsTableUpdateCompanionBuilder,
-          (Tag, $$TagsTableReferences),
-          Tag,
-          PrefetchHooks Function({bool workTagsRefs})
-        > {
-  $$TagsTableTableManager(_$AppDatabase db, $TagsTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$TagsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$TagsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$TagsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String> name = const Value.absent(),
-            Value<bool> isAdult = const Value.absent(),
-          }) => TagsCompanion(id: id, name: name, isAdult: isAdult),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            required String name,
-            Value<bool> isAdult = const Value.absent(),
-          }) => TagsCompanion.insert(id: id, name: name, isAdult: isAdult),
-          withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable<$TagsTable, Tag>(table),
-                  $$TagsTableReferences(db, table, e),
-                ),
-              )
-              .toList(),
-          prefetchHooksCallback: ({workTagsRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [if (workTagsRefs) db.workTags],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (workTagsRefs)
-                    await $_getPrefetchedData<Tag, $TagsTable, WorkTag>(
-                      currentTable: table,
-                      referencedTable: $$TagsTableReferences._workTagsRefsTable(
-                        db,
-                      ),
-                      managerFromTypedResult: (p0) =>
-                          $$TagsTableReferences(db, table, p0).workTagsRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.tagId == item.id),
-                      typedResults: items,
-                    ),
-                ];
-              },
-            );
-          },
-        ),
-      );
-}
-
-typedef $$TagsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $TagsTable,
-      Tag,
-      $$TagsTableFilterComposer,
-      $$TagsTableOrderingComposer,
-      $$TagsTableAnnotationComposer,
-      $$TagsTableCreateCompanionBuilder,
-      $$TagsTableUpdateCompanionBuilder,
-      (Tag, $$TagsTableReferences),
-      Tag,
-      PrefetchHooks Function({bool workTagsRefs})
     >;
 typedef $$WorkTagsTableCreateCompanionBuilder = WorkTagsCompanion Function({
   required int workId,
@@ -10621,17 +15980,31 @@ typedef $$AnnotationsTableProcessedTableManager =
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
-  $$SeriesTableTableManager get series =>
-      $$SeriesTableTableManager(_db, _db.series);
   $$FandomsTableTableManager get fandoms =>
       $$FandomsTableTableManager(_db, _db.fandoms);
+  $$SeriesTableTableManager get series =>
+      $$SeriesTableTableManager(_db, _db.series);
   $$WorksTableTableManager get works =>
       $$WorksTableTableManager(_db, _db.works);
+  $$TagsTableTableManager get tags => $$TagsTableTableManager(_db, _db.tags);
+  $$TagSuggestionsTableTableManager get tagSuggestions =>
+      $$TagSuggestionsTableTableManager(_db, _db.tagSuggestions);
+  $$FandomAliasesTableTableManager get fandomAliases =>
+      $$FandomAliasesTableTableManager(_db, _db.fandomAliases);
+  $$TagSynonymsTableTableManager get tagSynonyms =>
+      $$TagSynonymsTableTableManager(_db, _db.tagSynonyms);
+  $$CharactersTableTableManager get characters =>
+      $$CharactersTableTableManager(_db, _db.characters);
+  $$CharacterAliasesTableTableManager get characterAliases =>
+      $$CharacterAliasesTableTableManager(_db, _db.characterAliases);
+  $$WorkCharactersTableTableManager get workCharacters =>
+      $$WorkCharactersTableTableManager(_db, _db.workCharacters);
+  $$WorkFandomsTableTableManager get workFandoms =>
+      $$WorkFandomsTableTableManager(_db, _db.workFandoms);
   $$WorkRelationsTableTableManager get workRelations =>
       $$WorkRelationsTableTableManager(_db, _db.workRelations);
   $$ReadingDaysTableTableManager get readingDays =>
       $$ReadingDaysTableTableManager(_db, _db.readingDays);
-  $$TagsTableTableManager get tags => $$TagsTableTableManager(_db, _db.tags);
   $$WorkTagsTableTableManager get workTags =>
       $$WorkTagsTableTableManager(_db, _db.workTags);
   $$ChaptersTableTableManager get chapters =>
