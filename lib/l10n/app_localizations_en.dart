@@ -517,6 +517,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteDownload => 'Delete download';
 
   @override
+  String downloadIncomplete(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count chapters missing',
+      one: '1 chapter missing',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get loadMissingChapters => 'Load missing chapters';
+
+  @override
   String get downloadButton => 'Download…';
 
   @override
@@ -685,7 +699,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get readerBrowserHint =>
-      'A browser window opens briefly to load this site.';
+      'If a ReadTrack browser window opens, complete the website’s confirmation or sign-in there. Leave it open while reading or downloading.';
 
   @override
   String get readerRetry => 'Try again';

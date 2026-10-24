@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 
 import '../data/database.dart';
 import '../sources/html_clean.dart';
+import '../sources/fetcher.dart' show SourceAccessException;
 import '../sources/sources.dart';
 import 'storage.dart';
 import 'story_sync.dart';
@@ -33,6 +34,7 @@ class DownloadResult {
     required this.locked,
     required this.cancelled,
     this.file,
+    this.firstError,
   });
 
   final int downloaded;
@@ -42,6 +44,9 @@ class DownloadResult {
 
   /// The exported file, unless the download was cancelled.
   final File? file;
+
+  /// The first failed chapter's explanation, for the completion message.
+  final String? firstError;
 }
 
 /// Downloads chapters in the background and exports them, one job per work.
@@ -78,6 +83,7 @@ class DownloadService extends ChangeNotifier {
     notifyListeners();
     final fetcher = openFetcherFor(source);
     var downloaded = 0, failed = 0;
+    String? firstError;
     try {
       await _saveCover(work, fetcher);
       final start = appendTo?.fromChapter ?? from;
@@ -112,8 +118,13 @@ class DownloadService extends ChangeNotifier {
             wordCount: countWords(htmlToPlainText(html)),
           );
           downloaded++;
-        } on SourceException {
+        } on SourceException catch (error) {
           failed++;
+          firstError ??= error.message;
+          if (error is SourceAccessException) {
+            failed = todo.length - downloaded;
+            break;
+          }
         }
       }
 
@@ -123,6 +134,23 @@ class DownloadService extends ChangeNotifier {
           failed: failed,
           locked: locked,
           cancelled: true,
+          firstError: firstError,
+        );
+      }
+      final stored = await _db.chaptersOf(id);
+      final hasText = stored.any(
+        (chapter) =>
+            chapter.number >= start &&
+            chapter.number <= to &&
+            chapter.content != null,
+      );
+      if (!hasText) {
+        return DownloadResult(
+          downloaded: downloaded,
+          failed: failed,
+          locked: locked,
+          cancelled: false,
+          firstError: firstError ?? 'No chapter text is available to download.',
         );
       }
       final file = await _export(
@@ -139,6 +167,7 @@ class DownloadService extends ChangeNotifier {
         locked: locked,
         cancelled: false,
         file: file,
+        firstError: firstError,
       );
     } finally {
       await fetcher.close();

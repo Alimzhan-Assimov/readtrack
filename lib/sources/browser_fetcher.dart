@@ -138,15 +138,27 @@ class BrowserFetcher implements PageFetcher {
   Future<({String body, Map<String, String> headers})> getWithHeaders(
     Uri uri, {
     Map<String, String> headers = const {},
-  }) async => (body: await getText(uri), headers: const <String, String>{});
+  }) async {
+    if (_view == null) {
+      throw SourceException('The browser window was closed.');
+    }
+    final result =
+        await _fetch(uri, headers: headers, includeResponse: true) as Map;
+    return (
+      body: result['body'] as String,
+      headers: (result['headers'] as Map).cast<String, String>(),
+    );
+  }
 
   /// Runs `fetch()` in the current page and returns its body as text, or as
   /// base64 when [binary] is set.
-  Future<String> _fetch(
+  Future<Object?> _fetch(
     Uri uri, {
     String method = 'GET',
     Map<String, String> fields = const {},
     bool binary = false,
+    bool includeResponse = false,
+    Map<String, String> headers = const {},
   }) async {
     final view = await _webview();
     final current = Uri.tryParse(view.navigationState.value.url ?? '');
@@ -158,9 +170,18 @@ class BrowserFetcher implements PageFetcher {
     final id = _nextRequestId++;
     final completer = Completer<Object?>();
     _pending[id] = completer;
-    final options = method == 'POST'
-        ? '{method: "POST", credentials: "include", headers: {"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8", "X-Requested-With": "XMLHttpRequest"}, body: ${jsonEncode(Uri(queryParameters: fields).query)}}'
-        : '{credentials: "include"}';
+    final options = jsonEncode({
+      'method': method,
+      'credentials': 'include',
+      'headers': {
+        if (method == 'POST') ...{
+          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        ...headers,
+      },
+      if (method == 'POST') 'body': Uri(queryParameters: fields).query,
+    });
     final read = binary
         ? '''r.arrayBuffer().then(function (b) {
               var bytes = new Uint8Array(b), s = '';
@@ -169,8 +190,17 @@ class BrowserFetcher implements PageFetcher {
               }
               return btoa(s);
             })'''
+        : includeResponse
+        ? '''r.text().then(function (text) {
+              var headers = {};
+              r.headers.forEach(function (value, name) { headers[name] = value; });
+              // Author.Today's chapter key includes the signed-in user id.
+              headers['readtrack-user-id'] = String((window.app && window.app.userId) || '');
+              return {body: text, headers: headers};
+            })'''
         : 'r.text()';
-    await view.evaluateJavaScript('''
+    try {
+      await view.evaluateJavaScript('''
       fetch(${jsonEncode(uri.toString())}, $options)
         .then(function (r) {
           if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -180,31 +210,34 @@ class BrowserFetcher implements PageFetcher {
         .catch(function (e) { window.desktopWebview.postMessage('$_bridge', {id: $id, ok: false, error: String(e)}); });
       true;
     ''');
-    final body = await completer.future.timeout(
-      const Duration(minutes: 1),
-      onTimeout: () {
-        _pending.remove(id);
-        throw SourceException('${uri.host} did not respond in time.');
-      },
-    );
-    return body as String? ?? '';
+      return await completer.future.timeout(
+        const Duration(minutes: 1),
+        onTimeout: () {
+          _pending.remove(id);
+          throw SourceException('${uri.host} did not respond in time.');
+        },
+      );
+    } finally {
+      _pending.remove(id);
+    }
   }
 
-  /// Extra [headers] are not needed here: requests run inside the page,
-  /// which already carries the site's cookies and tokens.
+  /// Requests run inside the page and carry the site's cookies and tokens.
   @override
   Future<String> postForm(
     Uri uri,
     Map<String, String> fields, {
     Map<String, String> headers = const {},
-  }) => _fetch(uri, method: 'POST', fields: fields);
+  }) async =>
+      await _fetch(uri, method: 'POST', fields: fields, headers: headers)
+          as String;
 
   @override
   Future<Uint8List> getBytes(Uri uri) async =>
-      base64Decode(await _fetch(uri, binary: true));
+      base64Decode(await _fetch(uri, binary: true) as String);
 
   /// Runs `fetch()` for [uri] in the current page and returns the text.
-  Future<String> fetchInPage(Uri uri) => _fetch(uri);
+  Future<String> fetchInPage(Uri uri) async => await _fetch(uri) as String;
 
   /// Evaluates [javaScript] in the current page, e.g. to read a cookie.
   Future<Object?> evaluate(String javaScript) async =>

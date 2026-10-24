@@ -8,6 +8,7 @@ import 'package:readtrack/library/download_service.dart';
 import 'package:readtrack/library/exporters.dart';
 import 'package:readtrack/library/storage.dart';
 import 'package:readtrack/sources/sources.dart';
+import 'package:readtrack/sources/fetcher.dart' show SourceAccessException;
 
 import 'sources/fake_fetcher.dart';
 
@@ -43,6 +44,46 @@ class _FakeSource extends StorySource {
       title: chapter.title,
       html: '<p>Text of chapter ${chapter.number}.</p>$image',
     );
+  }
+}
+
+class _FailingSource extends _FakeSource {
+  const _FailingSource();
+
+  @override
+  Future<ChapterContent> fetchChapter(
+    ChapterRef chapter,
+    PageFetcher fetcher,
+  ) async => throw SourceException('Age confirmation required.');
+}
+
+class _AccessDeniedSource extends _FakeSource {
+  int requests = 0;
+
+  @override
+  Future<ChapterContent> fetchChapter(
+    ChapterRef chapter,
+    PageFetcher fetcher,
+  ) async {
+    requests++;
+    throw SourceAccessException('Confirmation window closed.');
+  }
+}
+
+/// Fails the chapters in [broken] the way an interrupted session does.
+class _FlakySource extends _FakeSource {
+  _FlakySource(this.broken);
+
+  final Set<int> broken;
+  final requested = <int>[];
+
+  @override
+  Future<ChapterContent> fetchChapter(ChapterRef chapter, PageFetcher fetcher) {
+    requested.add(chapter.number);
+    if (broken.contains(chapter.number)) {
+      throw SourceException('Connection lost.');
+    }
+    return super.fetchChapter(chapter, fetcher);
   }
 }
 
@@ -91,6 +132,102 @@ void main() {
   });
 
   tearDown(() => db.close());
+
+  test('a retry fills the gaps an interrupted download left', () async {
+    final first = _FlakySource({2, 4});
+    final result = await service.download(
+      work: work,
+      source: first,
+      from: 1,
+      to: 4,
+    );
+    expect((result.downloaded, result.failed), (2, 2));
+    expect(result.firstError, 'Connection lost.');
+    final download = (await db.downloadsOf(work.id)).single;
+    expect(await db.watchMissingChapters(work.id).first, [2, 4]);
+
+    final retry = _FlakySource({});
+    final again = await service.download(
+      work: work,
+      source: retry,
+      from: download.fromChapter,
+      to: download.toChapter,
+      appendTo: download,
+    );
+    // Only the gaps are fetched again; stored text is kept.
+    expect(retry.requested, [2, 4]);
+    expect((again.downloaded, again.failed), (2, 0));
+    expect(await db.watchMissingChapters(work.id).first, isEmpty);
+    final texts = {
+      for (final c in await db.chaptersOf(work.id))
+        if (c.number <= 4) c.number: c.content,
+    };
+    for (final n in [1, 2, 3, 4]) {
+      expect(texts[n], contains('Text of chapter $n.'));
+    }
+    expect(await db.downloadsOf(work.id), hasLength(1));
+    expect(await again.file!.readAsString(), contains('Text of chapter 4.'));
+  });
+
+  test('stops the batch when the confirmation session is cancelled', () async {
+    final source = _AccessDeniedSource();
+    final result = await service.download(
+      work: work,
+      source: source,
+      from: 1,
+      to: 3,
+    );
+    expect(source.requests, 1);
+    expect(result.failed, 3);
+    expect(result.downloaded, 0);
+    expect(result.firstError, 'Confirmation window closed.');
+    expect(result.file, isNull);
+    expect(await db.downloadsOf(work.id), isEmpty);
+    expect(service.isRunning(work.id), isFalse);
+  });
+
+  test('failed chapters do not create an empty download or export', () async {
+    final result = await service.download(
+      work: work,
+      source: const _FailingSource(),
+      from: 1,
+      to: 3,
+    );
+    expect(result.downloaded, 0);
+    expect(result.failed, 3);
+    expect(result.firstError, 'Age confirmation required.');
+    expect(result.file, isNull);
+    expect(await db.downloadsOf(work.id), isEmpty);
+    expect(
+      (await db.chaptersOf(work.id)).every((c) => c.content == null),
+      isTrue,
+    );
+  });
+
+  test(
+    'failed extension preserves an existing download and its text',
+    () async {
+      final first = await service.download(
+        work: work,
+        source: const _FakeSource(),
+        from: 1,
+        to: 2,
+      );
+      final result = await service.download(
+        work: work,
+        source: const _FailingSource(),
+        from: 3,
+        to: 4,
+        appendTo: (await db.downloadsOf(work.id)).single,
+      );
+      expect(result.downloaded, 0);
+      expect(result.failed, 2);
+      expect(result.firstError, 'Age confirmation required.');
+      expect(result.file!.readAsStringSync(), contains('Text of chapter 1'));
+      expect(await db.downloadsOf(work.id), hasLength(1));
+      expect(first.downloaded, 2);
+    },
+  );
 
   test(
     'downloads a range, saves images locally and exports a TXT file',

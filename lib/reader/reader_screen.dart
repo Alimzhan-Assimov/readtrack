@@ -441,12 +441,25 @@ class _ReaderScreenState extends State<ReaderScreen> {
                       ? Icons.lock_outline
                       : Icons.cloud_off,
                   text: '${snapshot.error}',
-                  action: _download == null && chapter?.isLocked != true
-                      ? FilledButton.tonal(
+                  action: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (_download == null && chapter?.isLocked != true)
+                        FilledButton.tonal(
                           onPressed: () => _open(_current),
                           child: Text(l10n.readerRetry),
-                        )
-                      : null,
+                        ),
+                      if (chapterUrl != null)
+                        TextButton.icon(
+                          onPressed: () => launchUrl(
+                            Uri.parse(chapterUrl),
+                            mode: LaunchMode.externalApplication,
+                          ),
+                          icon: const Icon(Icons.open_in_new),
+                          label: Text(l10n.readerOpenInBrowser),
+                        ),
+                    ],
+                  ),
                 );
               }
               final loaded = snapshot.data;
@@ -454,7 +467,8 @@ class _ReaderScreenState extends State<ReaderScreen> {
                 return _ReaderMessage(
                   icon: Icons.hourglass_top,
                   text:
-                      _source?.fetchMode == FetchMode.browser &&
+                      _source != null &&
+                          _source!.fetchMode != FetchMode.http &&
                           _download == null
                       ? '${l10n.readerLoading}\n${l10n.readerBrowserHint}'
                       : l10n.readerLoading,

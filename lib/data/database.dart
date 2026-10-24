@@ -698,6 +698,21 @@ class AppDatabase extends _$AppDatabase {
             ..orderBy([(c) => OrderingTerm.asc(c.number)]))
           .watch();
 
+  /// Numbers of the chapters that could be downloaded but have no text yet.
+  Stream<List<int>> watchMissingChapters(int workId) {
+    final query = selectOnly(chapters)
+      ..addColumns([chapters.number])
+      ..where(
+        chapters.workId.equals(workId) &
+            chapters.content.isNull() &
+            chapters.isLocked.equals(false) &
+            chapters.url.isNotNull(),
+      );
+    return query.watch().map(
+      (rows) => [for (final r in rows) r.read(chapters.number)!],
+    );
+  }
+
   Future<List<Chapter>> chaptersOf(int workId) =>
       (select(chapters)
             ..where((c) => c.workId.equals(workId))
