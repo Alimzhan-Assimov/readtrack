@@ -44,9 +44,14 @@ class ExportBook {
     required this.to,
     required this.storage,
     this.tags = const [],
+    this.fandom,
     this.withImages = true,
     DateTime? date,
   }) : date = date ?? DateTime.now();
+
+  /// The entry's category, kept in an EPUB so importing it again (on another
+  /// device, say) restores it.
+  final String? fandom;
 
   /// False leaves every chapter image out of the file.
   final bool withImages;
@@ -411,6 +416,7 @@ List<int> buildEpub(ExportBook book) {
         '<dc:language>${book.language}</dc:language>'
         '${w.summary == null ? '' : '<dc:description>${_xml(w.summary!)}</dc:description>'}'
         '${[for (final t in book.tags) '<dc:subject>${_xml(t)}</dc:subject>'].join()}'
+        '${book.fandom == null ? '' : '<meta name="readtrack:fandom" content="${_xml(book.fandom!)}"/>'}'
         '<meta property="dcterms:modified">$modified</meta>'
         '${coverName == null ? '' : '<meta name="cover" content="cover-image"/>'}'
         '</metadata><manifest>$manifest</manifest><spine toc="ncx">$spine</spine></package>',

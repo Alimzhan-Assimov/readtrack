@@ -1564,6 +1564,37 @@ class AppDatabase extends _$AppDatabase {
     return null;
   }
 
+  /// Files work [workId] under the category [name].
+  Future<void> setFandom(int workId, String name) async {
+    final id = await _fandomIdFor(name);
+    await (update(works)..where((w) => w.id.equals(workId))).write(
+      WorksCompanion(fandomId: Value(id)),
+    );
+  }
+
+  /// Franchises for entries without one: [sure] if a tag names it or a fan
+  /// fiction's title does, otherwise only the title of a book does, which
+  /// should be confirmed ("Twist of Fate" isn't Fate fan fiction).
+  Future<List<({WorkWithDetails item, String fandom, bool sure})>>
+  proposeFandoms() async {
+    final proposals = <({WorkWithDetails item, String fandom, bool sure})>[];
+    for (final item in await watchWorks(sort: WorkSort.title).first) {
+      if (item.fandom != null) continue;
+      final w = item.work;
+      final tags = [for (final t in item.tags) t.name];
+      final sure = await guessFandom(
+        title: w.title,
+        tags: tags,
+        useTitle: w.type == WorkType.fanfiction,
+      );
+      final guess = sure ?? await guessFandom(title: w.title);
+      if (guess != null) {
+        proposals.add((item: item, fandom: guess, sure: sure != null));
+      }
+    }
+    return proposals;
+  }
+
   Future<int?> _fandomIdFor(String? name) async {
     var n = name?.trim() ?? '';
     if (n.isEmpty) return null;

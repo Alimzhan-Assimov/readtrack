@@ -306,6 +306,40 @@ void main() {
     await unmount(tester);
   });
 
+  testWidgets('a franchise in the title is offered, not filled in', (
+    tester,
+  ) async {
+    await pumpApp(tester, width: 400);
+    await tester.tap(find.text('Add'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Enter manually'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Title *'),
+      'Naruto: Road to Ninja',
+    );
+    final chip = find.widgetWithText(ActionChip, 'Category: Naruto?');
+    for (var i = 0; i < 20 && chip.evaluate().isEmpty; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.runAsync(() => Future<void>.delayed(Durations.short1));
+    }
+    expect(chip, findsOneWidget);
+    expect(find.widgetWithText(TextFormField, 'Naruto'), findsNothing);
+    await tester.ensureVisible(chip);
+    await tester.pump();
+    await tester.tap(chip);
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.runAsync(() => Future<void>.delayed(Durations.short1));
+    await tester.pump();
+    // The category field is scrolled above the chip; back up to it.
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, 300));
+    await tester.pump();
+    expect(find.widgetWithText(TextFormField, 'Naruto'), findsOneWidget);
+    expect(chip, findsNothing);
+    await unmount(tester);
+  });
+
   testWidgets('leaving with unsaved changes asks for confirmation', (
     tester,
   ) async {

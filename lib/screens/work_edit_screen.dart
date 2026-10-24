@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:drift/drift.dart' show Value;
@@ -92,6 +93,10 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
   List<String> _tagSuggestions = kDefaultTags;
   List<String> _frequentTags = const [];
   bool _suggestionsRequested = false;
+
+  /// A franchise the title may name, offered rather than filled in.
+  String? _fandomSuggestion;
+  Timer? _fandomGuess;
   bool _saving = false;
 
   /// Whether anything changed since opening (to confirm before leaving).
@@ -169,6 +174,8 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     }
     _initialWords = _words.text;
     _initialPages = _pages.text;
+    _title.addListener(_scheduleFandomGuess);
+    _fandom.addListener(_scheduleFandomGuess);
   }
 
   late final String _initialWords;
@@ -236,6 +243,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
         messenger.showSnackBar(SnackBar(content: Text(l10n.isbnNotFound)));
       } else {
         _change(() => _applyDetails(details));
+        await _guessFandom(fill: true);
       }
     } on SourceException catch (e) {
       messenger.showSnackBar(
@@ -258,6 +266,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _url.text = book.sourceUrl ?? '';
     _isbn.text = book.isbn ?? '';
     _summary.text = book.summary ?? '';
+    _fandom.text = book.fandom ?? '';
     _chapters.text = '${book.chapters.length}';
     _words.text =
         '${[for (final c in book.chapters) countWords(htmlToPlainText(c.html))].fold<int>(0, (a, b) => a + b)}';
@@ -275,6 +284,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
 
   @override
   void dispose() {
+    _fandomGuess?.cancel();
     for (final c in _controllers) {
       c.dispose();
     }
@@ -282,13 +292,13 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
   }
 
   Future<void> _loadSuggestions() async {
-    // A site without franchises: guess it from the tags and title.
-    if (widget.imported case final info? when _fandom.text.trim().isEmpty) {
-      final guess = await storyFandom(_db, info);
-      if (guess != null && mounted && _fandom.text.trim().isEmpty) {
-        _fandom.text = guess;
-      }
-    }
+    // An import without a franchise: guess it from the tags and title.
+    await _guessFandom(
+      fill:
+          widget.imported != null ||
+          widget.file != null ||
+          widget.details != null,
+    );
     final fandoms = await _db.fandomNames();
     final seriesNames = await _db.seriesNames();
     final characterNames = await _db.characterNames();
@@ -345,10 +355,43 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
   );
 
   /// Changes state and records that there are unsaved changes.
-  void _change(VoidCallback fn) => setState(() {
-    fn();
-    _dirty = true;
-  });
+  void _change(VoidCallback fn) {
+    setState(() {
+      fn();
+      _dirty = true;
+    });
+    _scheduleFandomGuess();
+  }
+
+  void _scheduleFandomGuess() {
+    _fandomGuess?.cancel();
+    _fandomGuess = Timer(const Duration(milliseconds: 400), _guessFandom);
+  }
+
+  /// With an empty category: with [fill], takes a franchise a tag or a fan
+  /// fiction's title names; anything less sure (a book's title, or while
+  /// the user types) is only offered as [_fandomSuggestion].
+  Future<void> _guessFandom({bool fill = false}) async {
+    String? sure, guess;
+    if (_fandom.text.trim().isEmpty) {
+      final title = _title.text.trim();
+      sure = await _db.guessFandom(
+        title: title,
+        tags: _tags,
+        useTitle: _type == WorkType.fanfiction,
+      );
+      guess = sure ?? await _db.guessFandom(title: title);
+    }
+    if (!mounted) return;
+    if (_fandom.text.trim().isNotEmpty) guess = null;
+    if (fill && sure != null && guess != null) {
+      _fandom.text = sure;
+      guess = null;
+    }
+    if (guess != _fandomSuggestion) {
+      setState(() => _fandomSuggestion = guess);
+    }
+  }
 
   static String? _text(TextEditingController c) {
     final t = c.text.trim();
@@ -672,6 +715,19 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
               ),
             ),
       ),
+      if (_fandomSuggestion case final name?)
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: ActionChip(
+              avatar: const Icon(Icons.lightbulb_outline, size: 18),
+              label: Text(l10n.categorySuggestion(name)),
+              tooltip: l10n.categorySuggestionHint,
+              onPressed: () => _fandom.text = name,
+            ),
+          ),
+        ),
       gap,
       Row(
         crossAxisAlignment: CrossAxisAlignment.start,
