@@ -940,6 +940,30 @@ abstract class AppLocalizations {
   /// **'Delete download'**
   String get deleteDownload;
 
+  /// No description provided for @downloadWithImages.
+  ///
+  /// In en, this message translates to:
+  /// **'Include images'**
+  String get downloadWithImages;
+
+  /// No description provided for @downloadWithImagesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Off: only the text is downloaded and saved, which uses less data and space.'**
+  String get downloadWithImagesHint;
+
+  /// No description provided for @downloadKeepsImages.
+  ///
+  /// In en, this message translates to:
+  /// **'Images are included, as in this download.'**
+  String get downloadKeepsImages;
+
+  /// No description provided for @downloadKeepsNoImages.
+  ///
+  /// In en, this message translates to:
+  /// **'Without images, as in this download.'**
+  String get downloadKeepsNoImages;
+
   /// No description provided for @downloadIncomplete.
   ///
   /// In en, this message translates to:

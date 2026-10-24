@@ -315,6 +315,10 @@
     }
   },
   "deleteDownload": "Delete download",
+  "downloadWithImages": "Include images",
+  "downloadWithImagesHint": "Off: only the text is downloaded and saved, which uses less data and space.",
+  "downloadKeepsImages": "Images are included, as in this download.",
+  "downloadKeepsNoImages": "Without images, as in this download.",
   "downloadIncomplete": "{count, plural, =1{1 chapter missing} other{{count} chapters missing}}",
   "@downloadIncomplete": {
     "placeholders": {

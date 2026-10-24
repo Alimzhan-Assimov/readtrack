@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:html/dom.dart' as dom;
 import 'package:html/parser.dart' as html_parser;
 
@@ -34,8 +35,12 @@ class ExportBook {
     required this.to,
     required this.storage,
     this.tags = const [],
+    this.withImages = true,
     DateTime? date,
   }) : date = date ?? DateTime.now();
+
+  /// False leaves every chapter image out of the file.
+  final bool withImages;
 
   final Work work;
   final List<Chapter> chapters;
@@ -47,7 +52,10 @@ class ExportBook {
 
   List<Chapter> get inRange => [
     for (final c in chapters)
-      if (c.number >= from && c.number <= to) c,
+      if (c.number >= from && c.number <= to)
+        withImages || c.content == null
+            ? c
+            : c.copyWith(content: Value(withoutImages(c.content!))),
   ];
 
   String get rangeLabel => from == to ? 'Chapter $from' : 'Chapters $from–$to';
@@ -504,3 +512,16 @@ String buildFb2(ExportBook book) {
       '<id>${_xml(w.sourceUrl ?? 'readtrack-${w.id}')}</id><version>1.0</version></document-info>'
       '</description><body><title><p>${_xml(w.title)}</p></title>$body</body>$binaries</FictionBook>\n';
 }
+
+/// [html] with its images (and the figures or links that only held them)
+/// removed.
+String withoutImages(String html) => html
+    .replaceAll(RegExp(r'<img\b[^>]*>', caseSensitive: false), '')
+    .replaceAll(
+      RegExp(
+        r'<(figure|a)\b[^>]*>\s*(<figcaption>.*?</figcaption>\s*)?</\1>',
+        caseSensitive: false,
+        dotAll: true,
+      ),
+      '',
+    );

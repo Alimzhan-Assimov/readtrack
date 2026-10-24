@@ -123,6 +123,7 @@ class _ReadSectionState extends State<ReadSection> {
       to: choice.to,
       appendTo: choice.appendTo,
       format: choice.format,
+      withImages: choice.withImages,
     );
   }
 
@@ -144,6 +145,7 @@ class _ReadSectionState extends State<ReadSection> {
     required int to,
     Download? appendTo,
     ExportFormat format = ExportFormat.txt,
+    bool withImages = true,
   }) async {
     final l10n = context.l10n;
     final messenger = ScaffoldMessenger.of(context);
@@ -158,6 +160,7 @@ class _ReadSectionState extends State<ReadSection> {
       to: to,
       appendTo: appendTo,
       format: format,
+      withImages: withImages,
     );
     final file = result.file;
     messenger.showSnackBar(

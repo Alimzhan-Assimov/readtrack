@@ -2808,6 +2808,21 @@ class $DownloadsTable extends Downloads
     requiredDuringInsert: false,
     defaultValue: const Constant('txt'),
   );
+  static const VerificationMeta _withImagesMeta = const VerificationMeta(
+    'withImages',
+  );
+  @override
+  late final GeneratedColumn<bool> withImages = GeneratedColumn<bool>(
+    'with_images',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("with_images" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   static const VerificationMeta _filePathMeta = const VerificationMeta(
     'filePath',
   );
@@ -2850,6 +2865,7 @@ class $DownloadsTable extends Downloads
     fromChapter,
     toChapter,
     format,
+    withImages,
     filePath,
     createdAt,
     updatedAt,
@@ -2902,6 +2918,12 @@ class $DownloadsTable extends Downloads
         format.isAcceptableOrUnknown(data['format']!, _formatMeta),
       );
     }
+    if (data.containsKey('with_images')) {
+      context.handle(
+        _withImagesMeta,
+        withImages.isAcceptableOrUnknown(data['with_images']!, _withImagesMeta),
+      );
+    }
     if (data.containsKey('file_path')) {
       context.handle(
         _filePathMeta,
@@ -2949,6 +2971,10 @@ class $DownloadsTable extends Downloads
         DriftSqlType.string,
         data['${effectivePrefix}format'],
       )!,
+      withImages: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}with_images'],
+      )!,
       filePath: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}file_path'],
@@ -2976,6 +3002,9 @@ class Download extends DataClass implements Insertable<Download> {
   final int fromChapter;
   final int toChapter;
   final String format;
+
+  /// False when chapter images were left out to save space.
+  final bool withImages;
   final String? filePath;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -2985,6 +3014,7 @@ class Download extends DataClass implements Insertable<Download> {
     required this.fromChapter,
     required this.toChapter,
     required this.format,
+    required this.withImages,
     this.filePath,
     required this.createdAt,
     required this.updatedAt,
@@ -2997,6 +3027,7 @@ class Download extends DataClass implements Insertable<Download> {
     map['from_chapter'] = Variable<int>(fromChapter);
     map['to_chapter'] = Variable<int>(toChapter);
     map['format'] = Variable<String>(format);
+    map['with_images'] = Variable<bool>(withImages);
     if (!nullToAbsent || filePath != null) {
       map['file_path'] = Variable<String>(filePath);
     }
@@ -3012,6 +3043,7 @@ class Download extends DataClass implements Insertable<Download> {
       fromChapter: Value(fromChapter),
       toChapter: Value(toChapter),
       format: Value(format),
+      withImages: Value(withImages),
       filePath: filePath == null && nullToAbsent
           ? const Value.absent()
           : Value(filePath),
@@ -3031,6 +3063,7 @@ class Download extends DataClass implements Insertable<Download> {
       fromChapter: serializer.fromJson<int>(json['fromChapter']),
       toChapter: serializer.fromJson<int>(json['toChapter']),
       format: serializer.fromJson<String>(json['format']),
+      withImages: serializer.fromJson<bool>(json['withImages']),
       filePath: serializer.fromJson<String?>(json['filePath']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
@@ -3045,6 +3078,7 @@ class Download extends DataClass implements Insertable<Download> {
       'fromChapter': serializer.toJson<int>(fromChapter),
       'toChapter': serializer.toJson<int>(toChapter),
       'format': serializer.toJson<String>(format),
+      'withImages': serializer.toJson<bool>(withImages),
       'filePath': serializer.toJson<String?>(filePath),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
@@ -3057,6 +3091,7 @@ class Download extends DataClass implements Insertable<Download> {
     int? fromChapter,
     int? toChapter,
     String? format,
+    bool? withImages,
     Value<String?> filePath = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -3066,6 +3101,7 @@ class Download extends DataClass implements Insertable<Download> {
     fromChapter: fromChapter ?? this.fromChapter,
     toChapter: toChapter ?? this.toChapter,
     format: format ?? this.format,
+    withImages: withImages ?? this.withImages,
     filePath: filePath.present ? filePath.value : this.filePath,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -3079,6 +3115,9 @@ class Download extends DataClass implements Insertable<Download> {
           : this.fromChapter,
       toChapter: data.toChapter.present ? data.toChapter.value : this.toChapter,
       format: data.format.present ? data.format.value : this.format,
+      withImages: data.withImages.present
+          ? data.withImages.value
+          : this.withImages,
       filePath: data.filePath.present ? data.filePath.value : this.filePath,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
@@ -3093,6 +3132,7 @@ class Download extends DataClass implements Insertable<Download> {
           ..write('fromChapter: $fromChapter, ')
           ..write('toChapter: $toChapter, ')
           ..write('format: $format, ')
+          ..write('withImages: $withImages, ')
           ..write('filePath: $filePath, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
@@ -3107,6 +3147,7 @@ class Download extends DataClass implements Insertable<Download> {
     fromChapter,
     toChapter,
     format,
+    withImages,
     filePath,
     createdAt,
     updatedAt,
@@ -3120,6 +3161,7 @@ class Download extends DataClass implements Insertable<Download> {
           other.fromChapter == this.fromChapter &&
           other.toChapter == this.toChapter &&
           other.format == this.format &&
+          other.withImages == this.withImages &&
           other.filePath == this.filePath &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
@@ -3131,6 +3173,7 @@ class DownloadsCompanion extends UpdateCompanion<Download> {
   final Value<int> fromChapter;
   final Value<int> toChapter;
   final Value<String> format;
+  final Value<bool> withImages;
   final Value<String?> filePath;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
@@ -3140,6 +3183,7 @@ class DownloadsCompanion extends UpdateCompanion<Download> {
     this.fromChapter = const Value.absent(),
     this.toChapter = const Value.absent(),
     this.format = const Value.absent(),
+    this.withImages = const Value.absent(),
     this.filePath = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -3150,6 +3194,7 @@ class DownloadsCompanion extends UpdateCompanion<Download> {
     required int fromChapter,
     required int toChapter,
     this.format = const Value.absent(),
+    this.withImages = const Value.absent(),
     this.filePath = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -3162,6 +3207,7 @@ class DownloadsCompanion extends UpdateCompanion<Download> {
     Expression<int>? fromChapter,
     Expression<int>? toChapter,
     Expression<String>? format,
+    Expression<bool>? withImages,
     Expression<String>? filePath,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
@@ -3172,6 +3218,7 @@ class DownloadsCompanion extends UpdateCompanion<Download> {
       if (fromChapter != null) 'from_chapter': fromChapter,
       if (toChapter != null) 'to_chapter': toChapter,
       if (format != null) 'format': format,
+      if (withImages != null) 'with_images': withImages,
       if (filePath != null) 'file_path': filePath,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -3184,6 +3231,7 @@ class DownloadsCompanion extends UpdateCompanion<Download> {
     Value<int>? fromChapter,
     Value<int>? toChapter,
     Value<String>? format,
+    Value<bool>? withImages,
     Value<String?>? filePath,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
@@ -3194,6 +3242,7 @@ class DownloadsCompanion extends UpdateCompanion<Download> {
       fromChapter: fromChapter ?? this.fromChapter,
       toChapter: toChapter ?? this.toChapter,
       format: format ?? this.format,
+      withImages: withImages ?? this.withImages,
       filePath: filePath ?? this.filePath,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -3218,6 +3267,9 @@ class DownloadsCompanion extends UpdateCompanion<Download> {
     if (format.present) {
       map['format'] = Variable<String>(format.value);
     }
+    if (withImages.present) {
+      map['with_images'] = Variable<bool>(withImages.value);
+    }
     if (filePath.present) {
       map['file_path'] = Variable<String>(filePath.value);
     }
@@ -3238,6 +3290,7 @@ class DownloadsCompanion extends UpdateCompanion<Download> {
           ..write('fromChapter: $fromChapter, ')
           ..write('toChapter: $toChapter, ')
           ..write('format: $format, ')
+          ..write('withImages: $withImages, ')
           ..write('filePath: $filePath, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
@@ -6872,6 +6925,7 @@ typedef $$DownloadsTableCreateCompanionBuilder = DownloadsCompanion Function({
   required int fromChapter,
   required int toChapter,
   Value<String> format,
+  Value<bool> withImages,
   Value<String?> filePath,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
@@ -6882,6 +6936,7 @@ typedef $$DownloadsTableUpdateCompanionBuilder = DownloadsCompanion Function({
   Value<int> fromChapter,
   Value<int> toChapter,
   Value<String> format,
+  Value<bool> withImages,
   Value<String?> filePath,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
@@ -6935,6 +6990,11 @@ class $$DownloadsTableFilterComposer
 
   ColumnFilters<String> get format => $composableBuilder(
     column: $table.format,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get withImages => $composableBuilder(
+    column: $table.withImages,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -7006,6 +7066,11 @@ class $$DownloadsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get withImages => $composableBuilder(
+    column: $table.withImages,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get filePath => $composableBuilder(
     column: $table.filePath,
     builder: (column) => ColumnOrderings(column),
@@ -7067,6 +7132,11 @@ class $$DownloadsTableAnnotationComposer
 
   GeneratedColumn<String> get format =>
       $composableBuilder(column: $table.format, builder: (column) => column);
+
+  GeneratedColumn<bool> get withImages => $composableBuilder(
+    column: $table.withImages,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get filePath =>
       $composableBuilder(column: $table.filePath, builder: (column) => column);
@@ -7134,6 +7204,7 @@ class $$DownloadsTableTableManager
                 Value<int> fromChapter = const Value.absent(),
                 Value<int> toChapter = const Value.absent(),
                 Value<String> format = const Value.absent(),
+                Value<bool> withImages = const Value.absent(),
                 Value<String?> filePath = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
@@ -7143,6 +7214,7 @@ class $$DownloadsTableTableManager
                 fromChapter: fromChapter,
                 toChapter: toChapter,
                 format: format,
+                withImages: withImages,
                 filePath: filePath,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -7154,6 +7226,7 @@ class $$DownloadsTableTableManager
                 required int fromChapter,
                 required int toChapter,
                 Value<String> format = const Value.absent(),
+                Value<bool> withImages = const Value.absent(),
                 Value<String?> filePath = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
@@ -7163,6 +7236,7 @@ class $$DownloadsTableTableManager
                 fromChapter: fromChapter,
                 toChapter: toChapter,
                 format: format,
+                withImages: withImages,
                 filePath: filePath,
                 createdAt: createdAt,
                 updatedAt: updatedAt,

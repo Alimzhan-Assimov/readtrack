@@ -556,6 +556,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteDownload => 'Delete download';
 
   @override
+  String get downloadWithImages => 'Include images';
+
+  @override
+  String get downloadWithImagesHint =>
+      'Off: only the text is downloaded and saved, which uses less data and space.';
+
+  @override
+  String get downloadKeepsImages => 'Images are included, as in this download.';
+
+  @override
+  String get downloadKeepsNoImages => 'Without images, as in this download.';
+
+  @override
   String downloadIncomplete(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

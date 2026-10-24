@@ -14,7 +14,11 @@ class DownloadChoice {
     required this.to,
     this.appendTo,
     this.format = ExportFormat.txt,
+    this.withImages = true,
   });
+
+  /// False skips chapter images, to save data and space.
+  final bool withImages;
 
   final int from;
   final int to;
@@ -50,6 +54,7 @@ class _DownloadDialogState extends State<DownloadDialog> {
   List<Download> _downloads = const [];
   _Mode _mode = _Mode.newFile;
   ExportFormat _format = ExportFormat.epub;
+  bool _withImages = true;
 
   AppDatabase get _db => DatabaseScope.of(context);
 
@@ -122,7 +127,12 @@ class _DownloadDialogState extends State<DownloadDialog> {
     if (range != null) {
       Navigator.pop(
         context,
-        DownloadChoice(from: range.from, to: range.to, format: _format),
+        DownloadChoice(
+          from: range.from,
+          to: range.to,
+          format: _format,
+          withImages: _withImages,
+        ),
       );
     }
   }
@@ -220,7 +230,24 @@ class _DownloadDialogState extends State<DownloadDialog> {
                     ],
                   ),
                 ),
+                if (_mode == _Mode.append && latest != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      latest.withImages
+                          ? l10n.downloadKeepsImages
+                          : l10n.downloadKeepsNoImages,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ),
                 if (_mode == _Mode.newFile) ...[
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(l10n.downloadWithImages),
+                    subtitle: Text(l10n.downloadWithImagesHint),
+                    value: _withImages,
+                    onChanged: (v) => setState(() => _withImages = v),
+                  ),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: SegmentedButton<ExportFormat>(

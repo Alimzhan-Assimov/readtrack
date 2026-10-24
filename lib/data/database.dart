@@ -175,6 +175,9 @@ class Downloads extends Table {
   IntColumn get fromChapter => integer()();
   IntColumn get toChapter => integer()();
   TextColumn get format => text().withDefault(const Constant('txt'))();
+
+  /// False when chapter images were left out to save space.
+  BoolColumn get withImages => boolean().withDefault(const Constant(true))();
   TextColumn get filePath => text().nullable()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
@@ -234,7 +237,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -273,6 +276,9 @@ class AppDatabase extends _$AppDatabase {
         for (final w in await select(works).get()) {
           await fillMissingCounts(w.id);
         }
+      }
+      if (from < 9) {
+        await _addColumnIfMissing(m, downloads, downloads.withImages);
       }
     },
     beforeOpen: (details) async {

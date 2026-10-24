@@ -95,9 +95,11 @@ void main() {
   late LibraryStorage storage;
   late DownloadService service;
   late Work work;
+  late List<FakeFetcher> fetchers;
 
   setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
+    fetchers = [];
     final temp = Directory.systemTemp.createTempSync('readtrack_dl');
     addTearDown(() => temp.delete(recursive: true));
     storage = LibraryStorage(
@@ -108,8 +110,14 @@ void main() {
     service = DownloadService(
       db,
       storage,
-      openFetcherFor: (_) =>
-          FakeFetcher(const {}, bytes: {'https://fake.test/map.png': png}),
+      openFetcherFor: (_) {
+        final f = FakeFetcher(
+          const {},
+          bytes: {'https://fake.test/map.png': png},
+        );
+        fetchers.add(f);
+        return f;
+      },
     );
     final id = await db.saveWork(
       WorksCompanion.insert(
@@ -161,6 +169,51 @@ void main() {
       (await AppLog.open(dir).then((l) => l.startSession()))!
           .containsKey('download'),
       isFalse,
+    );
+  });
+
+  test('a download without images fetches and exports none', () async {
+    final result = await service.download(
+      work: work,
+      source: const _FakeSource(),
+      from: 1,
+      to: 2,
+      format: ExportFormat.html,
+      withImages: false,
+    );
+    expect(result.downloaded, 2);
+    expect(
+      fetchers.expand((f) => f.requests).where((r) => r.endsWith('.png')),
+      isEmpty,
+    );
+    expect(await result.file!.readAsString(), isNot(contains('<img')));
+    final download = (await db.downloadsOf(work.id)).single;
+    expect(download.withImages, isFalse);
+
+    // Extending keeps the choice even if the caller asks for images.
+    await service.download(
+      work: work,
+      source: const _FakeSource(),
+      from: 3,
+      to: 4,
+      appendTo: download,
+      withImages: true,
+    );
+    expect(
+      fetchers.expand((f) => f.requests).where((r) => r.endsWith('.png')),
+      isEmpty,
+    );
+    expect((await db.downloadsOf(work.id)).single.withImages, isFalse);
+  });
+
+  test('withoutImages drops images and the wrappers that only held them', () {
+    expect(
+      withoutImages(
+        '<p>a<img src="x.png" alt="y">b</p>'
+        '<figure><img src="z.jpg"><figcaption>Map</figcaption></figure>'
+        '<a href="big.png"><IMG SRC="small.png"></a><a href="/c">link</a>',
+      ),
+      '<p>ab</p><a href="/c">link</a>',
     );
   });
 
