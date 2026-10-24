@@ -1,8 +1,10 @@
 import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
+import 'package:flutter/painting.dart' show Color;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:readtrack/data/database.dart';
 import 'package:readtrack/ui/app_settings.dart';
+import 'package:readtrack/ui/fonts.dart';
 
 void main() {
   late AppDatabase db;
@@ -383,6 +385,60 @@ void main() {
     expect(
       (r.fontSize, r.font, r.lineHeight, r.theme, r.justify),
       (22.0, ReaderFont.mono, 1.9, ReaderTheme.sepia, true),
+    );
+  });
+
+  test('custom reader colors, font and width are stored and loaded', () async {
+    final settings = AppSettings(db);
+    await settings.setReader(
+      const ReaderPrefs(
+        theme: ReaderTheme.custom,
+        background: Color(0xFF102030),
+        textColor: Color(0xFFAABBCC),
+        fontFamily: 'Noto Serif',
+        textWidth: double.infinity,
+      ),
+    );
+    final again = AppSettings(db);
+    await again.load();
+    final r = again.reader;
+    expect(
+      (r.pageColor, r.inkColor, r.family, r.textWidth),
+      (
+        const Color(0xFF102030),
+        const Color(0xFFAABBCC),
+        'Noto Serif',
+        double.infinity,
+      ),
+    );
+
+    await again.setReader(r.copyWith(clearFontFamily: true, textWidth: 960));
+    await settings.load();
+    expect(
+      (settings.reader.family, settings.reader.textWidth),
+      (ReaderFont.serif.family, 960.0),
+    );
+  });
+
+  test('hex colors parse and print', () {
+    expect(parseHexColor('#1a2B3c'), const Color(0xFF1A2B3C));
+    expect(parseHexColor(' 801A2B3C '), const Color(0x801A2B3C));
+    expect(parseHexColor('#12345'), isNull);
+    expect(parseHexColor('red'), isNull);
+    expect(hexOfColor(const Color(0xFF1A2B3C)), '#1A2B3C');
+    expect(hexOfColor(const Color(0x801A2B3C)), '#801A2B3C');
+  });
+
+  test('font families are read from fc-list output', () {
+    expect(
+      parseFontFamilies(
+        'DejaVu Sans,DejaVu Sans Condensed\n'
+        'Noto Serif\n'
+        'DejaVu Sans\n'
+        'Fira Code,Fira Code Light\n'
+        'Source Code Pro\\-Bold\n\n',
+      ),
+      ['DejaVu Sans', 'Fira Code', 'Noto Serif', 'Source Code Pro-Bold'],
     );
   });
 }

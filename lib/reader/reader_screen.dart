@@ -444,7 +444,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
       child: Focus(
         autofocus: true,
         child: Scaffold(
-          backgroundColor: _prefs.theme.background,
+          backgroundColor: _prefs.pageColor,
           appBar: AppBar(
             title: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -576,7 +576,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                 );
               }
               final prefs = _prefs;
-              final textColor = prefs.theme.text ?? theme.colorScheme.onSurface;
+              final textColor = prefs.inkColor ?? theme.colorScheme.onSurface;
               return StreamBuilder<List<Annotation>>(
                 stream: _annotations,
                 builder: (context, annotationSnapshot) {
@@ -590,7 +590,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                     style: theme.textTheme.bodyLarge!.copyWith(
                       fontSize: prefs.fontSize,
                       height: prefs.lineHeight,
-                      fontFamily: prefs.font.family,
+                      fontFamily: prefs.family,
                       color: textColor,
                     ),
                     resolveImage: _resolveImage,
@@ -638,6 +638,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                           constraints.maxWidth,
                           top: 16,
                           bottom: 32,
+                          maxWidth: prefs.textWidth,
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -648,7 +649,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                                 loaded.title ?? '',
                                 style: theme.textTheme.headlineSmall?.copyWith(
                                   color: textColor,
-                                  fontFamily: prefs.font.family,
+                                  fontFamily: prefs.family,
                                 ),
                               ),
                             ),

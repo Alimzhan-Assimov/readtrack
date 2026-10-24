@@ -2314,6 +2314,78 @@ abstract class AppLocalizations {
   /// **'Justify text'**
   String get readerJustify;
 
+  /// No description provided for @readerThemeCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get readerThemeCustom;
+
+  /// No description provided for @readerBackgroundColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Background'**
+  String get readerBackgroundColor;
+
+  /// No description provided for @readerTextColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get readerTextColor;
+
+  /// No description provided for @readerHexInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Use #RRGGBB'**
+  String get readerHexInvalid;
+
+  /// No description provided for @readerTextWidth.
+  ///
+  /// In en, this message translates to:
+  /// **'Text width'**
+  String get readerTextWidth;
+
+  /// No description provided for @readerWidthFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Full'**
+  String get readerWidthFull;
+
+  /// No description provided for @readerWidthReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Default width'**
+  String get readerWidthReset;
+
+  /// No description provided for @readerFontOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other font…'**
+  String get readerFontOther;
+
+  /// No description provided for @readerFontPick.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a font'**
+  String get readerFontPick;
+
+  /// No description provided for @readerFontSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search or type a font name'**
+  String get readerFontSearch;
+
+  /// No description provided for @readerFontUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Use “{name}”'**
+  String readerFontUse(String name);
+
+  /// No description provided for @readerFontNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No installed fonts found. Type the name of a font.'**
+  String get readerFontNone;
+
   /// No description provided for @addBookmark.
   ///
   /// In en, this message translates to:

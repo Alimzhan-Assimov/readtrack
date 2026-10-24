@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../data/database.dart';
 import '../library/shelves.dart';
 import '../opds/opds.dart';
+import 'layout.dart';
 
 /// Reading modes for image chapters.
 enum MangaMode {
@@ -36,7 +37,10 @@ enum ReaderTheme {
   light(Color(0xFFFFFFFF), Color(0xFF1C1B1F)),
   sepia(Color(0xFFF4ECD8), Color(0xFF433422)),
   dark(Color(0xFF1E1E1E), Color(0xFFE0E0E0)),
-  black(Color(0xFF000000), Color(0xFFBDBDBD));
+  black(Color(0xFF000000), Color(0xFFBDBDBD)),
+
+  /// The user's own colors, see [ReaderPrefs.background].
+  custom(null, null);
 
   const ReaderTheme(this.background, this.text);
   final Color? background;
@@ -49,30 +53,78 @@ class ReaderPrefs {
   const ReaderPrefs({
     this.fontSize = 18,
     this.font = ReaderFont.serif,
+    this.fontFamily,
     this.lineHeight = 1.6,
     this.theme = ReaderTheme.app,
+    this.background = const Color(0xFFFAF3E0),
+    this.textColor = const Color(0xFF2B2B2B),
     this.justify = false,
+    this.textWidth = kReadableWidth,
   });
 
   final double fontSize;
   final ReaderFont font;
+
+  /// An installed font chosen by name; overrides [font].
+  final String? fontFamily;
   final double lineHeight;
   final ReaderTheme theme;
+
+  /// Colors of the [ReaderTheme.custom] theme.
+  final Color background;
+  final Color textColor;
   final bool justify;
+
+  /// Widest the text column gets; [double.infinity] uses the whole window.
+  final double textWidth;
+
+  /// Font family to use, or null for the platform default.
+  String? get family => fontFamily ?? font.family;
+
+  /// Page and text colors, or null to follow the app theme.
+  Color? get pageColor =>
+      theme == ReaderTheme.custom ? background : theme.background;
+  Color? get inkColor => theme == ReaderTheme.custom ? textColor : theme.text;
 
   ReaderPrefs copyWith({
     double? fontSize,
     ReaderFont? font,
+    String? fontFamily,
+    bool clearFontFamily = false,
     double? lineHeight,
     ReaderTheme? theme,
+    Color? background,
+    Color? textColor,
     bool? justify,
+    double? textWidth,
   }) => ReaderPrefs(
     fontSize: fontSize ?? this.fontSize,
     font: font ?? this.font,
+    fontFamily: clearFontFamily ? null : fontFamily ?? this.fontFamily,
     lineHeight: lineHeight ?? this.lineHeight,
     theme: theme ?? this.theme,
+    background: background ?? this.background,
+    textColor: textColor ?? this.textColor,
     justify: justify ?? this.justify,
+    textWidth: textWidth ?? this.textWidth,
   );
+}
+
+/// Parses "#RRGGBB", "RRGGBB" or "#AARRGGBB"; null if it isn't a color.
+Color? parseHexColor(String text) {
+  final hex = text.trim().replaceFirst('#', '');
+  if (!RegExp(r'^([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$').hasMatch(hex)) {
+    return null;
+  }
+  final value = int.parse(hex, radix: 16);
+  return Color(hex.length == 6 ? 0xFF000000 | value : value);
+}
+
+/// "#RRGGBB" for an opaque color, "#AARRGGBB" otherwise.
+String hexOfColor(Color color) {
+  final argb = color.toARGB32();
+  final hex = argb.toRadixString(16).padLeft(8, '0').toUpperCase();
+  return '#${argb >>> 24 == 0xFF ? hex.substring(2) : hex}';
 }
 
 /// App-wide settings, stored in the database. Screens rebuild when they
@@ -204,6 +256,10 @@ class AppSettings extends ChangeNotifier {
     lineHeight: 'reader.lineHeight',
     theme: 'reader.theme',
     justify: 'reader.justify',
+    family: 'reader.family',
+    background: 'reader.background',
+    textColor: 'reader.textColor',
+    width: 'reader.width',
   );
 
   ReaderPrefs get reader => _reader;
@@ -216,6 +272,13 @@ class AppSettings extends ChangeNotifier {
     await _db.setSetting(_readerKeys.lineHeight, '${prefs.lineHeight}');
     await _db.setSetting(_readerKeys.theme, prefs.theme.name);
     await _db.setSetting(_readerKeys.justify, '${prefs.justify}');
+    await _db.setSetting(_readerKeys.family, prefs.fontFamily ?? '');
+    await _db.setSetting(_readerKeys.background, hexOfColor(prefs.background));
+    await _db.setSetting(_readerKeys.textColor, hexOfColor(prefs.textColor));
+    await _db.setSetting(
+      _readerKeys.width,
+      prefs.textWidth.isFinite ? '${prefs.textWidth}' : 'full',
+    );
   }
 
   /// Whether tags marked as 18+ are hidden everywhere in the app.
@@ -273,6 +336,20 @@ class AppSettings extends ChangeNotifier {
         defaults.theme,
       ),
       justify: await _db.setting(_readerKeys.justify) == 'true',
+      fontFamily: switch (await _db.setting(_readerKeys.family)) {
+        final f? when f.isNotEmpty => f,
+        _ => null,
+      },
+      background:
+          parseHexColor(await _db.setting(_readerKeys.background) ?? '') ??
+          defaults.background,
+      textColor:
+          parseHexColor(await _db.setting(_readerKeys.textColor) ?? '') ??
+          defaults.textColor,
+      textWidth: switch (await _db.setting(_readerKeys.width)) {
+        'full' => double.infinity,
+        final w => double.tryParse(w ?? '') ?? defaults.textWidth,
+      },
     );
     notifyListeners();
   }

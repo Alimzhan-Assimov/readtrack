@@ -1528,6 +1528,45 @@ class AppLocalizationsEn extends AppLocalizations {
   String get readerJustify => 'Justify text';
 
   @override
+  String get readerThemeCustom => 'Custom';
+
+  @override
+  String get readerBackgroundColor => 'Background';
+
+  @override
+  String get readerTextColor => 'Text';
+
+  @override
+  String get readerHexInvalid => 'Use #RRGGBB';
+
+  @override
+  String get readerTextWidth => 'Text width';
+
+  @override
+  String get readerWidthFull => 'Full';
+
+  @override
+  String get readerWidthReset => 'Default width';
+
+  @override
+  String get readerFontOther => 'Other font…';
+
+  @override
+  String get readerFontPick => 'Choose a font';
+
+  @override
+  String get readerFontSearch => 'Search or type a font name';
+
+  @override
+  String readerFontUse(String name) {
+    return 'Use “$name”';
+  }
+
+  @override
+  String get readerFontNone =>
+      'No installed fonts found. Type the name of a font.';
+
+  @override
   String get addBookmark => 'Add bookmark';
 
   @override
