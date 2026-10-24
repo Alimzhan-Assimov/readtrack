@@ -93,6 +93,15 @@ class FanFictionNetSource extends StorySource {
     final image = profile.querySelector('img.cimage')?.attributes['src'];
     final storyId = RegExp(r'^/s/(\d+)').firstMatch(storyUrl.path)!.group(1);
 
+    final category = textOf(
+      doc.querySelectorAll('#pre_story_links a').lastOrNull,
+    );
+    // "Naruto + Harry Potter Crossover"
+    final crossover = switch (RegExp(r'^(.+?) \+ (.+) Crossover$')
+        .firstMatch(category ?? '')) {
+      final m? => (m.group(1)!, m.group(2)!),
+      null => null,
+    };
     return StoryInfo(
       url: storyUrl,
       siteName: name,
@@ -105,15 +114,33 @@ class FanFictionNetSource extends StorySource {
           // "/image/123/75/" is a thumbnail; 180 is the largest size.
           : storyUrl.resolve(image.replaceFirst(RegExp(r'/75/$'), '/180/')),
       // FictionPress shows a genre category here instead of a fandom.
-      fandom: _type == WorkType.fanfiction
-          ? textOf(doc.querySelectorAll('#pre_story_links a').lastOrNull)
-          : null,
+      fandom: crossover?.$1 ?? (_type == WorkType.fanfiction ? category : null),
+      crossovers: [?crossover?.$2],
       tags: genres,
       pairings: _pairings(segments),
+      characters: _characters(segments),
       wordCount: parseCount(field('Words')),
       isComplete: field('Status') == 'Complete',
       chapters: _chapters(doc, storyId!, title),
     );
+  }
+
+  /// "Rated: T - English - Romance/Humor - [Naruto U., Hinata H.] Neji H. -
+  /// Chapters: …": the segment after language and genres, if any.
+  static List<String> _characters(List<String> segments) {
+    for (final segment in segments.skip(2).take(3)) {
+      if (segment.contains(':')) break;
+      final isGenres = segment
+          .split('/')
+          .every((part) => _genres.any((g) => g.split('/').contains(part)));
+      if (isGenres) continue;
+      return [
+        for (final name
+            in segment.replaceAll(RegExp(r'[\[\]]'), ',').split(','))
+          if (name.trim().isNotEmpty) name.trim(),
+      ];
+    }
+    return const [];
   }
 
   /// The characters segment marks pairings with brackets:

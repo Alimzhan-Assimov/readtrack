@@ -4,6 +4,7 @@ import 'package:drift/drift.dart' show Value;
 
 import '../data/database.dart';
 import '../sources/html_clean.dart';
+import 'keyword_tags.dart';
 import '../sources/sources.dart';
 
 /// Loads a story's details from its site, opening and closing the fetcher.
@@ -165,15 +166,68 @@ Future<int> addStory(
       wordCount: Value(info.wordCount),
       pageCount: Value(info.pageCount),
       characterCount: Value(info.characterCount),
+      seriesIndex: Value(info.series?.index),
       checkedAt: Value(now ?? DateTime.now()),
       lastChapterAt: Value(info.updatedOn),
     ),
     fandomName: info.fandom,
+    seriesName: info.series?.name,
+    crossoverNames: info.crossovers,
+    characterNames: info.characters,
     tagNames: info.tags,
     pairingNames: info.pairings,
     adultTags: info.adultTags,
   );
   await db.saveChapterList(id, chapterListing(info));
   await db.fillMissingCounts(id);
+  await suggestKeywordTags(db, id, '${info.title}\n${info.summary ?? ''}');
   return id;
+}
+
+/// Proposes default tags whose keywords appear in [text] (a title and
+/// summary), with the English reason. Returns how many are new.
+Future<int> suggestKeywordTags(AppDatabase db, int workId, String text) =>
+    db.suggestTags(workId, {
+      for (final MapEntry(key: tag, value: word) in keywordTags(text).entries)
+        tag: 'The summary mentions “$word”',
+    });
+
+/// Adds [fresh] chapters after the known ones (e.g. from a site's feed) and
+/// counts them as new; records the check either way.
+Future<void> appendChapters(
+  AppDatabase db,
+  Work work,
+  List<ChapterRef> fresh, {
+  DateTime? lastChapterAt,
+  DateTime? now,
+}) async {
+  final time = now ?? DateTime.now();
+  final last = (await db.chaptersOf(work.id)).lastOrNull?.number ?? 0;
+  await db.saveChapterList(work.id, [
+    for (final (i, c) in fresh.indexed)
+      (
+        number: last + i + 1,
+        title: c.title,
+        url: c.url.toString(),
+        locked: c.locked,
+      ),
+  ]);
+  final unseen = (await db.workById(work.id))?.newChapters ?? 0;
+  await db.updateWork(
+    work.id,
+    WorksCompanion(
+      checkedAt: Value(time),
+      chapterCount: fresh.isEmpty
+          ? const Value.absent()
+          : Value(last + fresh.length),
+      newChapters: fresh.isEmpty
+          ? const Value.absent()
+          : Value(unseen + fresh.length),
+      lastChapterAt: fresh.isEmpty
+          ? const Value.absent()
+          : Value(lastChapterAt ?? time),
+    ),
+    touch: false,
+  );
+  if (fresh.isNotEmpty) await db.fillMissingCounts(work.id);
 }

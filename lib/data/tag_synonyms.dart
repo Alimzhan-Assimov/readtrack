@@ -1,0 +1,26 @@
+/// Spellings of common tags that mean the same, mapped to the name used in
+/// [kDefaultTags]. Keys are lowercase. Users add their own by merging tags.
+const kTagSynonyms = {
+  'harem fic': 'Harem',
+  'harem fanfic': 'Harem',
+  'slowburn': 'Slow Burn',
+  'slow-burn': 'Slow Burn',
+  'slow build': 'Slow Burn',
+  'au': 'Alternate Universe',
+  'alternate universe - canon divergence': 'Alternate Universe',
+  'alt universe': 'Alternate Universe',
+  'op': 'Overpowered',
+  'op mc': 'Overpowered',
+  'overpowered protagonist': 'Overpowered',
+  'overpowered main character': 'Overpowered',
+  'fix it': 'Fix-it',
+  'fix-it fic': 'Fix-it',
+  'timetravel': 'Time Travel',
+  'time-travel': 'Time Travel',
+  'reincarnated': 'Reincarnation',
+  'humour': 'Humor',
+  'hurt comfort': 'Hurt/Comfort',
+  'hurt & comfort': 'Hurt/Comfort',
+  'slice-of-life': 'Slice of Life',
+  'kingdom-building': 'Kingdom Building',
+};
