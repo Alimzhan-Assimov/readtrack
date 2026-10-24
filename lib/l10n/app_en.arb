@@ -329,6 +329,33 @@
     }
   },
   "deleteDownload": "Delete download",
+  "ownsPaperCopy": "I also own it on paper",
+  "paperCopy": "Paper copy",
+  "mergeTagInto": "Merge into another tag…",
+  "mergeTagTitle": "Merge “{name}” into",
+  "@mergeTagTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "tagAlsoCalled": "Also: {names}",
+  "@tagAlsoCalled": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "removeSynonym": "Forget “{name}”",
+  "@removeSynonym": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "sectionCharacters": "Characters",
   "addCharacter": "Add a character",
   "addCharacterHint": "e.g. Fujiwara Chika",

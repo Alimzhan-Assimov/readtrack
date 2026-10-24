@@ -982,6 +982,42 @@ abstract class AppLocalizations {
   /// **'Delete download'**
   String get deleteDownload;
 
+  /// No description provided for @ownsPaperCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'I also own it on paper'**
+  String get ownsPaperCopy;
+
+  /// No description provided for @paperCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Paper copy'**
+  String get paperCopy;
+
+  /// No description provided for @mergeTagInto.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge into another tag…'**
+  String get mergeTagInto;
+
+  /// No description provided for @mergeTagTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge “{name}” into'**
+  String mergeTagTitle(String name);
+
+  /// No description provided for @tagAlsoCalled.
+  ///
+  /// In en, this message translates to:
+  /// **'Also: {names}'**
+  String tagAlsoCalled(String names);
+
+  /// No description provided for @removeSynonym.
+  ///
+  /// In en, this message translates to:
+  /// **'Forget “{name}”'**
+  String removeSynonym(String name);
+
   /// No description provided for @sectionCharacters.
   ///
   /// In en, this message translates to:

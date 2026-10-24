@@ -586,6 +586,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteDownload => 'Delete download';
 
   @override
+  String get ownsPaperCopy => 'I also own it on paper';
+
+  @override
+  String get paperCopy => 'Paper copy';
+
+  @override
+  String get mergeTagInto => 'Merge into another tag…';
+
+  @override
+  String mergeTagTitle(String name) {
+    return 'Merge “$name” into';
+  }
+
+  @override
+  String tagAlsoCalled(String names) {
+    return 'Also: $names';
+  }
+
+  @override
+  String removeSynonym(String name) {
+    return 'Forget “$name”';
+  }
+
+  @override
   String get sectionCharacters => 'Characters';
 
   @override

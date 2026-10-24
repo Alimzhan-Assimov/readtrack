@@ -24,6 +24,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final _search = TextEditingController();
   late Stream<List<Tag>> _tags;
+  late Stream<Map<int, List<String>>> _synonyms;
   late Stream<List<Work>> _trash;
 
   AppDatabase get _db => DatabaseScope.of(context);
@@ -32,10 +33,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _tags = _db.watchAllTags();
+    _synonyms = _db.watchTagSynonyms();
     _trash = _db.watchTrash();
   }
 
   bool _busy = false;
+
+  /// Merges [tag] into another one the user picks.
+  Future<void> _mergeTag(Tag tag, List<Tag> all) async {
+    final l10n = context.l10n;
+    final into = await showDialog<Tag>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: Text(l10n.mergeTagTitle(tag.name)),
+        children: [
+          for (final t in all)
+            if (t.id != tag.id)
+              SimpleDialogOption(
+                onPressed: () => Navigator.pop(context, t),
+                child: Text(t.name),
+              ),
+        ],
+      ),
+    );
+    if (into != null) await _db.mergeTag(tag.id, into.id);
+  }
 
   Future<void> _createBackup() async {
     final l10n = context.l10n;
@@ -230,16 +252,56 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const SizedBox(height: 8),
                 if (tags.isEmpty)
                   ListTile(enabled: false, title: Text(l10n.pickerEmpty)),
-                for (final tag in tags)
-                  CheckboxListTile(
-                    contentPadding: EdgeInsets.zero,
-                    controlAffinity: ListTileControlAffinity.leading,
-                    title: Text(tag.name),
-                    secondary: tag.isAdult ? const Text('18+') : null,
-                    value: tag.isAdult,
-                    onChanged: (adult) =>
-                        _db.setTagAdult(tag.id, adult ?? false),
-                  ),
+                StreamBuilder<Map<int, List<String>>>(
+                  stream: _synonyms,
+                  builder: (context, synonymSnapshot) {
+                    final synonyms = synonymSnapshot.data ?? const {};
+                    return Column(
+                      children: [
+                        for (final tag in tags)
+                          CheckboxListTile(
+                            contentPadding: EdgeInsets.zero,
+                            controlAffinity: ListTileControlAffinity.leading,
+                            title: Text(tag.name),
+                            subtitle: synonyms[tag.id] == null
+                                ? null
+                                : Text(
+                                    l10n.tagAlsoCalled(
+                                      synonyms[tag.id]!.join(', '),
+                                    ),
+                                  ),
+                            secondary: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (tag.isAdult) const Text('18+'),
+                                PopupMenuButton<String>(
+                                  tooltip: l10n.moreOptions,
+                                  onSelected: (action) => action == 'merge'
+                                      ? _mergeTag(tag, snapshot.data!)
+                                      : _db.removeTagSynonym(action),
+                                  itemBuilder: (context) => [
+                                    PopupMenuItem(
+                                      value: 'merge',
+                                      child: Text(l10n.mergeTagInto),
+                                    ),
+                                    for (final s
+                                        in synonyms[tag.id] ?? const [])
+                                      PopupMenuItem(
+                                        value: s,
+                                        child: Text(l10n.removeSynonym(s)),
+                                      ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            value: tag.isAdult,
+                            onChanged: (adult) =>
+                                _db.setTagAdult(tag.id, adult ?? false),
+                          ),
+                      ],
+                    );
+                  },
+                ),
               ],
             );
           },

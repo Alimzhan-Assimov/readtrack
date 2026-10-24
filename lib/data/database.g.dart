@@ -3,6 +3,467 @@
 part of 'database.dart';
 
 // ignore_for_file: type=lint
+class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TagsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _isAdultMeta = const VerificationMeta(
+    'isAdult',
+  );
+  @override
+  late final GeneratedColumn<bool> isAdult = GeneratedColumn<bool>(
+    'is_adult',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_adult" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, name, isAdult];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'tags';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Tag> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('is_adult')) {
+      context.handle(
+        _isAdultMeta,
+        isAdult.isAcceptableOrUnknown(data['is_adult']!, _isAdultMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Tag map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Tag(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      isAdult: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_adult'],
+      )!,
+    );
+  }
+
+  @override
+  $TagsTable createAlias(String alias) {
+    return $TagsTable(attachedDatabase, alias);
+  }
+}
+
+class Tag extends DataClass implements Insertable<Tag> {
+  final int id;
+  final String name;
+
+  /// Adult content; hidden when the "hide 18+ tags" setting is on.
+  final bool isAdult;
+  const Tag({required this.id, required this.name, required this.isAdult});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['is_adult'] = Variable<bool>(isAdult);
+    return map;
+  }
+
+  TagsCompanion toCompanion(bool nullToAbsent) {
+    return TagsCompanion(
+      id: Value(id),
+      name: Value(name),
+      isAdult: Value(isAdult),
+    );
+  }
+
+  factory Tag.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Tag(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      isAdult: serializer.fromJson<bool>(json['isAdult']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'isAdult': serializer.toJson<bool>(isAdult),
+    };
+  }
+
+  Tag copyWith({int? id, String? name, bool? isAdult}) => Tag(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    isAdult: isAdult ?? this.isAdult,
+  );
+  Tag copyWithCompanion(TagsCompanion data) {
+    return Tag(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      isAdult: data.isAdult.present ? data.isAdult.value : this.isAdult,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Tag(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('isAdult: $isAdult')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name, isAdult);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Tag &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.isAdult == this.isAdult);
+}
+
+class TagsCompanion extends UpdateCompanion<Tag> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<bool> isAdult;
+  const TagsCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.isAdult = const Value.absent(),
+  });
+  TagsCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.isAdult = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<Tag> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<bool>? isAdult,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (isAdult != null) 'is_adult': isAdult,
+    });
+  }
+
+  TagsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<bool>? isAdult,
+  }) {
+    return TagsCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      isAdult: isAdult ?? this.isAdult,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (isAdult.present) {
+      map['is_adult'] = Variable<bool>(isAdult.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TagsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('isAdult: $isAdult')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $TagSynonymsTable extends TagSynonyms
+    with TableInfo<$TagSynonymsTable, TagSynonym> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TagSynonymsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _synonymMeta = const VerificationMeta(
+    'synonym',
+  );
+  @override
+  late final GeneratedColumn<String> synonym = GeneratedColumn<String>(
+    'synonym',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _tagIdMeta = const VerificationMeta('tagId');
+  @override
+  late final GeneratedColumn<int> tagId = GeneratedColumn<int>(
+    'tag_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES tags (id) ON DELETE CASCADE',
+    ),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [synonym, tagId];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'tag_synonyms';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TagSynonym> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('synonym')) {
+      context.handle(
+        _synonymMeta,
+        synonym.isAcceptableOrUnknown(data['synonym']!, _synonymMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_synonymMeta);
+    }
+    if (data.containsKey('tag_id')) {
+      context.handle(
+        _tagIdMeta,
+        tagId.isAcceptableOrUnknown(data['tag_id']!, _tagIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_tagIdMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {synonym};
+  @override
+  TagSynonym map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TagSynonym(
+      synonym: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}synonym'],
+      )!,
+      tagId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}tag_id'],
+      )!,
+    );
+  }
+
+  @override
+  $TagSynonymsTable createAlias(String alias) {
+    return $TagSynonymsTable(attachedDatabase, alias);
+  }
+}
+
+class TagSynonym extends DataClass implements Insertable<TagSynonym> {
+  /// Lowercase.
+  final String synonym;
+  final int tagId;
+  const TagSynonym({required this.synonym, required this.tagId});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['synonym'] = Variable<String>(synonym);
+    map['tag_id'] = Variable<int>(tagId);
+    return map;
+  }
+
+  TagSynonymsCompanion toCompanion(bool nullToAbsent) {
+    return TagSynonymsCompanion(synonym: Value(synonym), tagId: Value(tagId));
+  }
+
+  factory TagSynonym.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TagSynonym(
+      synonym: serializer.fromJson<String>(json['synonym']),
+      tagId: serializer.fromJson<int>(json['tagId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'synonym': serializer.toJson<String>(synonym),
+      'tagId': serializer.toJson<int>(tagId),
+    };
+  }
+
+  TagSynonym copyWith({String? synonym, int? tagId}) =>
+      TagSynonym(synonym: synonym ?? this.synonym, tagId: tagId ?? this.tagId);
+  TagSynonym copyWithCompanion(TagSynonymsCompanion data) {
+    return TagSynonym(
+      synonym: data.synonym.present ? data.synonym.value : this.synonym,
+      tagId: data.tagId.present ? data.tagId.value : this.tagId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TagSynonym(')
+          ..write('synonym: $synonym, ')
+          ..write('tagId: $tagId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(synonym, tagId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TagSynonym &&
+          other.synonym == this.synonym &&
+          other.tagId == this.tagId);
+}
+
+class TagSynonymsCompanion extends UpdateCompanion<TagSynonym> {
+  final Value<String> synonym;
+  final Value<int> tagId;
+  final Value<int> rowid;
+  const TagSynonymsCompanion({
+    this.synonym = const Value.absent(),
+    this.tagId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TagSynonymsCompanion.insert({
+    required String synonym,
+    required int tagId,
+    this.rowid = const Value.absent(),
+  }) : synonym = Value(synonym),
+       tagId = Value(tagId);
+  static Insertable<TagSynonym> custom({
+    Expression<String>? synonym,
+    Expression<int>? tagId,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (synonym != null) 'synonym': synonym,
+      if (tagId != null) 'tag_id': tagId,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TagSynonymsCompanion copyWith({
+    Value<String>? synonym,
+    Value<int>? tagId,
+    Value<int>? rowid,
+  }) {
+    return TagSynonymsCompanion(
+      synonym: synonym ?? this.synonym,
+      tagId: tagId ?? this.tagId,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (synonym.present) {
+      map['synonym'] = Variable<String>(synonym.value);
+    }
+    if (tagId.present) {
+      map['tag_id'] = Variable<int>(tagId.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TagSynonymsCompanion(')
+          ..write('synonym: $synonym, ')
+          ..write('tagId: $tagId, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $FandomsTable extends Fandoms with TableInfo<$FandomsTable, Fandom> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -1204,6 +1665,21 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _ownsPhysicalCopyMeta = const VerificationMeta(
+    'ownsPhysicalCopy',
+  );
+  @override
+  late final GeneratedColumn<bool> ownsPhysicalCopy = GeneratedColumn<bool>(
+    'owns_physical_copy',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("owns_physical_copy" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _seriesIdMeta = const VerificationMeta(
     'seriesId',
   );
@@ -1299,6 +1775,7 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
     newChapters,
     deletedAt,
     finishedAt,
+    ownsPhysicalCopy,
     seriesId,
     seriesIndex,
     wordsEstimated,
@@ -1472,6 +1949,15 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
         finishedAt.isAcceptableOrUnknown(data['finished_at']!, _finishedAtMeta),
       );
     }
+    if (data.containsKey('owns_physical_copy')) {
+      context.handle(
+        _ownsPhysicalCopyMeta,
+        ownsPhysicalCopy.isAcceptableOrUnknown(
+          data['owns_physical_copy']!,
+          _ownsPhysicalCopyMeta,
+        ),
+      );
+    }
     if (data.containsKey('series_id')) {
       context.handle(
         _seriesIdMeta,
@@ -1637,6 +2123,10 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}finished_at'],
       ),
+      ownsPhysicalCopy: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}owns_physical_copy'],
+      )!,
       seriesId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}series_id'],
@@ -1720,6 +2210,9 @@ class Work extends DataClass implements Insertable<Work> {
 
   /// When the status last became "finished" (kept by a trigger).
   final DateTime? finishedAt;
+
+  /// The user also has the book on paper (for digital or online entries).
+  final bool ownsPhysicalCopy;
   final int? seriesId;
 
   /// Position in the series; may be fractional (2.5 for a side story).
@@ -1760,6 +2253,7 @@ class Work extends DataClass implements Insertable<Work> {
     required this.newChapters,
     this.deletedAt,
     this.finishedAt,
+    required this.ownsPhysicalCopy,
     this.seriesId,
     this.seriesIndex,
     required this.wordsEstimated,
@@ -1842,6 +2336,7 @@ class Work extends DataClass implements Insertable<Work> {
     if (!nullToAbsent || finishedAt != null) {
       map['finished_at'] = Variable<DateTime>(finishedAt);
     }
+    map['owns_physical_copy'] = Variable<bool>(ownsPhysicalCopy);
     if (!nullToAbsent || seriesId != null) {
       map['series_id'] = Variable<int>(seriesId);
     }
@@ -1919,6 +2414,7 @@ class Work extends DataClass implements Insertable<Work> {
       finishedAt: finishedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(finishedAt),
+      ownsPhysicalCopy: Value(ownsPhysicalCopy),
       seriesId: seriesId == null && nullToAbsent
           ? const Value.absent()
           : Value(seriesId),
@@ -1972,6 +2468,7 @@ class Work extends DataClass implements Insertable<Work> {
       newChapters: serializer.fromJson<int>(json['newChapters']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
       finishedAt: serializer.fromJson<DateTime?>(json['finishedAt']),
+      ownsPhysicalCopy: serializer.fromJson<bool>(json['ownsPhysicalCopy']),
       seriesId: serializer.fromJson<int?>(json['seriesId']),
       seriesIndex: serializer.fromJson<double?>(json['seriesIndex']),
       wordsEstimated: serializer.fromJson<bool>(json['wordsEstimated']),
@@ -2016,6 +2513,7 @@ class Work extends DataClass implements Insertable<Work> {
       'newChapters': serializer.toJson<int>(newChapters),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
       'finishedAt': serializer.toJson<DateTime?>(finishedAt),
+      'ownsPhysicalCopy': serializer.toJson<bool>(ownsPhysicalCopy),
       'seriesId': serializer.toJson<int?>(seriesId),
       'seriesIndex': serializer.toJson<double?>(seriesIndex),
       'wordsEstimated': serializer.toJson<bool>(wordsEstimated),
@@ -2052,6 +2550,7 @@ class Work extends DataClass implements Insertable<Work> {
     int? newChapters,
     Value<DateTime?> deletedAt = const Value.absent(),
     Value<DateTime?> finishedAt = const Value.absent(),
+    bool? ownsPhysicalCopy,
     Value<int?> seriesId = const Value.absent(),
     Value<double?> seriesIndex = const Value.absent(),
     bool? wordsEstimated,
@@ -2089,6 +2588,7 @@ class Work extends DataClass implements Insertable<Work> {
     newChapters: newChapters ?? this.newChapters,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
     finishedAt: finishedAt.present ? finishedAt.value : this.finishedAt,
+    ownsPhysicalCopy: ownsPhysicalCopy ?? this.ownsPhysicalCopy,
     seriesId: seriesId.present ? seriesId.value : this.seriesId,
     seriesIndex: seriesIndex.present ? seriesIndex.value : this.seriesIndex,
     wordsEstimated: wordsEstimated ?? this.wordsEstimated,
@@ -2140,6 +2640,9 @@ class Work extends DataClass implements Insertable<Work> {
       finishedAt: data.finishedAt.present
           ? data.finishedAt.value
           : this.finishedAt,
+      ownsPhysicalCopy: data.ownsPhysicalCopy.present
+          ? data.ownsPhysicalCopy.value
+          : this.ownsPhysicalCopy,
       seriesId: data.seriesId.present ? data.seriesId.value : this.seriesId,
       seriesIndex: data.seriesIndex.present
           ? data.seriesIndex.value
@@ -2186,6 +2689,7 @@ class Work extends DataClass implements Insertable<Work> {
           ..write('newChapters: $newChapters, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('finishedAt: $finishedAt, ')
+          ..write('ownsPhysicalCopy: $ownsPhysicalCopy, ')
           ..write('seriesId: $seriesId, ')
           ..write('seriesIndex: $seriesIndex, ')
           ..write('wordsEstimated: $wordsEstimated, ')
@@ -2224,6 +2728,7 @@ class Work extends DataClass implements Insertable<Work> {
     newChapters,
     deletedAt,
     finishedAt,
+    ownsPhysicalCopy,
     seriesId,
     seriesIndex,
     wordsEstimated,
@@ -2261,6 +2766,7 @@ class Work extends DataClass implements Insertable<Work> {
           other.newChapters == this.newChapters &&
           other.deletedAt == this.deletedAt &&
           other.finishedAt == this.finishedAt &&
+          other.ownsPhysicalCopy == this.ownsPhysicalCopy &&
           other.seriesId == this.seriesId &&
           other.seriesIndex == this.seriesIndex &&
           other.wordsEstimated == this.wordsEstimated &&
@@ -2296,6 +2802,7 @@ class WorksCompanion extends UpdateCompanion<Work> {
   final Value<int> newChapters;
   final Value<DateTime?> deletedAt;
   final Value<DateTime?> finishedAt;
+  final Value<bool> ownsPhysicalCopy;
   final Value<int?> seriesId;
   final Value<double?> seriesIndex;
   final Value<bool> wordsEstimated;
@@ -2329,6 +2836,7 @@ class WorksCompanion extends UpdateCompanion<Work> {
     this.newChapters = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.finishedAt = const Value.absent(),
+    this.ownsPhysicalCopy = const Value.absent(),
     this.seriesId = const Value.absent(),
     this.seriesIndex = const Value.absent(),
     this.wordsEstimated = const Value.absent(),
@@ -2363,6 +2871,7 @@ class WorksCompanion extends UpdateCompanion<Work> {
     this.newChapters = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.finishedAt = const Value.absent(),
+    this.ownsPhysicalCopy = const Value.absent(),
     this.seriesId = const Value.absent(),
     this.seriesIndex = const Value.absent(),
     this.wordsEstimated = const Value.absent(),
@@ -2399,6 +2908,7 @@ class WorksCompanion extends UpdateCompanion<Work> {
     Expression<int>? newChapters,
     Expression<DateTime>? deletedAt,
     Expression<DateTime>? finishedAt,
+    Expression<bool>? ownsPhysicalCopy,
     Expression<int>? seriesId,
     Expression<double>? seriesIndex,
     Expression<bool>? wordsEstimated,
@@ -2433,6 +2943,7 @@ class WorksCompanion extends UpdateCompanion<Work> {
       if (newChapters != null) 'new_chapters': newChapters,
       if (deletedAt != null) 'deleted_at': deletedAt,
       if (finishedAt != null) 'finished_at': finishedAt,
+      if (ownsPhysicalCopy != null) 'owns_physical_copy': ownsPhysicalCopy,
       if (seriesId != null) 'series_id': seriesId,
       if (seriesIndex != null) 'series_index': seriesIndex,
       if (wordsEstimated != null) 'words_estimated': wordsEstimated,
@@ -2469,6 +2980,7 @@ class WorksCompanion extends UpdateCompanion<Work> {
     Value<int>? newChapters,
     Value<DateTime?>? deletedAt,
     Value<DateTime?>? finishedAt,
+    Value<bool>? ownsPhysicalCopy,
     Value<int?>? seriesId,
     Value<double?>? seriesIndex,
     Value<bool>? wordsEstimated,
@@ -2503,6 +3015,7 @@ class WorksCompanion extends UpdateCompanion<Work> {
       newChapters: newChapters ?? this.newChapters,
       deletedAt: deletedAt ?? this.deletedAt,
       finishedAt: finishedAt ?? this.finishedAt,
+      ownsPhysicalCopy: ownsPhysicalCopy ?? this.ownsPhysicalCopy,
       seriesId: seriesId ?? this.seriesId,
       seriesIndex: seriesIndex ?? this.seriesIndex,
       wordsEstimated: wordsEstimated ?? this.wordsEstimated,
@@ -2601,6 +3114,9 @@ class WorksCompanion extends UpdateCompanion<Work> {
     if (finishedAt.present) {
       map['finished_at'] = Variable<DateTime>(finishedAt.value);
     }
+    if (ownsPhysicalCopy.present) {
+      map['owns_physical_copy'] = Variable<bool>(ownsPhysicalCopy.value);
+    }
     if (seriesId.present) {
       map['series_id'] = Variable<int>(seriesId.value);
     }
@@ -2649,6 +3165,7 @@ class WorksCompanion extends UpdateCompanion<Work> {
           ..write('newChapters: $newChapters, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('finishedAt: $finishedAt, ')
+          ..write('ownsPhysicalCopy: $ownsPhysicalCopy, ')
           ..write('seriesId: $seriesId, ')
           ..write('seriesIndex: $seriesIndex, ')
           ..write('wordsEstimated: $wordsEstimated, ')
@@ -3842,253 +4359,6 @@ class ReadingDaysCompanion extends UpdateCompanion<ReadingDay> {
           ..write('words: $words, ')
           ..write('chapters: $chapters, ')
           ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $TagsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-    'id',
-    aliasedName,
-    false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
-  );
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
-  @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-    'name',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
-  );
-  static const VerificationMeta _isAdultMeta = const VerificationMeta(
-    'isAdult',
-  );
-  @override
-  late final GeneratedColumn<bool> isAdult = GeneratedColumn<bool>(
-    'is_adult',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("is_adult" IN (0, 1))',
-    ),
-    defaultValue: const Constant(false),
-  );
-  @override
-  List<GeneratedColumn> get $columns => [id, name, isAdult];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'tags';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<Tag> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('name')) {
-      context.handle(
-        _nameMeta,
-        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_nameMeta);
-    }
-    if (data.containsKey('is_adult')) {
-      context.handle(
-        _isAdultMeta,
-        isAdult.isAcceptableOrUnknown(data['is_adult']!, _isAdultMeta),
-      );
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  Tag map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Tag(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}id'],
-      )!,
-      name: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}name'],
-      )!,
-      isAdult: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}is_adult'],
-      )!,
-    );
-  }
-
-  @override
-  $TagsTable createAlias(String alias) {
-    return $TagsTable(attachedDatabase, alias);
-  }
-}
-
-class Tag extends DataClass implements Insertable<Tag> {
-  final int id;
-  final String name;
-
-  /// Adult content; hidden when the "hide 18+ tags" setting is on.
-  final bool isAdult;
-  const Tag({required this.id, required this.name, required this.isAdult});
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['name'] = Variable<String>(name);
-    map['is_adult'] = Variable<bool>(isAdult);
-    return map;
-  }
-
-  TagsCompanion toCompanion(bool nullToAbsent) {
-    return TagsCompanion(
-      id: Value(id),
-      name: Value(name),
-      isAdult: Value(isAdult),
-    );
-  }
-
-  factory Tag.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Tag(
-      id: serializer.fromJson<int>(json['id']),
-      name: serializer.fromJson<String>(json['name']),
-      isAdult: serializer.fromJson<bool>(json['isAdult']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
-      'name': serializer.toJson<String>(name),
-      'isAdult': serializer.toJson<bool>(isAdult),
-    };
-  }
-
-  Tag copyWith({int? id, String? name, bool? isAdult}) => Tag(
-    id: id ?? this.id,
-    name: name ?? this.name,
-    isAdult: isAdult ?? this.isAdult,
-  );
-  Tag copyWithCompanion(TagsCompanion data) {
-    return Tag(
-      id: data.id.present ? data.id.value : this.id,
-      name: data.name.present ? data.name.value : this.name,
-      isAdult: data.isAdult.present ? data.isAdult.value : this.isAdult,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('Tag(')
-          ..write('id: $id, ')
-          ..write('name: $name, ')
-          ..write('isAdult: $isAdult')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(id, name, isAdult);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is Tag &&
-          other.id == this.id &&
-          other.name == this.name &&
-          other.isAdult == this.isAdult);
-}
-
-class TagsCompanion extends UpdateCompanion<Tag> {
-  final Value<int> id;
-  final Value<String> name;
-  final Value<bool> isAdult;
-  const TagsCompanion({
-    this.id = const Value.absent(),
-    this.name = const Value.absent(),
-    this.isAdult = const Value.absent(),
-  });
-  TagsCompanion.insert({
-    this.id = const Value.absent(),
-    required String name,
-    this.isAdult = const Value.absent(),
-  }) : name = Value(name);
-  static Insertable<Tag> custom({
-    Expression<int>? id,
-    Expression<String>? name,
-    Expression<bool>? isAdult,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (name != null) 'name': name,
-      if (isAdult != null) 'is_adult': isAdult,
-    });
-  }
-
-  TagsCompanion copyWith({
-    Value<int>? id,
-    Value<String>? name,
-    Value<bool>? isAdult,
-  }) {
-    return TagsCompanion(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      isAdult: isAdult ?? this.isAdult,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
-    if (name.present) {
-      map['name'] = Variable<String>(name.value);
-    }
-    if (isAdult.present) {
-      map['is_adult'] = Variable<bool>(isAdult.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('TagsCompanion(')
-          ..write('id: $id, ')
-          ..write('name: $name, ')
-          ..write('isAdult: $isAdult')
           ..write(')'))
         .toString();
   }
@@ -6545,6 +6815,8 @@ class AnnotationsCompanion extends UpdateCompanion<Annotation> {
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
+  late final $TagsTable tags = $TagsTable(this);
+  late final $TagSynonymsTable tagSynonyms = $TagSynonymsTable(this);
   late final $FandomsTable fandoms = $FandomsTable(this);
   late final $CharactersTable characters = $CharactersTable(this);
   late final $CharacterAliasesTable characterAliases = $CharacterAliasesTable(
@@ -6556,7 +6828,6 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $WorkFandomsTable workFandoms = $WorkFandomsTable(this);
   late final $WorkRelationsTable workRelations = $WorkRelationsTable(this);
   late final $ReadingDaysTable readingDays = $ReadingDaysTable(this);
-  late final $TagsTable tags = $TagsTable(this);
   late final $WorkTagsTable workTags = $WorkTagsTable(this);
   late final $ChaptersTable chapters = $ChaptersTable(this);
   late final $DownloadsTable downloads = $DownloadsTable(this);
@@ -6569,6 +6840,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
+    tags,
+    tagSynonyms,
     fandoms,
     characters,
     characterAliases,
@@ -6578,7 +6851,6 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     workFandoms,
     workRelations,
     readingDays,
-    tags,
     workTags,
     chapters,
     downloads,
@@ -6589,6 +6861,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'tags',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('tag_synonyms', kind: UpdateKind.delete)],
+    ),
     WritePropagation(
       on: TableUpdateQuery.onTableName(
         'fandoms',
@@ -6718,6 +6997,590 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   ]);
 }
 
+typedef $$TagsTableCreateCompanionBuilder = TagsCompanion Function({
+  Value<int> id,
+  required String name,
+  Value<bool> isAdult,
+});
+typedef $$TagsTableUpdateCompanionBuilder = TagsCompanion Function({
+  Value<int> id,
+  Value<String> name,
+  Value<bool> isAdult,
+});
+
+final class $$TagsTableReferences
+    extends BaseReferences<_$AppDatabase, $TagsTable, Tag> {
+  $$TagsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$TagSynonymsTable, List<TagSynonym>>
+  _tagSynonymsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.tagSynonyms,
+    aliasName: 'tags__id__tag_synonyms__tag_id',
+  );
+
+  $$TagSynonymsTableProcessedTableManager get tagSynonymsRefs {
+    final manager = $$TagSynonymsTableTableManager(
+      $_db,
+      $_db.tagSynonyms,
+    ).filter((f) => f.tagId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_tagSynonymsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$WorkTagsTable, List<WorkTag>> _workTagsRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.workTags,
+    aliasName: 'tags__id__work_tags__tag_id',
+  );
+
+  $$WorkTagsTableProcessedTableManager get workTagsRefs {
+    final manager = $$WorkTagsTableTableManager(
+      $_db,
+      $_db.workTags,
+    ).filter((f) => f.tagId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_workTagsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$TagsTableFilterComposer extends Composer<_$AppDatabase, $TagsTable> {
+  $$TagsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isAdult => $composableBuilder(
+    column: $table.isAdult,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> tagSynonymsRefs(
+    Expression<bool> Function($$TagSynonymsTableFilterComposer f) f,
+  ) {
+    final $$TagSynonymsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.tagSynonyms,
+      getReferencedColumn: (t) => t.tagId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TagSynonymsTableFilterComposer(
+            $db: $db,
+            $table: $db.tagSynonyms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> workTagsRefs(
+    Expression<bool> Function($$WorkTagsTableFilterComposer f) f,
+  ) {
+    final $$WorkTagsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workTags,
+      getReferencedColumn: (t) => t.tagId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkTagsTableFilterComposer(
+            $db: $db,
+            $table: $db.workTags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$TagsTableOrderingComposer extends Composer<_$AppDatabase, $TagsTable> {
+  $$TagsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isAdult => $composableBuilder(
+    column: $table.isAdult,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$TagsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TagsTable> {
+  $$TagsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<bool> get isAdult =>
+      $composableBuilder(column: $table.isAdult, builder: (column) => column);
+
+  Expression<T> tagSynonymsRefs<T extends Object>(
+    Expression<T> Function($$TagSynonymsTableAnnotationComposer a) f,
+  ) {
+    final $$TagSynonymsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.tagSynonyms,
+      getReferencedColumn: (t) => t.tagId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TagSynonymsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.tagSynonyms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> workTagsRefs<T extends Object>(
+    Expression<T> Function($$WorkTagsTableAnnotationComposer a) f,
+  ) {
+    final $$WorkTagsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workTags,
+      getReferencedColumn: (t) => t.tagId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkTagsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.workTags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$TagsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TagsTable,
+          Tag,
+          $$TagsTableFilterComposer,
+          $$TagsTableOrderingComposer,
+          $$TagsTableAnnotationComposer,
+          $$TagsTableCreateCompanionBuilder,
+          $$TagsTableUpdateCompanionBuilder,
+          (Tag, $$TagsTableReferences),
+          Tag,
+          PrefetchHooks Function({bool tagSynonymsRefs, bool workTagsRefs})
+        > {
+  $$TagsTableTableManager(_$AppDatabase db, $TagsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TagsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TagsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TagsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<bool> isAdult = const Value.absent(),
+          }) => TagsCompanion(id: id, name: name, isAdult: isAdult),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String name,
+            Value<bool> isAdult = const Value.absent(),
+          }) => TagsCompanion.insert(id: id, name: name, isAdult: isAdult),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$TagsTable, Tag>(table),
+                  $$TagsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({tagSynonymsRefs = false, workTagsRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (tagSynonymsRefs) db.tagSynonyms,
+                    if (workTagsRefs) db.workTags,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (tagSynonymsRefs)
+                        await $_getPrefetchedData<Tag, $TagsTable, TagSynonym>(
+                          currentTable: table,
+                          referencedTable: $$TagsTableReferences
+                              ._tagSynonymsRefsTable(db),
+                          managerFromTypedResult: (p0) => $$TagsTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).tagSynonymsRefs,
+                          referencedItemsForCurrentItem: (
+                            item,
+                            referencedItems,
+                          ) => referencedItems.where((e) => e.tagId == item.id),
+                          typedResults: items,
+                        ),
+                      if (workTagsRefs)
+                        await $_getPrefetchedData<Tag, $TagsTable, WorkTag>(
+                          currentTable: table,
+                          referencedTable: $$TagsTableReferences
+                              ._workTagsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$TagsTableReferences(db, table, p0).workTagsRefs,
+                          referencedItemsForCurrentItem: (
+                            item,
+                            referencedItems,
+                          ) => referencedItems.where((e) => e.tagId == item.id),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$TagsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TagsTable,
+      Tag,
+      $$TagsTableFilterComposer,
+      $$TagsTableOrderingComposer,
+      $$TagsTableAnnotationComposer,
+      $$TagsTableCreateCompanionBuilder,
+      $$TagsTableUpdateCompanionBuilder,
+      (Tag, $$TagsTableReferences),
+      Tag,
+      PrefetchHooks Function({bool tagSynonymsRefs, bool workTagsRefs})
+    >;
+typedef $$TagSynonymsTableCreateCompanionBuilder =
+    TagSynonymsCompanion Function({
+      required String synonym,
+      required int tagId,
+      Value<int> rowid,
+    });
+typedef $$TagSynonymsTableUpdateCompanionBuilder =
+    TagSynonymsCompanion Function({
+      Value<String> synonym,
+      Value<int> tagId,
+      Value<int> rowid,
+    });
+
+final class $$TagSynonymsTableReferences
+    extends BaseReferences<_$AppDatabase, $TagSynonymsTable, TagSynonym> {
+  $$TagSynonymsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $TagsTable _tagIdTable(_$AppDatabase db) =>
+      db.tags.createAlias('tag_synonyms__tag_id__tags__id');
+
+  $$TagsTableProcessedTableManager get tagId {
+    final $_column = $_itemColumn<int>('tag_id')!;
+
+    final manager = $$TagsTableTableManager(
+      $_db,
+      $_db.tags,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_tagIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$TagSynonymsTableFilterComposer
+    extends Composer<_$AppDatabase, $TagSynonymsTable> {
+  $$TagSynonymsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get synonym => $composableBuilder(
+    column: $table.synonym,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$TagsTableFilterComposer get tagId {
+    final $$TagsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.tagId,
+      referencedTable: $db.tags,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TagsTableFilterComposer(
+            $db: $db,
+            $table: $db.tags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TagSynonymsTableOrderingComposer
+    extends Composer<_$AppDatabase, $TagSynonymsTable> {
+  $$TagSynonymsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get synonym => $composableBuilder(
+    column: $table.synonym,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$TagsTableOrderingComposer get tagId {
+    final $$TagsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.tagId,
+      referencedTable: $db.tags,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TagsTableOrderingComposer(
+            $db: $db,
+            $table: $db.tags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TagSynonymsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TagSynonymsTable> {
+  $$TagSynonymsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get synonym =>
+      $composableBuilder(column: $table.synonym, builder: (column) => column);
+
+  $$TagsTableAnnotationComposer get tagId {
+    final $$TagsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.tagId,
+      referencedTable: $db.tags,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TagsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.tags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TagSynonymsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TagSynonymsTable,
+          TagSynonym,
+          $$TagSynonymsTableFilterComposer,
+          $$TagSynonymsTableOrderingComposer,
+          $$TagSynonymsTableAnnotationComposer,
+          $$TagSynonymsTableCreateCompanionBuilder,
+          $$TagSynonymsTableUpdateCompanionBuilder,
+          (TagSynonym, $$TagSynonymsTableReferences),
+          TagSynonym,
+          PrefetchHooks Function({bool tagId})
+        > {
+  $$TagSynonymsTableTableManager(_$AppDatabase db, $TagSynonymsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TagSynonymsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TagSynonymsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TagSynonymsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> synonym = const Value.absent(),
+                Value<int> tagId = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TagSynonymsCompanion(
+                synonym: synonym,
+                tagId: tagId,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String synonym,
+                required int tagId,
+                Value<int> rowid = const Value.absent(),
+              }) => TagSynonymsCompanion.insert(
+                synonym: synonym,
+                tagId: tagId,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$TagSynonymsTable, TagSynonym>(table),
+                  $$TagSynonymsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({tagId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (tagId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.tagId,
+                        referencedTable: $$TagSynonymsTableReferences
+                            ._tagIdTable(db),
+                        referencedColumn: $$TagSynonymsTableReferences
+                            ._tagIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$TagSynonymsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TagSynonymsTable,
+      TagSynonym,
+      $$TagSynonymsTableFilterComposer,
+      $$TagSynonymsTableOrderingComposer,
+      $$TagSynonymsTableAnnotationComposer,
+      $$TagSynonymsTableCreateCompanionBuilder,
+      $$TagSynonymsTableUpdateCompanionBuilder,
+      (TagSynonym, $$TagSynonymsTableReferences),
+      TagSynonym,
+      PrefetchHooks Function({bool tagId})
+    >;
 typedef $$FandomsTableCreateCompanionBuilder = FandomsCompanion Function({
   Value<int> id,
   required String name,
@@ -8136,6 +8999,7 @@ typedef $$WorksTableCreateCompanionBuilder = WorksCompanion Function({
   Value<int> newChapters,
   Value<DateTime?> deletedAt,
   Value<DateTime?> finishedAt,
+  Value<bool> ownsPhysicalCopy,
   Value<int?> seriesId,
   Value<double?> seriesIndex,
   Value<bool> wordsEstimated,
@@ -8170,6 +9034,7 @@ typedef $$WorksTableUpdateCompanionBuilder = WorksCompanion Function({
   Value<int> newChapters,
   Value<DateTime?> deletedAt,
   Value<DateTime?> finishedAt,
+  Value<bool> ownsPhysicalCopy,
   Value<int?> seriesId,
   Value<double?> seriesIndex,
   Value<bool> wordsEstimated,
@@ -8500,6 +9365,11 @@ class $$WorksTableFilterComposer extends Composer<_$AppDatabase, $WorksTable> {
 
   ColumnFilters<DateTime> get finishedAt => $composableBuilder(
     column: $table.finishedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get ownsPhysicalCopy => $composableBuilder(
+    column: $table.ownsPhysicalCopy,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -8909,6 +9779,11 @@ class $$WorksTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get ownsPhysicalCopy => $composableBuilder(
+    column: $table.ownsPhysicalCopy,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<double> get seriesIndex => $composableBuilder(
     column: $table.seriesIndex,
     builder: (column) => ColumnOrderings(column),
@@ -9074,6 +9949,11 @@ class $$WorksTableAnnotationComposer
 
   GeneratedColumn<DateTime> get finishedAt => $composableBuilder(
     column: $table.finishedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get ownsPhysicalCopy => $composableBuilder(
+    column: $table.ownsPhysicalCopy,
     builder: (column) => column,
   );
 
@@ -9410,6 +10290,7 @@ class $$WorksTableTableManager
                 Value<int> newChapters = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<DateTime?> finishedAt = const Value.absent(),
+                Value<bool> ownsPhysicalCopy = const Value.absent(),
                 Value<int?> seriesId = const Value.absent(),
                 Value<double?> seriesIndex = const Value.absent(),
                 Value<bool> wordsEstimated = const Value.absent(),
@@ -9443,6 +10324,7 @@ class $$WorksTableTableManager
                 newChapters: newChapters,
                 deletedAt: deletedAt,
                 finishedAt: finishedAt,
+                ownsPhysicalCopy: ownsPhysicalCopy,
                 seriesId: seriesId,
                 seriesIndex: seriesIndex,
                 wordsEstimated: wordsEstimated,
@@ -9478,6 +10360,7 @@ class $$WorksTableTableManager
                 Value<int> newChapters = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<DateTime?> finishedAt = const Value.absent(),
+                Value<bool> ownsPhysicalCopy = const Value.absent(),
                 Value<int?> seriesId = const Value.absent(),
                 Value<double?> seriesIndex = const Value.absent(),
                 Value<bool> wordsEstimated = const Value.absent(),
@@ -9511,6 +10394,7 @@ class $$WorksTableTableManager
                 newChapters: newChapters,
                 deletedAt: deletedAt,
                 finishedAt: finishedAt,
+                ownsPhysicalCopy: ownsPhysicalCopy,
                 seriesId: seriesId,
                 seriesIndex: seriesIndex,
                 wordsEstimated: wordsEstimated,
@@ -11193,243 +12077,6 @@ typedef $$ReadingDaysTableProcessedTableManager =
       (ReadingDay, $$ReadingDaysTableReferences),
       ReadingDay,
       PrefetchHooks Function({bool workId})
-    >;
-typedef $$TagsTableCreateCompanionBuilder = TagsCompanion Function({
-  Value<int> id,
-  required String name,
-  Value<bool> isAdult,
-});
-typedef $$TagsTableUpdateCompanionBuilder = TagsCompanion Function({
-  Value<int> id,
-  Value<String> name,
-  Value<bool> isAdult,
-});
-
-final class $$TagsTableReferences
-    extends BaseReferences<_$AppDatabase, $TagsTable, Tag> {
-  $$TagsTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static MultiTypedResultKey<$WorkTagsTable, List<WorkTag>> _workTagsRefsTable(
-    _$AppDatabase db,
-  ) => MultiTypedResultKey.fromTable(
-    db.workTags,
-    aliasName: 'tags__id__work_tags__tag_id',
-  );
-
-  $$WorkTagsTableProcessedTableManager get workTagsRefs {
-    final manager = $$WorkTagsTableTableManager(
-      $_db,
-      $_db.workTags,
-    ).filter((f) => f.tagId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_workTagsRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-}
-
-class $$TagsTableFilterComposer extends Composer<_$AppDatabase, $TagsTable> {
-  $$TagsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<bool> get isAdult => $composableBuilder(
-    column: $table.isAdult,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  Expression<bool> workTagsRefs(
-    Expression<bool> Function($$WorkTagsTableFilterComposer f) f,
-  ) {
-    final $$WorkTagsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.workTags,
-      getReferencedColumn: (t) => t.tagId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$WorkTagsTableFilterComposer(
-            $db: $db,
-            $table: $db.workTags,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $$TagsTableOrderingComposer extends Composer<_$AppDatabase, $TagsTable> {
-  $$TagsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<bool> get isAdult => $composableBuilder(
-    column: $table.isAdult,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $$TagsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $TagsTable> {
-  $$TagsTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get name =>
-      $composableBuilder(column: $table.name, builder: (column) => column);
-
-  GeneratedColumn<bool> get isAdult =>
-      $composableBuilder(column: $table.isAdult, builder: (column) => column);
-
-  Expression<T> workTagsRefs<T extends Object>(
-    Expression<T> Function($$WorkTagsTableAnnotationComposer a) f,
-  ) {
-    final $$WorkTagsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.workTags,
-      getReferencedColumn: (t) => t.tagId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$WorkTagsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.workTags,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $$TagsTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $TagsTable,
-          Tag,
-          $$TagsTableFilterComposer,
-          $$TagsTableOrderingComposer,
-          $$TagsTableAnnotationComposer,
-          $$TagsTableCreateCompanionBuilder,
-          $$TagsTableUpdateCompanionBuilder,
-          (Tag, $$TagsTableReferences),
-          Tag,
-          PrefetchHooks Function({bool workTagsRefs})
-        > {
-  $$TagsTableTableManager(_$AppDatabase db, $TagsTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$TagsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$TagsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$TagsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String> name = const Value.absent(),
-            Value<bool> isAdult = const Value.absent(),
-          }) => TagsCompanion(id: id, name: name, isAdult: isAdult),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            required String name,
-            Value<bool> isAdult = const Value.absent(),
-          }) => TagsCompanion.insert(id: id, name: name, isAdult: isAdult),
-          withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable<$TagsTable, Tag>(table),
-                  $$TagsTableReferences(db, table, e),
-                ),
-              )
-              .toList(),
-          prefetchHooksCallback: ({workTagsRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [if (workTagsRefs) db.workTags],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (workTagsRefs)
-                    await $_getPrefetchedData<Tag, $TagsTable, WorkTag>(
-                      currentTable: table,
-                      referencedTable: $$TagsTableReferences._workTagsRefsTable(
-                        db,
-                      ),
-                      managerFromTypedResult: (p0) =>
-                          $$TagsTableReferences(db, table, p0).workTagsRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.tagId == item.id),
-                      typedResults: items,
-                    ),
-                ];
-              },
-            );
-          },
-        ),
-      );
-}
-
-typedef $$TagsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $TagsTable,
-      Tag,
-      $$TagsTableFilterComposer,
-      $$TagsTableOrderingComposer,
-      $$TagsTableAnnotationComposer,
-      $$TagsTableCreateCompanionBuilder,
-      $$TagsTableUpdateCompanionBuilder,
-      (Tag, $$TagsTableReferences),
-      Tag,
-      PrefetchHooks Function({bool workTagsRefs})
     >;
 typedef $$WorkTagsTableCreateCompanionBuilder = WorkTagsCompanion Function({
   required int workId,
@@ -13617,6 +14264,9 @@ typedef $$AnnotationsTableProcessedTableManager =
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
+  $$TagsTableTableManager get tags => $$TagsTableTableManager(_db, _db.tags);
+  $$TagSynonymsTableTableManager get tagSynonyms =>
+      $$TagSynonymsTableTableManager(_db, _db.tagSynonyms);
   $$FandomsTableTableManager get fandoms =>
       $$FandomsTableTableManager(_db, _db.fandoms);
   $$CharactersTableTableManager get characters =>
@@ -13635,7 +14285,6 @@ class $AppDatabaseManager {
       $$WorkRelationsTableTableManager(_db, _db.workRelations);
   $$ReadingDaysTableTableManager get readingDays =>
       $$ReadingDaysTableTableManager(_db, _db.readingDays);
-  $$TagsTableTableManager get tags => $$TagsTableTableManager(_db, _db.tags);
   $$WorkTagsTableTableManager get workTags =>
       $$WorkTagsTableTableManager(_db, _db.workTags);
   $$ChaptersTableTableManager get chapters =>

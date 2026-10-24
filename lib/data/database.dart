@@ -10,6 +10,7 @@ import 'adult_tags.dart';
 import 'enums.dart';
 import 'fandom_names.dart';
 import 'pairing_tags.dart';
+import 'tag_synonyms.dart';
 
 export 'enums.dart';
 
@@ -104,6 +105,17 @@ class WorkCharacters extends Table {
 
   @override
   Set<Column> get primaryKey => {workId, characterId};
+}
+
+/// Another name for a tag: tags saved under it go to [tagId] instead.
+class TagSynonyms extends Table {
+  /// Lowercase.
+  TextColumn get synonym => text()();
+  IntColumn get tagId =>
+      integer().references(Tags, #id, onDelete: KeyAction.cascade)();
+
+  @override
+  Set<Column> get primaryKey => {synonym};
 }
 
 class Pairings extends Table {
@@ -205,6 +217,10 @@ class Works extends Table {
 
   /// When the status last became "finished" (kept by a trigger).
   DateTimeColumn get finishedAt => dateTime().nullable()();
+
+  /// The user also has the book on paper (for digital or online entries).
+  BoolColumn get ownsPhysicalCopy =>
+      boolean().withDefault(const Constant(false))();
 
   IntColumn get seriesId => integer().nullable().references(
     Series,
@@ -348,6 +364,7 @@ class ReadingDays extends Table {
 
 @DriftDatabase(
   tables: [
+    TagSynonyms,
     Characters,
     CharacterAliases,
     WorkCharacters,
@@ -371,7 +388,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 14;
+  int get schemaVersion => 15;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -380,6 +397,11 @@ class AppDatabase extends _$AppDatabase {
       await _createFinishedTriggers();
     },
     onUpgrade: (m, from, to) async {
+      // Earlier steps read whole rows of works, which needs every
+      // non-nullable column to exist already.
+      if (from < 15) {
+        await _addColumnIfMissing(m, works, works.ownsPhysicalCopy);
+      }
       if (from < 2) {
         await m.addColumn(works, works.coverPath);
         await m.addColumn(works, works.readOffset);
@@ -431,6 +453,7 @@ class AppDatabase extends _$AppDatabase {
         );
       }
       if (from < 13) await m.createTable(workFandoms);
+      if (from < 15) await m.createTable(tagSynonyms);
       if (from < 14) {
         await m.createTable(characters);
         await m.createTable(characterAliases);
@@ -1471,8 +1494,13 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<int?> _tagIdFor(String name, {bool adult = false}) async {
-    final n = name.trim();
+    var n = name.trim();
     if (n.isEmpty) return null;
+    final synonym = await (select(
+      tagSynonyms,
+    )..where((s) => s.synonym.equals(n.toLowerCase()))).getSingleOrNull();
+    if (synonym != null) return synonym.tagId;
+    n = kTagSynonyms[n.toLowerCase()] ?? n;
     final existing = _sameName(await select(tags).get(), (t) => t.name, n);
     if (existing != null) {
       if (adult && !existing.isAdult) await setTagAdult(existing.id, true);
@@ -1582,6 +1610,46 @@ class AppDatabase extends _$AppDatabase {
       }
     });
   }
+
+  /// Moves [fromId]'s works to [intoId] and deletes it; its name becomes a
+  /// synonym, so later imports land on [intoId] too.
+  Future<void> mergeTag(int fromId, int intoId) {
+    if (fromId == intoId) return Future.value();
+    return transaction(() async {
+      final from = await (select(
+        tags,
+      )..where((t) => t.id.equals(fromId))).getSingle();
+      await customStatement(
+        'INSERT OR IGNORE INTO work_tags (work_id, tag_id) '
+        'SELECT work_id, ? FROM work_tags WHERE tag_id = ?',
+        [intoId, fromId],
+      );
+      // Synonyms of the old tag follow it.
+      await (update(tagSynonyms)..where((s) => s.tagId.equals(fromId))).write(
+        TagSynonymsCompanion(tagId: Value(intoId)),
+      );
+      await (delete(tags)..where((t) => t.id.equals(fromId))).go();
+      await into(tagSynonyms).insertOnConflictUpdate(
+        TagSynonymsCompanion.insert(
+          synonym: from.name.toLowerCase(),
+          tagId: intoId,
+        ),
+      );
+    });
+  }
+
+  /// Each tag's synonyms, by tag id.
+  Stream<Map<int, List<String>>> watchTagSynonyms() =>
+      select(tagSynonyms).watch().map((rows) {
+        final byTag = <int, List<String>>{};
+        for (final r in rows) {
+          byTag.putIfAbsent(r.tagId, () => []).add(r.synonym);
+        }
+        return byTag;
+      });
+
+  Future<void> removeTagSynonym(String synonym) =>
+      (delete(tagSynonyms)..where((s) => s.synonym.equals(synonym))).go();
 
   Future<void> setTagAdult(int tagId, bool adult) =>
       (update(tags)..where((t) => t.id.equals(tagId))).write(

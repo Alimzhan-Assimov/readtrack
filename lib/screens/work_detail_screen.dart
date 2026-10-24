@@ -226,6 +226,11 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
                   avatar: Icon(w.format.icon, size: 18),
                   label: Text(w.format.label(l10n)),
                 ),
+                if (w.ownsPhysicalCopy)
+                  Chip(
+                    avatar: Icon(WorkFormat.physical.icon, size: 18),
+                    label: Text(l10n.paperCopy),
+                  ),
                 _StatusMenu(
                   status: w.status,
                   onChanged: (s) =>
