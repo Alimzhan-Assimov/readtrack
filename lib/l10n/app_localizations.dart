@@ -982,6 +982,90 @@ abstract class AppLocalizations {
   /// **'Delete download'**
   String get deleteDownload;
 
+  /// No description provided for @suggestTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest tags'**
+  String get suggestTags;
+
+  /// No description provided for @tagSuggestionWhy.
+  ///
+  /// In en, this message translates to:
+  /// **'{reason}. Tap to add the tag.'**
+  String tagSuggestionWhy(String reason);
+
+  /// No description provided for @tagReasonKeyword.
+  ///
+  /// In en, this message translates to:
+  /// **'The summary mentions “{word}”'**
+  String tagReasonKeyword(String word);
+
+  /// No description provided for @tagsSuggested.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No new tag suggestions} =1{1 tag suggested} other{{count} tags suggested}}'**
+  String tagsSuggested(int count);
+
+  /// No description provided for @findCharacters.
+  ///
+  /// In en, this message translates to:
+  /// **'Find in the text'**
+  String get findCharacters;
+
+  /// No description provided for @suggestedCharacter.
+  ///
+  /// In en, this message translates to:
+  /// **'Found in the text. Tap to confirm.'**
+  String get suggestedCharacter;
+
+  /// No description provided for @dismissSuggestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Not in this story'**
+  String get dismissSuggestion;
+
+  /// No description provided for @noKnownCharacters.
+  ///
+  /// In en, this message translates to:
+  /// **'No characters are known for this category yet. Add some, or look the franchise up on AniList.'**
+  String get noKnownCharacters;
+
+  /// No description provided for @noTextToSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no downloaded text to search yet.'**
+  String get noTextToSearch;
+
+  /// No description provided for @charactersFound.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No more known characters found} =1{Found 1 character; confirm it with a tap} other{Found {count} characters; confirm them with a tap}}'**
+  String charactersFound(int count);
+
+  /// No description provided for @aniListLookUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Look up on AniList'**
+  String get aniListLookUp;
+
+  /// No description provided for @aniListTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AniList'**
+  String get aniListTitle;
+
+  /// No description provided for @aniListHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick the matching one. Empty fields are filled in; tags, characters and links to sequels or prequels in your library are added.'**
+  String get aniListHint;
+
+  /// No description provided for @aniListApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Took AniList\'s details: {characters, plural, =0{no new characters} =1{1 new character} other{{characters} new characters}}, {relations, plural, =0{no links} =1{1 link} other{{relations} links}}'**
+  String aniListApplied(int characters, int relations);
+
   /// No description provided for @categoriesTitle.
   ///
   /// In en, this message translates to:
