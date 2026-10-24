@@ -6,6 +6,7 @@ import 'package:archive/archive.dart';
 import 'package:path/path.dart' as p;
 import 'package:xml/xml.dart';
 
+import '../data/enums.dart';
 import '../sources/charsets.dart';
 import '../sources/html_clean.dart';
 import '../sources/source.dart' show parseHtml, squash, textOf;
@@ -29,7 +30,15 @@ class ImportedBook {
     this.sourceUrl,
     this.isbn,
     this.isFanfiction = false,
+    this.type,
+    this.rightToLeft = false,
   });
+
+  /// What the file says it is, e.g. manga for a CBZ; null for a book.
+  final WorkType? type;
+
+  /// Pages are read right to left (manga).
+  final bool rightToLeft;
 
   /// Where the book came from, e.g. a ReadTrack export of a web story.
   final String? sourceUrl;
@@ -52,6 +61,8 @@ class ImportedBook {
     sourceUrl: url,
     isbn: isbn,
     isFanfiction: isFanfiction,
+    type: type,
+    rightToLeft: rightToLeft,
   );
 
   final String title;
@@ -75,7 +86,7 @@ class ImportException implements Exception {
   String toString() => message;
 }
 
-const kImportExtensions = ['epub', 'fb2', 'zip', 'txt', 'html', 'htm'];
+const kImportExtensions = ['epub', 'fb2', 'zip', 'cbz', 'txt', 'html', 'htm'];
 
 /// Reads an EPUB, FB2 (also zipped), TXT or HTML file.
 Future<ImportedBook> readBookFile(String path) async {
@@ -86,6 +97,7 @@ Future<ImportedBook> readBookFile(String path) async {
     '.epub' => readEpub(bytes),
     '.fb2' => readFb2(bytes),
     '.zip' => _readZippedFb2(bytes),
+    '.cbz' => readCbz(bytes, title: name),
     '.txt' => readTxt(bytes, title: name),
     '.html' || '.htm' => readHtmlBook(
       decodeBody(bytes),
@@ -129,6 +141,99 @@ Map<String, Uint8List> _referencedImages(
     }
   }
   return images;
+}
+
+// --- CBZ --------------------------------------------------------------------
+
+const _imageExtensions = {'.jpg', '.jpeg', '.png', '.gif', '.webp'};
+
+/// A comic book archive: the images in natural order ("2" before "10"),
+/// one chapter per folder (or one chapter for loose pages). ComicInfo.xml
+/// fills in title, writer, summary, genres and the reading direction.
+ImportedBook readCbz(List<int> bytes, {required String title}) {
+  final Archive archive;
+  try {
+    archive = ZipDecoder().decodeBytes(bytes);
+  } on Object {
+    throw ImportException('This CBZ file is damaged or not a ZIP archive.');
+  }
+  final pages = [
+    for (final f in archive.files)
+      if (f.isFile &&
+          _imageExtensions.contains(p.extension(f.name).toLowerCase()) &&
+          !p.basename(f.name).startsWith('.') &&
+          !f.name.startsWith('__MACOSX'))
+        f,
+  ]..sort((a, b) => naturalCompare(a.name, b.name));
+  if (pages.isEmpty) throw ImportException('This CBZ file has no images.');
+
+  final byFolder = <String, List<ArchiveFile>>{};
+  for (final f in pages) {
+    byFolder.putIfAbsent(p.posix.dirname(f.name), () => []).add(f);
+  }
+  final images = <String, Uint8List>{};
+  final chapters = <({String title, String html})>[];
+  for (final MapEntry(key: folder, value: files) in byFolder.entries) {
+    final html = StringBuffer();
+    for (final f in files) {
+      final url = Uri.https(kBookHost, '/${Uri.encodeFull(f.name)}').toString();
+      images[url] = f.readBytes()!;
+      html.write('<p><img src="$url" alt=""></p>');
+    }
+    chapters.add((
+      title: folder == '.' ? title : p.posix.basename(folder),
+      html: '$html',
+    ));
+  }
+
+  XmlElement? info;
+  final infoFile = archive.findFile('ComicInfo.xml');
+  if (infoFile != null) {
+    try {
+      info = XmlDocument.parse(
+        utf8.decode(infoFile.readBytes()!, allowMalformed: true),
+      ).rootElement;
+    } on XmlException {
+      // Pages without details.
+    }
+  }
+  String? field(String name) {
+    final v = info?.findElements(name).firstOrNull?.innerText.trim();
+    return v == null || v.isEmpty ? null : v;
+  }
+
+  final manga = field('Manga');
+  return ImportedBook(
+    title: field('Title') ?? field('Series') ?? title,
+    author: field('Writer'),
+    summary: field('Summary'),
+    tags: [
+      for (final g in (field('Genre') ?? '').split(','))
+        if (g.trim().isNotEmpty) g.trim(),
+    ],
+    format: ExportFormat.cbz,
+    cover: pages.first.readBytes(),
+    chapters: chapters,
+    images: images,
+    type: manga != null && manga.startsWith('Yes')
+        ? WorkType.manga
+        : WorkType.comic,
+    rightToLeft: manga == 'YesAndRightToLeft',
+  );
+}
+
+/// Compares names with numbers by their value: "page2" before "page10".
+int naturalCompare(String a, String b) {
+  final parts = RegExp(r'(\d+)|(\D+)');
+  final x = parts.allMatches(a.toLowerCase()).toList();
+  final y = parts.allMatches(b.toLowerCase()).toList();
+  for (var i = 0; i < x.length && i < y.length; i++) {
+    final (s, t) = (x[i].group(0)!, y[i].group(0)!);
+    final (m, n) = (int.tryParse(s), int.tryParse(t));
+    final c = m != null && n != null ? m.compareTo(n) : s.compareTo(t);
+    if (c != 0) return c;
+  }
+  return x.length.compareTo(y.length);
 }
 
 // --- EPUB -------------------------------------------------------------------
