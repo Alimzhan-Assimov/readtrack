@@ -1,2 +1,2 @@
-/// Keep in sync with `version:` in pubspec.yaml (a test checks it).
-const kAppVersion = '1.0.0+1';
+/// Updated together with pubspec.yaml by scripts/release.py.
+const kAppVersion = '1.1.0+2';

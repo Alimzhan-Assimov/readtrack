@@ -4,6 +4,8 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:desktop_webview_window/desktop_webview_window.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 import 'fetcher.dart';
 
@@ -44,11 +46,15 @@ class BrowserFetcher implements PageFetcher {
 
   Future<Webview> _create() async {
     try {
+      final profile = Platform.isWindows
+          ? p.join((await getApplicationSupportDirectory()).path, 'WebView2')
+          : 'webview_window_WebView2';
       final view = await WebviewWindow.create(
         configuration: CreateConfiguration(
           windowWidth: 960,
           windowHeight: 720,
           title: windowTitle,
+          windows: WindowsWebviewOptions(userDataFolder: profile),
           titleBar: const TitleBarOptions(showNavigation: false),
         ),
       );

@@ -14,6 +14,7 @@ import 'log_screen.dart';
 import 'trash_screen.dart';
 import '../ui/app_settings.dart';
 import '../ui/layout.dart';
+import '../version.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -252,6 +253,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
+                AboutListTile(
+                  icon: const Icon(Icons.info_outline),
+                  applicationName: l10n.appTitle,
+                  applicationVersion: kAppVersion,
+                ),
                 Text(
                   l10n.adultTagsHeading,
                   style: theme.textTheme.titleSmall?.copyWith(
