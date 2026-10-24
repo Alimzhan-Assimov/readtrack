@@ -133,6 +133,9 @@ class Works extends Table {
       boolean().withDefault(const Constant(false))();
   BoolColumn get pagesEstimated =>
       boolean().withDefault(const Constant(false))();
+
+  /// Size in characters (with spaces), for sites that give only that.
+  IntColumn get characterCount => integer().nullable()();
 }
 
 class WorkTags extends Table {
@@ -237,7 +240,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -279,6 +282,9 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 9) {
         await _addColumnIfMissing(m, downloads, downloads.withImages);
+      }
+      if (from < 10) {
+        await _addColumnIfMissing(m, works, works.characterCount);
       }
     },
     beforeOpen: (details) async {
@@ -773,9 +779,13 @@ class AppDatabase extends _$AppDatabase {
   /// Words per page for estimates (a typical paperback page).
   static const wordsPerPage = 250;
 
+  /// Characters (with spaces) per word, measured on Russian prose.
+  static const charactersPerWord = 6.4;
+
   /// Works out word and page counts the site didn't give: words from the
-  /// chapters read so far (scaled up to all chapters), pages from words, or
-  /// words from pages. Values from the site or the user are kept.
+  /// site's character count, else from the chapters read so far (scaled up
+  /// to all chapters), pages from words, or words from pages. Values from
+  /// the site or the user are kept.
   Future<void> fillMissingCounts(int workId) async {
     final w = await workById(workId);
     if (w == null) return;
@@ -792,9 +802,12 @@ class AppDatabase extends _$AppDatabase {
     final sum = row.read(words) ?? 0;
     final total = max(w.chapterCount ?? 0, known);
     final givenPages = w.pagesEstimated ? null : w.pageCount;
+    final chars = w.characterCount;
 
     final wordCount = !(w.wordCount == null || w.wordsEstimated)
         ? w.wordCount
+        : chars != null && chars > 0
+        ? (chars / charactersPerWord).round()
         : known > 0 && sum > 0
         ? (sum * total / known).round()
         : givenPages != null

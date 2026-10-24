@@ -756,6 +756,17 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _characterCountMeta = const VerificationMeta(
+    'characterCount',
+  );
+  @override
+  late final GeneratedColumn<int> characterCount = GeneratedColumn<int>(
+    'character_count',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -786,6 +797,7 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
     deletedAt,
     wordsEstimated,
     pagesEstimated,
+    characterCount,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -966,6 +978,15 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
         ),
       );
     }
+    if (data.containsKey('character_count')) {
+      context.handle(
+        _characterCountMeta,
+        characterCount.isAcceptableOrUnknown(
+          data['character_count']!,
+          _characterCountMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -1093,6 +1114,10 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
         DriftSqlType.bool,
         data['${effectivePrefix}pages_estimated'],
       )!,
+      characterCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}character_count'],
+      ),
     );
   }
 
@@ -1158,6 +1183,9 @@ class Work extends DataClass implements Insertable<Work> {
   /// the site didn't give them; such values are updated as more is known.
   final bool wordsEstimated;
   final bool pagesEstimated;
+
+  /// Size in characters (with spaces), for sites that give only that.
+  final int? characterCount;
   const Work({
     required this.id,
     required this.type,
@@ -1187,6 +1215,7 @@ class Work extends DataClass implements Insertable<Work> {
     this.deletedAt,
     required this.wordsEstimated,
     required this.pagesEstimated,
+    this.characterCount,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1263,6 +1292,9 @@ class Work extends DataClass implements Insertable<Work> {
     }
     map['words_estimated'] = Variable<bool>(wordsEstimated);
     map['pages_estimated'] = Variable<bool>(pagesEstimated);
+    if (!nullToAbsent || characterCount != null) {
+      map['character_count'] = Variable<int>(characterCount);
+    }
     return map;
   }
 
@@ -1328,6 +1360,9 @@ class Work extends DataClass implements Insertable<Work> {
           : Value(deletedAt),
       wordsEstimated: Value(wordsEstimated),
       pagesEstimated: Value(pagesEstimated),
+      characterCount: characterCount == null && nullToAbsent
+          ? const Value.absent()
+          : Value(characterCount),
     );
   }
 
@@ -1371,6 +1406,7 @@ class Work extends DataClass implements Insertable<Work> {
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
       wordsEstimated: serializer.fromJson<bool>(json['wordsEstimated']),
       pagesEstimated: serializer.fromJson<bool>(json['pagesEstimated']),
+      characterCount: serializer.fromJson<int?>(json['characterCount']),
     );
   }
   @override
@@ -1411,6 +1447,7 @@ class Work extends DataClass implements Insertable<Work> {
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
       'wordsEstimated': serializer.toJson<bool>(wordsEstimated),
       'pagesEstimated': serializer.toJson<bool>(pagesEstimated),
+      'characterCount': serializer.toJson<int?>(characterCount),
     };
   }
 
@@ -1443,6 +1480,7 @@ class Work extends DataClass implements Insertable<Work> {
     Value<DateTime?> deletedAt = const Value.absent(),
     bool? wordsEstimated,
     bool? pagesEstimated,
+    Value<int?> characterCount = const Value.absent(),
   }) => Work(
     id: id ?? this.id,
     type: type ?? this.type,
@@ -1476,6 +1514,9 @@ class Work extends DataClass implements Insertable<Work> {
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
     wordsEstimated: wordsEstimated ?? this.wordsEstimated,
     pagesEstimated: pagesEstimated ?? this.pagesEstimated,
+    characterCount: characterCount.present
+        ? characterCount.value
+        : this.characterCount,
   );
   Work copyWithCompanion(WorksCompanion data) {
     return Work(
@@ -1523,6 +1564,9 @@ class Work extends DataClass implements Insertable<Work> {
       pagesEstimated: data.pagesEstimated.present
           ? data.pagesEstimated.value
           : this.pagesEstimated,
+      characterCount: data.characterCount.present
+          ? data.characterCount.value
+          : this.characterCount,
     );
   }
 
@@ -1556,7 +1600,8 @@ class Work extends DataClass implements Insertable<Work> {
           ..write('newChapters: $newChapters, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('wordsEstimated: $wordsEstimated, ')
-          ..write('pagesEstimated: $pagesEstimated')
+          ..write('pagesEstimated: $pagesEstimated, ')
+          ..write('characterCount: $characterCount')
           ..write(')'))
         .toString();
   }
@@ -1591,6 +1636,7 @@ class Work extends DataClass implements Insertable<Work> {
     deletedAt,
     wordsEstimated,
     pagesEstimated,
+    characterCount,
   ]);
   @override
   bool operator ==(Object other) =>
@@ -1623,7 +1669,8 @@ class Work extends DataClass implements Insertable<Work> {
           other.newChapters == this.newChapters &&
           other.deletedAt == this.deletedAt &&
           other.wordsEstimated == this.wordsEstimated &&
-          other.pagesEstimated == this.pagesEstimated);
+          other.pagesEstimated == this.pagesEstimated &&
+          other.characterCount == this.characterCount);
 }
 
 class WorksCompanion extends UpdateCompanion<Work> {
@@ -1655,6 +1702,7 @@ class WorksCompanion extends UpdateCompanion<Work> {
   final Value<DateTime?> deletedAt;
   final Value<bool> wordsEstimated;
   final Value<bool> pagesEstimated;
+  final Value<int?> characterCount;
   const WorksCompanion({
     this.id = const Value.absent(),
     this.type = const Value.absent(),
@@ -1684,6 +1732,7 @@ class WorksCompanion extends UpdateCompanion<Work> {
     this.deletedAt = const Value.absent(),
     this.wordsEstimated = const Value.absent(),
     this.pagesEstimated = const Value.absent(),
+    this.characterCount = const Value.absent(),
   });
   WorksCompanion.insert({
     this.id = const Value.absent(),
@@ -1714,6 +1763,7 @@ class WorksCompanion extends UpdateCompanion<Work> {
     this.deletedAt = const Value.absent(),
     this.wordsEstimated = const Value.absent(),
     this.pagesEstimated = const Value.absent(),
+    this.characterCount = const Value.absent(),
   }) : type = Value(type),
        format = Value(format),
        title = Value(title);
@@ -1746,6 +1796,7 @@ class WorksCompanion extends UpdateCompanion<Work> {
     Expression<DateTime>? deletedAt,
     Expression<bool>? wordsEstimated,
     Expression<bool>? pagesEstimated,
+    Expression<int>? characterCount,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1776,6 +1827,7 @@ class WorksCompanion extends UpdateCompanion<Work> {
       if (deletedAt != null) 'deleted_at': deletedAt,
       if (wordsEstimated != null) 'words_estimated': wordsEstimated,
       if (pagesEstimated != null) 'pages_estimated': pagesEstimated,
+      if (characterCount != null) 'character_count': characterCount,
     });
   }
 
@@ -1808,6 +1860,7 @@ class WorksCompanion extends UpdateCompanion<Work> {
     Value<DateTime?>? deletedAt,
     Value<bool>? wordsEstimated,
     Value<bool>? pagesEstimated,
+    Value<int?>? characterCount,
   }) {
     return WorksCompanion(
       id: id ?? this.id,
@@ -1838,6 +1891,7 @@ class WorksCompanion extends UpdateCompanion<Work> {
       deletedAt: deletedAt ?? this.deletedAt,
       wordsEstimated: wordsEstimated ?? this.wordsEstimated,
       pagesEstimated: pagesEstimated ?? this.pagesEstimated,
+      characterCount: characterCount ?? this.characterCount,
     );
   }
 
@@ -1934,6 +1988,9 @@ class WorksCompanion extends UpdateCompanion<Work> {
     if (pagesEstimated.present) {
       map['pages_estimated'] = Variable<bool>(pagesEstimated.value);
     }
+    if (characterCount.present) {
+      map['character_count'] = Variable<int>(characterCount.value);
+    }
     return map;
   }
 
@@ -1967,7 +2024,8 @@ class WorksCompanion extends UpdateCompanion<Work> {
           ..write('newChapters: $newChapters, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('wordsEstimated: $wordsEstimated, ')
-          ..write('pagesEstimated: $pagesEstimated')
+          ..write('pagesEstimated: $pagesEstimated, ')
+          ..write('characterCount: $characterCount')
           ..write(')'))
         .toString();
   }
@@ -4999,6 +5057,7 @@ typedef $$WorksTableCreateCompanionBuilder = WorksCompanion Function({
   Value<DateTime?> deletedAt,
   Value<bool> wordsEstimated,
   Value<bool> pagesEstimated,
+  Value<int?> characterCount,
 });
 typedef $$WorksTableUpdateCompanionBuilder = WorksCompanion Function({
   Value<int> id,
@@ -5029,6 +5088,7 @@ typedef $$WorksTableUpdateCompanionBuilder = WorksCompanion Function({
   Value<DateTime?> deletedAt,
   Value<bool> wordsEstimated,
   Value<bool> pagesEstimated,
+  Value<int?> characterCount,
 });
 
 final class $$WorksTableReferences
@@ -5288,6 +5348,11 @@ class $$WorksTableFilterComposer extends Composer<_$AppDatabase, $WorksTable> {
 
   ColumnFilters<bool> get pagesEstimated => $composableBuilder(
     column: $table.pagesEstimated,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get characterCount => $composableBuilder(
+    column: $table.characterCount,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5584,6 +5649,11 @@ class $$WorksTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get characterCount => $composableBuilder(
+    column: $table.characterCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$FandomsTableOrderingComposer get fandomId {
     final $$FandomsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -5711,6 +5781,11 @@ class $$WorksTableAnnotationComposer
 
   GeneratedColumn<bool> get pagesEstimated => $composableBuilder(
     column: $table.pagesEstimated,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get characterCount => $composableBuilder(
+    column: $table.characterCount,
     builder: (column) => column,
   );
 
@@ -5926,6 +6001,7 @@ class $$WorksTableTableManager
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<bool> wordsEstimated = const Value.absent(),
                 Value<bool> pagesEstimated = const Value.absent(),
+                Value<int?> characterCount = const Value.absent(),
               }) => WorksCompanion(
                 id: id,
                 type: type,
@@ -5955,6 +6031,7 @@ class $$WorksTableTableManager
                 deletedAt: deletedAt,
                 wordsEstimated: wordsEstimated,
                 pagesEstimated: pagesEstimated,
+                characterCount: characterCount,
               ),
           createCompanionCallback:
               ({
@@ -5986,6 +6063,7 @@ class $$WorksTableTableManager
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<bool> wordsEstimated = const Value.absent(),
                 Value<bool> pagesEstimated = const Value.absent(),
+                Value<int?> characterCount = const Value.absent(),
               }) => WorksCompanion.insert(
                 id: id,
                 type: type,
@@ -6015,6 +6093,7 @@ class $$WorksTableTableManager
                 deletedAt: deletedAt,
                 wordsEstimated: wordsEstimated,
                 pagesEstimated: pagesEstimated,
+                characterCount: characterCount,
               ),
           withReferenceMapper: (p0) => p0
               .map(

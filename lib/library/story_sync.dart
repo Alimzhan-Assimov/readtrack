@@ -58,6 +58,9 @@ Future<int> applyStoryInfo(
       pagesEstimated: info.pageCount == null
           ? const Value.absent()
           : const Value(false),
+      characterCount: info.characterCount == null
+          ? const Value.absent()
+          : Value(info.characterCount),
       isComplete: info.isComplete == null
           ? const Value.absent()
           : Value(info.isComplete!),

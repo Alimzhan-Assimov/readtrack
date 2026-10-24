@@ -264,6 +264,9 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
       pagesEstimated: _pages.text == _initialPages
           ? const Value.absent()
           : const Value(false),
+      characterCount: widget.imported?.characterCount == null
+          ? const Value.absent()
+          : Value(widget.imported!.characterCount),
       rating: Value(_rating),
       notes: Value(_text(_notes)),
       coverUrl: switch (widget.imported?.coverUrl) {

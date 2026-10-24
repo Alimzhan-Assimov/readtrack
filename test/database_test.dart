@@ -197,6 +197,26 @@ void main() {
     expect((w.wordCount, w.pageCount), (null, null));
   });
 
+  test('words come from the character count before chapters', () async {
+    final id = await db.saveWork(
+      WorksCompanion.insert(
+        type: WorkType.book,
+        format: WorkFormat.online,
+        title: 'Книга',
+        chapterCount: const Value(10),
+        characterCount: const Value(640000),
+      ),
+    );
+    await db.saveChapterList(id, [
+      for (var n = 1; n <= 10; n++)
+        (number: n, title: '$n', url: 'https://a.test/$n', locked: false),
+    ]);
+    await db.saveChapterText(id, 1, html: '<p>x</p>', wordCount: 5);
+    final w = (await db.workById(id))!;
+    expect((w.wordCount, w.wordsEstimated), (100000, true));
+    expect((w.pageCount, w.pagesEstimated), (400, true));
+  });
+
   test('sorting by title ignores case', () async {
     for (final title in ['beta', 'Gamma', 'Alpha']) {
       await db.saveWork(fic(title));

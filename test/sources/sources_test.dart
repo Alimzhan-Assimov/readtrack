@@ -219,6 +219,19 @@ void main() {
     );
   });
 
+  test('Author.Today: reads the size in characters', () async {
+    final story = Uri.parse('https://author.today/work/564935');
+    final fetcher = FakeFetcher({
+      '$story': '''
+        <h1 class="book-title">Книга</h1><div class="book-authors"><a>Автор</a></div>
+        <span class="hint-top" data-hint="Размер, кол-во знаков с пробелами">2 110 486 <noindex>зн.</noindex></span>, 52,76 <abbr>а.л.</abbr>
+        <ul class="table-of-content"><li><a href="/reader/564935/1">Глава 1</a></li></ul>''',
+    });
+    final info = await const AuthorTodaySource().fetchStory(story, fetcher);
+    expect(info.characterCount, 2110486);
+    expect((info.wordCount, info.pageCount), (null, null));
+  });
+
   test(
     'Author.Today: decodes the reader text with the secret header',
     () async {

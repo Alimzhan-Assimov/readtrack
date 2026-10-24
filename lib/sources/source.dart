@@ -42,6 +42,7 @@ class StoryInfo {
     this.adultTags = const {},
     this.wordCount,
     this.pageCount,
+    this.characterCount,
     this.isComplete,
     this.updatedOn,
     this._chapterCount,
@@ -65,6 +66,9 @@ class StoryInfo {
   final List<ChapterRef> chapters;
   final int? wordCount;
   final int? pageCount;
+
+  /// Size in characters, for sites that give neither words nor pages.
+  final int? characterCount;
   final bool? isComplete;
 
   /// When the story was last updated, if the site says.
