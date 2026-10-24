@@ -1,11 +1,35 @@
+import 'dart:async';
+
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../data/database.dart';
 import '../data/database_scope.dart';
-import '../ui/labels.dart';
+import '../l10n/l10n.dart';
+import '../library/auto_download.dart';
+import '../library/file_import.dart';
+import '../sources/fetcher.dart';
+import '../sources/isbn_lookup.dart';
+import '../library/library_scope.dart';
+import '../library/shelves.dart';
+import '../ui/app_settings.dart';
+import '../ui/layout.dart';
+import '../widgets/text_prompt.dart';
+import '../widgets/work_grid_tile.dart';
 import '../widgets/work_tile.dart';
+import 'catalog_screen.dart';
+import 'import_screen.dart';
+import 'library_filters.dart';
+import 'list_import_screen.dart';
+import 'settings_screen.dart';
+import 'stats_screen.dart';
+import 'work_detail_screen.dart';
 import 'work_edit_screen.dart';
 
+/// Home screen. In narrow windows (phones) it is a list that opens details as
+/// separate pages; from [Breakpoints.expanded] on, list and details sit side
+/// by side (the Material 3 "list-detail" layout).
 class LibraryScreen extends StatefulWidget {
   const LibraryScreen({super.key});
 
@@ -14,39 +38,146 @@ class LibraryScreen extends StatefulWidget {
 }
 
 class _LibraryScreenState extends State<LibraryScreen> {
+  static const _listPaneWidth = 400.0;
+
   final _search = TextEditingController();
-  WorkType? _type;
-  Fandom? _fandom;
-  Tag? _tag;
+  final _searchFocus = FocusNode();
+  Timer? _searchDebounce;
+  LibraryFilters _filters = LibraryFilters();
+  int? _selectedId;
   late Stream<List<WorkWithDetails>> _works;
 
   AppDatabase get _db => DatabaseScope.of(context);
 
   bool get _isFiltered =>
-      _search.text.trim().isNotEmpty ||
-      _type != null ||
-      _fandom != null ||
-      _tag != null;
+      _search.text.trim().isNotEmpty || _filters.activeCount > 0;
+
+  bool _checking = false;
+  bool _checkedOnStart = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _updateQuery();
+    if (!_checkedOnStart) {
+      _checkedOnStart = true;
+      if (SettingsScope.maybeOf(context)?.checkOnStart ?? false) {
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => _checkForUpdates(quiet: true),
+        );
+      }
+    }
+  }
+
+  /// Looks for new chapters; with [quiet], only reports when there are some.
+  Future<void> _checkForUpdates({bool quiet = false}) async {
+    final checker = LibraryScope.of(context).updates;
+    if (checker == null || !mounted) return;
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _checking = true);
+    try {
+      final summary = await checker.check(all: !quiet);
+      if (summary.newChapters > 0 &&
+          mounted &&
+          (SettingsScope.maybeOf(context)?.autoDownload ?? false)) {
+        final downloads = LibraryScope.of(context).downloads;
+        // In the background; the download list shows the progress.
+        unawaited(
+          downloadNewChapters(_db, downloads).then((n) {
+            if (n > 0) {
+              messenger.showSnackBar(
+                SnackBar(content: Text(l10n.autoDownloaded(n))),
+              );
+            }
+          }),
+        );
+      }
+      if (summary.newChapters > 0) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(
+              l10n.updatesFound(summary.newChapters, summary.updatedWorks),
+            ),
+          ),
+        );
+      } else if (!quiet) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(
+              summary.failed > 0
+                  ? l10n.updatesFailed(summary.failed)
+                  : l10n.noUpdatesFound,
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _checking = false);
+    }
   }
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _search.dispose();
+    _searchFocus.dispose();
     super.dispose();
   }
 
   void _updateQuery() {
-    _works = _db.watchWorks(
-      search: _search.text,
-      type: _type,
-      fandomId: _fandom?.id,
-      tagId: _tag?.id,
+    _works = _filters.watch(_db, search: _search.text);
+  }
+
+  LibraryFilter get _filter => LibraryFilter(
+    type: _filters.type,
+    fandomId: _filters.fandom?.id,
+    tagId: _filters.tag?.id,
+    pairingId: _filters.pairing?.id,
+    seriesId: _filters.series?.id,
+    characterId: _filters.character?.id,
+    status: _filters.status,
+    minWords: _filters.minWords,
+    complete: _filters.complete,
+    sort: _filters.sort,
+  );
+
+  /// Applies a saved shelf; categories, tags and pairings are looked up by id.
+  Future<void> _applyShelf(Shelf shelf) async {
+    final f = shelf.filter;
+    final fandoms = await _db.usedFandoms();
+    final tags = await _db.usedTags();
+    final pairings = await _db.usedPairings();
+    final series = await _db.usedSeries();
+    final characters = await _db.usedCharacters();
+    if (!mounted) return;
+    _setFilters(
+      LibraryFilters(
+        type: f.type,
+        fandom: fandoms.where((x) => x.id == f.fandomId).firstOrNull,
+        tag: tags.where((x) => x.id == f.tagId).firstOrNull,
+        pairing: pairings.where((x) => x.id == f.pairingId).firstOrNull,
+        series: series.where((x) => x.id == f.seriesId).firstOrNull,
+        character: characters.where((x) => x.id == f.characterId).firstOrNull,
+        status: f.status,
+        minWords: f.minWords,
+        complete: f.complete,
+        sort: f.sort,
+      ),
     );
+  }
+
+  Future<void> _saveShelf() async {
+    final l10n = context.l10n;
+    final settings = SettingsScope.maybeOf(context);
+    if (settings == null) return;
+    final name = await showTextPrompt(
+      context,
+      title: l10n.saveShelfTitle,
+      hint: l10n.shelfNameHint,
+    );
+    if (name == null || name.isEmpty) return;
+    await settings.saveShelf(Shelf(name, _filter));
   }
 
   void _setFilter(VoidCallback change) => setState(() {
@@ -54,171 +185,460 @@ class _LibraryScreenState extends State<LibraryScreen> {
     _updateQuery();
   });
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Meine Bibliothek')),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-            child: SearchBar(
-              controller: _search,
-              hintText: 'Titel, Autor oder Kategorie suchen',
-              leading: const Icon(Icons.search),
-              elevation: const WidgetStatePropertyAll(0),
-              onChanged: (_) => _setFilter(() {}),
-              trailing: [
-                if (_search.text.isNotEmpty)
-                  IconButton(
-                    icon: const Icon(Icons.clear),
-                    tooltip: 'Suche leeren',
-                    onPressed: () => _setFilter(_search.clear),
-                  ),
-              ],
-            ),
-          ),
-          SizedBox(
-            height: 48,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              children: [
-                _PickerChip<Fandom>(
-                  icon: Icons.category_outlined,
-                  emptyLabel: 'Kategorie',
-                  selected: _fandom,
-                  loadOptions: _db.usedFandoms,
-                  nameOf: (f) => f.name,
-                  onSelected: (f) => _setFilter(() => _fandom = f),
-                ),
-                const SizedBox(width: 8),
-                _PickerChip<Tag>(
-                  icon: Icons.sell_outlined,
-                  emptyLabel: 'Tag',
-                  selected: _tag,
-                  loadOptions: _db.usedTags,
-                  nameOf: (t) => t.name,
-                  onSelected: (t) => _setFilter(() => _tag = t),
-                ),
-                const VerticalDivider(indent: 12, endIndent: 12, width: 24),
-                ChoiceChip(
-                  label: const Text('Alle'),
-                  selected: _type == null,
-                  onSelected: (_) => _setFilter(() => _type = null),
-                ),
-                for (final t in WorkType.values) ...[
-                  const SizedBox(width: 8),
-                  ChoiceChip(
-                    avatar: Icon(t.icon, size: 18),
-                    showCheckmark: false,
-                    label: Text(t.label),
-                    selected: _type == t,
-                    onSelected: (sel) =>
-                        _setFilter(() => _type = sel ? t : null),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          Expanded(
-            child: StreamBuilder<List<WorkWithDetails>>(
-              stream: _works,
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
-                  return Center(child: Text('Fehler: ${snapshot.error}'));
-                }
-                final items = snapshot.data;
-                if (items == null) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (items.isEmpty) return _EmptyState(filtered: _isFiltered);
-                return ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(12, 4, 12, 96),
-                  itemCount: items.length,
-                  itemBuilder: (context, i) => WorkTile(item: items[i]),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.of(context)
-            .push(MaterialPageRoute(builder: (_) => const WorkEditScreen())),
-        icon: const Icon(Icons.add),
-        label: const Text('Hinzufügen'),
-      ),
+  void _setFilters(LibraryFilters filters) =>
+      _setFilter(() => _filters = filters);
+
+  void _openFilterPanel() => showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    showDragHandle: true,
+    builder: (_) => FilterPanel(
+      db: _db,
+      filters: _filters,
+      search: _search.text,
+      onChanged: _setFilters,
+    ),
+  );
+
+  /// Only queries the database once typing pauses briefly.
+  void _onSearchChanged(String _) {
+    setState(() {}); // show/hide the clear button
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(
+      const Duration(milliseconds: 250),
+      () => _setFilter(() {}),
     );
   }
-}
 
-/// Filter-Chip, der beim Antippen eine Auswahlliste öffnet.
-class _PickerChip<T> extends StatelessWidget {
-  const _PickerChip({
-    required this.icon,
-    required this.emptyLabel,
-    required this.selected,
-    required this.loadOptions,
-    required this.nameOf,
-    required this.onSelected,
-  });
+  void _clearSearch() {
+    _searchDebounce?.cancel();
+    _setFilter(_search.clear);
+  }
 
-  final IconData icon;
-  final String emptyLabel;
-  final T? selected;
-  final Future<List<T>> Function() loadOptions;
-  final String Function(T) nameOf;
-  final ValueChanged<T?> onSelected;
+  void _open(int id, {required bool wide}) {
+    if (wide) {
+      setState(() => _selectedId = id);
+    } else {
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => WorkDetailScreen(workId: id)));
+    }
+  }
 
-  Future<void> _pick(BuildContext context) async {
-    final options = await loadOptions();
-    if (!context.mounted) return;
-    // Record statt T?, damit „Alle“ (null) von „abgebrochen“ unterscheidbar ist.
-    final result = await showModalBottomSheet<(T?,)>(
+  /// Asks whether to add from a link or by hand, then opens the new entry.
+  /// Asks how to add an entry (link, file or by hand), then opens it.
+  Future<void> _create({required bool wide}) async {
+    final l10n = context.l10n;
+    final kind = await showModalBottomSheet<_AddKind>(
       context: context,
       showDragHandle: true,
-      builder: (context) => ListView(
-        shrinkWrap: true,
-        children: [
-          ListTile(
-            leading: const Icon(Icons.clear_all),
-            title: const Text('Alle'),
-            selected: selected == null,
-            onTap: () => Navigator.pop<(T?,)>(context, (null,)),
-          ),
-          if (options.isEmpty)
-            const ListTile(enabled: false, title: Text('Noch keine Einträge')),
-          for (final option in options)
+      isScrollControlled: true,
+      builder: (context) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          children: [
             ListTile(
-              title: Text(nameOf(option)),
-              selected: option == selected,
-              onTap: () => Navigator.pop<(T?,)>(context, (option,)),
+              leading: const Icon(Icons.link),
+              title: Text(l10n.addFromLink),
+              subtitle: Text(l10n.addFromLinkHint),
+              onTap: () => Navigator.pop(context, _AddKind.link),
             ),
-        ],
+            ListTile(
+              leading: const Icon(Icons.playlist_add),
+              title: Text(l10n.addFromList),
+              subtitle: Text(l10n.addFromListHint),
+              onTap: () => Navigator.pop(context, _AddKind.list),
+            ),
+            ListTile(
+              leading: const Icon(Icons.local_library_outlined),
+              title: Text(l10n.addFromCatalog),
+              subtitle: Text(l10n.addFromCatalogHint),
+              onTap: () => Navigator.pop(context, _AddKind.catalog),
+            ),
+            ListTile(
+              leading: const Icon(Icons.file_open_outlined),
+              title: Text(l10n.addFromFile),
+              subtitle: Text(l10n.addFromFileHint),
+              onTap: () => Navigator.pop(context, _AddKind.file),
+            ),
+            ListTile(
+              leading: const Icon(Icons.qr_code),
+              title: Text(l10n.addByIsbn),
+              subtitle: Text(l10n.addByIsbnHint),
+              onTap: () => Navigator.pop(context, _AddKind.isbn),
+            ),
+            ListTile(
+              leading: const Icon(Icons.edit_note),
+              title: Text(l10n.addManually),
+              subtitle: Text(l10n.addManuallyHint),
+              onTap: () => Navigator.pop(context, _AddKind.manual),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
       ),
     );
-    if (result != null) onSelected(result.$1);
+    if (kind == null || !mounted) return;
+    if (kind == _AddKind.list || kind == _AddKind.catalog) {
+      await Navigator.of(context).push<int>(
+        MaterialPageRoute(
+          builder: (_) => kind == _AddKind.list
+              ? const ListImportScreen()
+              : const CatalogsScreen(),
+        ),
+      );
+      return;
+    }
+    final int? id;
+    if (kind == _AddKind.isbn) {
+      id = await _addByIsbn();
+    } else if (kind == _AddKind.file) {
+      id = await _importFile();
+    } else {
+      id = await Navigator.of(context).push<int>(
+        MaterialPageRoute(
+          builder: (_) => kind == _AddKind.link
+              ? const ImportScreen()
+              : const WorkEditScreen(),
+        ),
+      );
+    }
+    if (id != null && mounted) _open(id, wide: wide);
+  }
+
+  /// Asks for an ISBN, looks it up and opens the form with what was found
+  /// (or just the ISBN); returns the new id.
+  Future<int?> _addByIsbn() async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    final input = await showTextPrompt(
+      context,
+      title: l10n.addByIsbn,
+      hint: '978-3-…',
+    );
+    if (input == null || input.isEmpty || !mounted) return null;
+    final isbn = isbnOf(input);
+    if (isbn == null) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.isbnInvalid)));
+      return null;
+    }
+    BookDetails? details;
+    final fetcher = HttpFetcher();
+    try {
+      details = await lookupIsbn(isbn, fetcher);
+      if (details == null) {
+        messenger.showSnackBar(SnackBar(content: Text(l10n.isbnNotFound)));
+      }
+    } on SourceException catch (e) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.isbnLookupFailed(e.message))),
+      );
+    } finally {
+      await fetcher.close();
+    }
+    return navigator.push<int>(
+      MaterialPageRoute(
+        builder: (_) => WorkEditScreen(
+          details: details ?? BookDetails(isbn: isbn, title: ''),
+        ),
+      ),
+    );
+  }
+
+  /// Lets the user pick a book file, shows its details in the form and
+  /// adds it on save; returns the new id.
+  Future<int?> _importFile() async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    final file = await openFile(
+      acceptedTypeGroups: [
+        XTypeGroup(label: l10n.bookFiles, extensions: kImportExtensions),
+      ],
+    );
+    if (file == null || !mounted) return null;
+    unawaited(
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          content: Row(
+            children: [
+              const SizedBox.square(
+                dimension: 24,
+                child: CircularProgressIndicator(),
+              ),
+              const SizedBox(width: 16),
+              Expanded(child: Text(l10n.importingFile(file.name))),
+            ],
+          ),
+        ),
+      ),
+    );
+    final ImportedBook book;
+    try {
+      book = await readBookFile(file.path);
+    } on Exception catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.importFailed('$e'))));
+      return null;
+    } finally {
+      navigator.pop(); // the progress dialog
+    }
+    final id = await navigator.push<int>(
+      MaterialPageRoute(
+        builder: (_) => WorkEditScreen(file: (book: book, path: file.path)),
+      ),
+    );
+    if (id != null) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.importedFile(file.name))),
+      );
+    }
+    return id;
   }
 
   @override
   Widget build(BuildContext context) {
-    final sel = selected;
-    return FilterChip(
-      avatar: Icon(icon, size: 18),
-      showCheckmark: false,
-      label: Row(
-        mainAxisSize: MainAxisSize.min,
+    final wide = MediaQuery.sizeOf(context).width >= Breakpoints.expanded;
+    final list = _buildListPane(context, wide: wide);
+    final selectedId = _selectedId;
+
+    // In the wide layout an outer Scaffold wraps both panes so snackbars
+    // appear once across the full width.
+    final body = !wide
+        ? list
+        : Scaffold(
+            body: Row(
+              children: [
+                SizedBox(width: _listPaneWidth, child: list),
+                const VerticalDivider(width: 1),
+                Expanded(
+                  child: selectedId == null
+                      ? const _NoSelection()
+                      : WorkDetailScreen(
+                          key: ValueKey(selectedId),
+                          workId: selectedId,
+                          embedded: true,
+                          onDeleted: () => setState(() => _selectedId = null),
+                        ),
+                ),
+              ],
+            ),
+          );
+
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.keyN, control: true): () =>
+            _create(wide: wide),
+        const SingleActivator(LogicalKeyboardKey.keyF, control: true):
+            _searchFocus.requestFocus,
+      },
+      child: Focus(autofocus: true, child: body),
+    );
+  }
+
+  Widget _buildListPane(BuildContext context, {required bool wide}) {
+    final theme = Theme.of(context);
+    final l10n = context.l10n;
+    return Scaffold(
+      body: StreamBuilder<List<WorkWithDetails>>(
+        stream: _works,
+        builder: (context, snapshot) {
+          final items = snapshot.data;
+          final list = CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                title: Text(l10n.libraryTitle),
+                floating: true,
+                snap: true,
+                actions: [
+                  if (LibraryScope.of(context).updates != null)
+                    IconButton(
+                      icon: _checking
+                          ? const SizedBox.square(
+                              dimension: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.refresh),
+                      tooltip: l10n.checkForUpdates,
+                      onPressed: _checking ? null : _checkForUpdates,
+                    ),
+                  if (SettingsScope.maybeOf(context) case final settings?)
+                    IconButton(
+                      icon: Icon(
+                        settings.gridView
+                            ? Icons.view_list_outlined
+                            : Icons.grid_view,
+                      ),
+                      tooltip: settings.gridView
+                          ? l10n.showAsList
+                          : l10n.showAsGrid,
+                      onPressed: () => settings.setGridView(!settings.gridView),
+                    ),
+                  IconButton(
+                    icon: const Icon(Icons.insights),
+                    tooltip: l10n.statsTitle,
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const StatsScreen()),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.settings_outlined),
+                    tooltip: l10n.settingsTitle,
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                    ),
+                  ),
+                ],
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                  child: SearchBar(
+                    controller: _search,
+                    focusNode: _searchFocus,
+                    hintText: l10n.searchHint,
+                    leading: const Icon(Icons.search),
+                    elevation: const WidgetStatePropertyAll(0),
+                    onChanged: _onSearchChanged,
+                    trailing: [
+                      if (_search.text.isNotEmpty)
+                        IconButton(
+                          icon: const Icon(Icons.clear),
+                          tooltip: l10n.clearSearch,
+                          onPressed: _clearSearch,
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              if (SettingsScope.maybeOf(context)?.shelves case final shelves?
+                  when shelves.isNotEmpty)
+                SliverToBoxAdapter(child: _buildShelves(l10n, shelves)),
+              SliverToBoxAdapter(
+                child: ActiveFilters(
+                  filters: _filters,
+                  onOpenPanel: _openFilterPanel,
+                  onChanged: _setFilters,
+                  onSaveShelf: SettingsScope.maybeOf(context) == null
+                      ? null
+                      : _saveShelf,
+                ),
+              ),
+              if (snapshot.hasError)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: Text(l10n.errorMessage(snapshot.error!)),
+                  ),
+                )
+              else if (items == null)
+                const SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else if (items.isEmpty)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: _EmptyState(filtered: _isFiltered),
+                )
+              else ...[
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                    child: Text(
+                      l10n.entryCount(items.length),
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ),
+                if (SettingsScope.maybeOf(context)?.gridView ?? false)
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 96),
+                    sliver: SliverGrid.builder(
+                      gridDelegate:
+                          const SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: 170,
+                            childAspectRatio: 0.52,
+                            mainAxisSpacing: 4,
+                            crossAxisSpacing: 4,
+                          ),
+                      itemCount: items.length,
+                      itemBuilder: (context, i) {
+                        final id = items[i].work.id;
+                        return WorkGridTile(
+                          item: items[i],
+                          selected: wide && id == _selectedId,
+                          heroTag: wide ? null : 'cover-$id',
+                          onTap: () => _open(id, wide: wide),
+                        );
+                      },
+                    ),
+                  )
+                else
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 96),
+                    sliver: SliverList.builder(
+                      itemCount: items.length,
+                      itemBuilder: (context, i) {
+                        final id = items[i].work.id;
+                        return WorkTile(
+                          item: items[i],
+                          selected: wide && id == _selectedId,
+                          // Hero animation only on page transitions (narrow layout).
+                          heroTag: wide ? null : 'cover-$id',
+                          onTap: () => _open(id, wide: wide),
+                        );
+                      },
+                    ),
+                  ),
+              ],
+            ],
+          );
+          return LibraryScope.of(context).updates == null
+              ? list
+              : RefreshIndicator(onRefresh: _checkForUpdates, child: list);
+        },
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _create(wide: wide),
+        tooltip: l10n.addTooltip,
+        icon: const Icon(Icons.add),
+        label: Text(l10n.addButton),
+      ),
+    );
+  }
+
+  Widget _buildShelves(AppLocalizations l10n, List<Shelf> shelves) {
+    final settings = SettingsScope.maybeOf(context)!;
+    return SizedBox(
+      height: 44,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         children: [
-          Text(sel == null ? emptyLabel : nameOf(sel)),
-          const Icon(Icons.arrow_drop_down, size: 18),
+          for (final shelf in shelves)
+            Padding(
+              padding: const EdgeInsets.only(right: 8, bottom: 4),
+              child: InputChip(
+                avatar: const Icon(Icons.shelves, size: 18),
+                label: Text(shelf.name),
+                tooltip: l10n.openShelf,
+                onPressed: () => _applyShelf(shelf),
+                onDeleted: () => settings.deleteShelf(shelf.name),
+                deleteButtonTooltipMessage: l10n.deleteShelf,
+              ),
+            ),
         ],
       ),
-      selected: sel != null,
-      onSelected: (_) => _pick(context),
     );
   }
 }
+
+enum _AddKind { link, list, catalog, file, isbn, manual }
 
 class _EmptyState extends StatelessWidget {
   const _EmptyState({required this.filtered});
@@ -228,6 +648,7 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -235,22 +656,50 @@ class _EmptyState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              Icons.auto_stories_outlined,
+              filtered ? Icons.search_off : Icons.auto_stories_outlined,
               size: 64,
               color: theme.colorScheme.outline,
             ),
             const SizedBox(height: 16),
             Text(
-              filtered ? 'Nichts gefunden' : 'Deine Bibliothek ist noch leer',
+              filtered ? l10n.noResultsTitle : l10n.emptyLibraryTitle,
               style: theme.textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
             Text(
-              filtered ? 'Probier andere Filter oder Suchbegriffe.' : 'Füge dein erstes Buch oder deine erste Fanfic über „Hinzufügen“ hinzu.',
+              filtered ? l10n.noResultsBody : l10n.emptyLibraryBody,
               textAlign: TextAlign.center,
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _NoSelection extends StatelessWidget {
+  const _NoSelection();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.menu_book_outlined,
+            size: 64,
+            color: theme.colorScheme.outline,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            context.l10n.noSelection,
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -19,6 +19,16 @@ static void first_frame_cb(MyApplication* self, FlView* view) {
   gtk_widget_show(gtk_widget_get_toplevel(GTK_WIDGET(view)));
 }
 
+static gboolean is_tiling_compositor() {
+  const gchar* desktop = g_getenv("XDG_CURRENT_DESKTOP");
+  if (desktop == nullptr) return FALSE;
+  static const gchar* const kTiling[] = {"Hyprland", "sway", "niri", "river"};
+  for (const gchar* name : kTiling) {
+    if (g_strrstr(desktop, name) != nullptr) return TRUE;
+  }
+  return FALSE;
+}
+
 // Implements GApplication::activate.
 static void my_application_activate(GApplication* application) {
   MyApplication* self = MY_APPLICATION(application);
@@ -42,14 +52,20 @@ static void my_application_activate(GApplication* application) {
     }
   }
 #endif
+  // Tiling-Compositoren (Hyprland, Sway, ...) brauchen keine Titelleiste.
+  // GTK3 würde unter Wayland sonst trotzdem eine eigene zeichnen.
+  if (is_tiling_compositor()) {
+    use_header_bar = FALSE;
+    gtk_window_set_decorated(window, FALSE);
+  }
   if (use_header_bar) {
     GtkHeaderBar* header_bar = GTK_HEADER_BAR(gtk_header_bar_new());
     gtk_widget_show(GTK_WIDGET(header_bar));
-    gtk_header_bar_set_title(header_bar, "lesetracker");
+    gtk_header_bar_set_title(header_bar, "ReadTrack");
     gtk_header_bar_set_show_close_button(header_bar, TRUE);
     gtk_window_set_titlebar(window, GTK_WIDGET(header_bar));
   } else {
-    gtk_window_set_title(window, "lesetracker");
+    gtk_window_set_title(window, "ReadTrack");
   }
 
   gtk_window_set_default_size(window, 1280, 720);

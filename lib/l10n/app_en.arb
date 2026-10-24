@@ -1,0 +1,1168 @@
+{
+  "@@locale": "en",
+  "appTitle": "ReadTrack",
+  "typeBook": "Book",
+  "typeFanfiction": "Fanfiction",
+  "typeWebnovel": "Web novel",
+  "typeManga": "Manga",
+  "typeComic": "Comic",
+  "formatPhysical": "Physical",
+  "formatDigital": "Digital",
+  "formatOnline": "Online",
+  "statusPlanned": "Want to read",
+  "statusReading": "Reading",
+  "statusFinished": "Finished",
+  "statusPaused": "On hold",
+  "statusDropped": "Dropped",
+  "sortUpdated": "Recently updated",
+  "sortAdded": "Recently added",
+  "sortTitle": "Title A–Z",
+  "sortRating": "Highest rated",
+  "chapterCount": "{count, plural, =1{1 chapter} other{{count} chapters}}",
+  "@chapterCount": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "wordCount": "{count, plural, =1{1 word} other{{count} words}}",
+  "@wordCount": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "pageCount": "{count, plural, =1{1 page} other{{count} pages}}",
+  "@pageCount": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "libraryTitle": "My Library",
+  "searchHint": "Search title, author, category, tags",
+  "clearSearch": "Clear search",
+  "sortTooltip": "Sort",
+  "filterCategory": "Category",
+  "filterTag": "Tag",
+  "filterType": "Type",
+  "clearFilters": "Clear filters",
+  "filtersButton": "Filters",
+  "removeFilter": "Remove filter",
+  "showEntries": "{count, plural, =0{No matching entries} =1{Show 1 entry} other{Show {count} entries}}",
+  "@showEntries": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "showEntriesLoading": "Show entries",
+  "searchFilterValues": "Search",
+  "sortByName": "Sort by name",
+  "sortByCount": "Sort by number of entries",
+  "filterAll": "All",
+  "pickerEmpty": "Nothing here yet",
+  "entryCount": "{count, plural, =1{1 entry} other{{count} entries}}",
+  "@entryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "addButton": "Add",
+  "addTooltip": "New entry (Ctrl+N)",
+  "emptyLibraryTitle": "Your library is empty",
+  "emptyLibraryBody": "Add your first book or fanfic with “Add”.",
+  "noResultsTitle": "Nothing found",
+  "noResultsBody": "Try different filters or search terms.",
+  "noSelection": "Select an entry on the left",
+  "errorMessage": "Error: {error}",
+  "@errorMessage": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "editTooltip": "Edit",
+  "deleteTooltip": "Delete",
+  "notFound": "Entry not found",
+  "linkOpenFailed": "Couldn't open the link",
+  "undo": "Undo",
+  "byAuthor": "by {author}",
+  "@byAuthor": {
+    "placeholders": {
+      "author": {
+        "type": "String"
+      }
+    }
+  },
+  "changeStatus": "Change reading status",
+  "chaptersComplete": "Chapters · complete",
+  "chaptersOngoing": "Chapters · ongoing",
+  "sectionProgress": "Reading progress",
+  "chapterProgress": "Chapter {current} of {total}",
+  "@chapterProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterCurrent": "Chapter {current}",
+  "@chapterCurrent": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      }
+    }
+  },
+  "previousChapter": "Previous chapter",
+  "nextChapter": "Next chapter",
+  "sectionLink": "Link",
+  "readOn": "Read on {site}",
+  "@readOn": {
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "readOnline": "Read online",
+  "sectionTags": "Tags",
+  "sectionIsbn": "ISBN",
+  "sectionSummary": "Summary",
+  "sectionNotes": "Notes",
+  "addedUpdated": "Added {added} · updated {updated}",
+  "@addedUpdated": {
+    "placeholders": {
+      "added": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      },
+      "updated": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      }
+    }
+  },
+  "newEntry": "New entry",
+  "editEntry": "Edit entry",
+  "save": "Save",
+  "discardTitle": "Discard changes?",
+  "discardBody": "Your changes haven't been saved.",
+  "keepEditing": "Keep editing",
+  "discard": "Discard",
+  "numbersOnly": "Numbers only",
+  "fieldType": "Type",
+  "fieldTitle": "Title *",
+  "titleRequired": "Please enter a title",
+  "fieldAuthor": "Author",
+  "fieldCategory": "Category / fandom",
+  "fieldCategoryHint": "e.g. Naruto, Harry Potter",
+  "fieldLink": "Link",
+  "fieldLinkHint": "https://www.fanfiction.net/s/…",
+  "invalidLink": "Invalid link",
+  "fieldStatus": "Reading status",
+  "sectionLength": "Length",
+  "fieldChapters": "Chapters",
+  "fieldCurrentChapter": "Read up to chapter",
+  "fieldWords": "Words",
+  "fieldPages": "Pages",
+  "completeTitle": "Completed by the author",
+  "completeSubtitle": "Off = the story is still being updated",
+  "fieldIsbn": "ISBN",
+  "addTag": "Add tag",
+  "addTagHint": "e.g. Action, Harem, Kingdom Building",
+  "sectionRating": "Rating",
+  "starTooltip": "{count, plural, =1{1 star} other{{count} stars}}",
+  "@starTooltip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sectionDescription": "Description",
+  "fieldSummary": "Summary",
+  "fieldNotes": "Personal notes",
+  "cancel": "Cancel",
+  "moreOptions": "More options",
+  "addFromLink": "From a link",
+  "addFromLinkHint": "Fanfic, web novel or book page – details are filled in for you",
+  "addManually": "Enter manually",
+  "addManuallyHint": "For example a book on your shelf",
+  "importTitle": "Add from link",
+  "importIntro": "Paste the link to a story. ReadTrack loads its title, author, chapters and more, and you can check everything before saving.",
+  "importLinkLabel": "Link to the story",
+  "importPaste": "Paste",
+  "importDetected": "Recognized: {site}",
+  "@importDetected": {
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "importFetch": "Load details",
+  "importLoading": "Loading…",
+  "importInvalidLink": "That doesn't look like a link.",
+  "importUnsupported": "This site isn't supported yet. You can still add the entry manually.",
+  "importAlreadyInLibrary": "This story is already in your library.",
+  "importSupported": "Supported sites",
+  "importBrowserNote": "FanFiction.Net, Scribble Hub, WebNovel and sometimes AO3 and Royal Road are protected against bots. For them a small browser window opens while ReadTrack loads pages. If it shows a verification, solve it once.",
+  "importedFrom": "Imported from {site}",
+  "@importedFrom": {
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "importedSummary": "{count, plural, =1{1 chapter found} other{{count} chapters found}} – check the details and save.",
+  "@importedSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "sectionRead": "Read",
+  "readOnlineInApp": "Read online",
+  "continueOnline": "Continue online · chapter {chapter}",
+  "@continueOnline": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "loadChapterList": "Load chapter list",
+  "checkForNewChapters": "Check for new chapters",
+  "newChaptersFound": "{count, plural, =1{1 new chapter} other{{count} new chapters}}",
+  "@newChaptersFound": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "noNewChapters": "No new chapters",
+  "downloadsHeading": "Downloads",
+  "noDownloadsYet": "Nothing downloaded yet. Downloads can be read offline.",
+  "downloadRange": "Chapters {from}–{to}",
+  "@downloadRange": {
+    "placeholders": {
+      "from": {
+        "type": "int"
+      },
+      "to": {
+        "type": "int"
+      }
+    }
+  },
+  "downloadSubtitle": "{format} · updated {date}",
+  "@downloadSubtitle": {
+    "placeholders": {
+      "format": {
+        "type": "String"
+      },
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      }
+    }
+  },
+  "readDownload": "Read",
+  "openFile": "Open file",
+  "logTitle": "Diagnostic log",
+  "logHint": "Errors and download problems, for bug reports. No passwords or book text.",
+  "logEmpty": "Nothing logged yet.",
+  "copyLog": "Copy log",
+  "exportLog": "Save log as file",
+  "clearLog": "Clear log",
+  "clearLogTitle": "Clear the diagnostic log?",
+  "logExported": "Log saved: {path}",
+  "@logExported": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "showLog": "Show log",
+  "crashNotice": "ReadTrack didn't close normally last time. The log may show why.",
+  "crashDuringDownload": "ReadTrack stopped unexpectedly while downloading “{title}” ({done} of {total} chapters). Downloaded chapters are kept; start the download again to continue.",
+  "@crashDuringDownload": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "done": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "openFileFormat": "Open {format} file",
+  "@openFileFormat": {
+    "placeholders": {
+      "format": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteDownload": "Delete download",
+  "suggestTags": "Suggest tags",
+  "tagSuggestionWhy": "{reason}. Tap to add the tag.",
+  "@tagSuggestionWhy": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "tagReasonKeyword": "The summary mentions “{word}”",
+  "@tagReasonKeyword": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "tagsSuggested": "{count, plural, =0{No new tag suggestions} =1{1 tag suggested} other{{count} tags suggested}}",
+  "@tagsSuggested": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "findCharacters": "Find in the text",
+  "suggestedCharacter": "Found in the text. Tap to confirm.",
+  "dismissSuggestion": "Not in this story",
+  "noKnownCharacters": "No characters are known for this category yet. Add some, or look the franchise up on AniList.",
+  "noTextToSearch": "There is no downloaded text to search yet.",
+  "charactersFound": "{count, plural, =0{No more known characters found} =1{Found 1 character; confirm it with a tap} other{Found {count} characters; confirm them with a tap}}",
+  "@charactersFound": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aniListLookUp": "Look up on AniList",
+  "aniListTitle": "AniList",
+  "aniListHint": "Pick the matching one. Empty fields are filled in; tags, characters and links to sequels or prequels in your library are added.",
+  "aniListApplied": "Took AniList's details: {characters, plural, =0{no new characters} =1{1 new character} other{{characters} new characters}}, {relations, plural, =0{no links} =1{1 link} other{{relations} links}}",
+  "@aniListApplied": {
+    "placeholders": {
+      "characters": {
+        "type": "int"
+      },
+      "relations": {
+        "type": "int"
+      }
+    }
+  },
+  "categoriesTitle": "Categories",
+  "categoriesTileHint": "Rename or merge franchises",
+  "categoriesHint": "Merging a category into another moves its entries, crossovers and characters, and remembers its name, so stories imported later with that name land in the right place.",
+  "renameCategory": "Rename",
+  "mergeCategoryInto": "Merge into another category…",
+  "mergeCategoryTitle": "Merge “{name}” into",
+  "@mergeCategoryTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryAliases": "{count, plural, =1{1 other name} other{{count} other names}}",
+  "@categoryAliases": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pageCurrent": "Page {current}",
+  "@pageCurrent": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      }
+    }
+  },
+  "pageProgress": "Page {current} of {total}",
+  "@pageProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "setPage": "Set page",
+  "currentPageTitle": "Which page are you on?",
+  "autoDownload": "Download new chapters",
+  "autoDownloadHint": "When a check finds new chapters, stories you have downloaded get them too, in the same file.",
+  "autoDownloaded": "{count, plural, =1{Downloaded 1 new chapter} other{Downloaded {count} new chapters}}",
+  "@autoDownloaded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mangaMode": "Page layout",
+  "mangaPages": "Pages, left to right",
+  "mangaPagesRtl": "Pages, right to left (manga)",
+  "mangaScroll": "Long strip (webtoon)",
+  "mangaDoublePage": "Two pages side by side (wide windows)",
+  "ownsPaperCopy": "I also own it on paper",
+  "paperCopy": "Paper copy",
+  "mergeTagInto": "Merge into another tag…",
+  "mergeTagTitle": "Merge “{name}” into",
+  "@mergeTagTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "tagAlsoCalled": "Also: {names}",
+  "@tagAlsoCalled": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "removeSynonym": "Forget “{name}”",
+  "@removeSynonym": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sectionCharacters": "Characters",
+  "addCharacter": "Add a character",
+  "addCharacterHint": "e.g. Fujiwara Chika",
+  "pickCharacters": "Choose characters",
+  "filterCharacter": "Character",
+  "sectionCrossovers": "Crossover with",
+  "addCrossover": "Add a category",
+  "addCrossoverHint": "The other franchises of a crossover",
+  "openFranchise": "Everything for {name}",
+  "@openFranchise": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "franchiseSummary": "{own, plural, =1{1 entry} other{{own} entries}}, {crossovers, plural, =0{no crossovers} =1{1 crossover} other{{crossovers} crossovers}}",
+  "@franchiseSummary": {
+    "placeholders": {
+      "own": {
+        "type": "int"
+      },
+      "crossovers": {
+        "type": "int"
+      }
+    }
+  },
+  "franchiseCrossovers": "Crossovers from other categories",
+  "fieldSeries": "Series",
+  "fieldSeriesHint": "e.g. Harry Potter",
+  "fieldSeriesIndex": "No.",
+  "pickSeries": "Choose a series",
+  "filterSeries": "Series",
+  "sectionSeries": "Series: {name}",
+  "@sectionSeries": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sectionRelated": "Related",
+  "addRelation": "Add",
+  "addRelationTitle": "Related to “{title}”",
+  "@addRelationTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "removeRelation": "Remove relation",
+  "relationSequel": "Sequel",
+  "relationPrequel": "Prequel",
+  "relationSpinOff": "Spin-off",
+  "relationSpinOffOf": "Spin-off of",
+  "relationSideStory": "Side story",
+  "relationSideStoryOf": "Side story of",
+  "statsTitle": "Statistics",
+  "statsIntro": "Counts reading in ReadTrack's reader: time while you scroll or turn pages, and the words of each chapter read to the end.",
+  "statsLast30Days": "Words per day, last 30 days",
+  "statsNothingYet": "Nothing read in the app yet.",
+  "statsMostInADay": "Most in a day: {words} words",
+  "@statsMostInADay": {
+    "placeholders": {
+      "words": {
+        "type": "String"
+      }
+    }
+  },
+  "statsTotals": "Totals",
+  "statsThisWeek": "this week",
+  "statsThisMonth": "this month",
+  "statsThisYear": "this year",
+  "statsWordsIn": "words {span}",
+  "@statsWordsIn": {
+    "placeholders": {
+      "span": {
+        "type": "String"
+      }
+    }
+  },
+  "statsStreaks": "Streaks",
+  "statsCurrentStreak": "Current streak",
+  "statsLongestStreak": "Longest streak",
+  "statsDays": "{count, plural, =1{1 day} other{{count} days}}",
+  "@statsDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsYearInReview": "{year} in review",
+  "@statsYearInReview": {
+    "placeholders": {
+      "year": {
+        "type": "String"
+      }
+    }
+  },
+  "statsRead": "read",
+  "statsDaysRead": "Days with reading",
+  "statsFinished": "Finished",
+  "statsMostRead": "Most read",
+  "statsFinishedList": "Finished",
+  "statsMinutes": "{minutes} min",
+  "@statsMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "statsHours": "{hours} h {minutes} min",
+  "@statsHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "addByIsbn": "By ISBN",
+  "addByIsbnHint": "A paper book: details and cover from Open Library",
+  "isbnLookUp": "Look up this ISBN",
+  "isbnInvalid": "That isn't a valid ISBN-10 or ISBN-13.",
+  "isbnNotFound": "No details found for this ISBN. Please fill them in.",
+  "isbnLookupFailed": "The lookup failed: {error}",
+  "@isbnLookupFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "addFromCatalog": "From a free catalog",
+  "addFromCatalogHint": "Project Gutenberg, Standard Ebooks or your own OPDS catalog (e.g. Calibre)",
+  "catalogsTitle": "Catalogs",
+  "catalogsIntro": "Free, legal books in OPDS catalogs. Add your own, such as a Calibre content server.",
+  "addCatalog": "Add catalog",
+  "removeCatalog": "Remove catalog",
+  "catalogUrl": "OPDS address",
+  "catalogName": "Name (optional)",
+  "catalogNoSearch": "This catalog can't be searched.",
+  "catalogSearch": "Search {name}",
+  "@catalogSearch": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "searchButton": "Search",
+  "catalogEmpty": "Nothing here.",
+  "catalogNoFile": "No EPUB, FB2 or text file offered",
+  "catalogAdd": "Add to library",
+  "catalogAttach": "Attach to this entry",
+  "catalogAttached": "Attached “{title}”. It can be read in the app now.",
+  "@catalogAttached": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "catalogMore": "Load more",
+  "freeEditionsTitle": "Free editions: {query}",
+  "@freeEditionsTitle": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "noTextHint": "No text for this entry yet.",
+  "attachFile": "Attach a book file",
+  "findFreeEditions": "Find free editions",
+  "addFromList": "From a list on a site",
+  "addFromListHint": "Bookmarks, favorites, collections or reading lists",
+  "listImportTitle": "Add from a list",
+  "listImportIntro": "Paste the link to a list page: AO3 bookmarks, collections, series or a user's works; Royal Road favorites; FanFiction.net favorites; a Wattpad reading list; or a list page on another supported site. Private lists only load if the site shows them without signing in.",
+  "listImportUrl": "Link to the list",
+  "listImportLoad": "Load list",
+  "listImportUnsupported": "This isn't a link to a supported site.",
+  "listImportIsStory": "This link is a single story. Use “From a link” to add it.",
+  "listImportEmpty": "No stories found on this page.",
+  "listImportFound": "{count, plural, =1{1 story} other{{count} stories}}, {inLibrary} already in your library",
+  "@listImportFound": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "inLibrary": {
+        "type": "int"
+      }
+    }
+  },
+  "listImportToggleAll": "Select all / none",
+  "listImportStatus": "Add as",
+  "listImportInLibrary": "Already in your library",
+  "listImportAdd": "{count, plural, =1{Add 1 story} other{Add {count} stories}}",
+  "@listImportAdd": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "listImportProgress": "Adding {done} of {total}…",
+  "@listImportProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "listImportDone": "Added {added}, {failed} failed",
+  "@listImportDone": {
+    "placeholders": {
+      "added": {
+        "type": "int"
+      },
+      "failed": {
+        "type": "int"
+      }
+    }
+  },
+  "listImportClose": "Done",
+  "importingFromFile": "From file: {name}",
+  "@importingFromFile": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "importedFileSummary": "{format} · {count, plural, =1{1 chapter} other{{count} chapters}}. Check the details, then save to add the book.",
+  "@importedFileSummary": {
+    "placeholders": {
+      "format": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "estimateLength": "Estimate length",
+  "estimateLengthHint": "Reads three sample chapters from the site and scales them up.",
+  "estimateFailed": "No sample chapter could be loaded.",
+  "downloadWithImages": "Include images",
+  "downloadWithImagesHint": "Off: only the text is downloaded and saved, which uses less data and space.",
+  "downloadKeepsImages": "Images are included, as in this download.",
+  "downloadKeepsNoImages": "Without images, as in this download.",
+  "downloadIncomplete": "{count, plural, =1{1 chapter missing} other{{count} chapters missing}}",
+  "@downloadIncomplete": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "loadMissingChapters": "Load missing chapters",
+  "downloadButton": "Download…",
+  "downloadPreparing": "Preparing download…",
+  "downloadProgress": "Downloading chapter {current} of {total}…",
+  "@downloadProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "downloadDone": "{count, plural, =0{Download updated} =1{Downloaded 1 chapter} other{Downloaded {count} chapters}}",
+  "@downloadDone": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "downloadDoneWithErrors": "Downloaded {done}, {failed} failed",
+  "@downloadDoneWithErrors": {
+    "placeholders": {
+      "done": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "failed": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "downloadCancelled": "Download cancelled after {count} chapters",
+  "@downloadCancelled": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "downloadTitle": "Download chapters",
+  "downloadChecking": "Checking {site} for new chapters…",
+  "@downloadChecking": {
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadCheckFailed": "Couldn't check for new chapters: {error}",
+  "@downloadCheckFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadAvailable": "{count, plural, =1{1 chapter available} other{{count} chapters available}}",
+  "@downloadAvailable": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "downloadNewChapters": "{count, plural, =1{1 of them is new} other{{count} of them are new}}",
+  "@downloadNewChapters": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "downloadLockedNote": "{count, plural, =1{1 chapter is locked on the site and will be skipped.} other{{count} chapters are locked on the site and will be skipped.}}",
+  "@downloadLockedNote": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "downloadNoChapters": "No chapters found on the site.",
+  "downloadUpToDate": "All chapters are downloaded already. You can still create another file.",
+  "downloadAppend": "Add to “Chapters {from}–{to}” → chapters {from}–{newTo}",
+  "@downloadAppend": {
+    "placeholders": {
+      "from": {
+        "type": "int"
+      },
+      "to": {
+        "type": "int"
+      },
+      "newTo": {
+        "type": "int"
+      }
+    }
+  },
+  "downloadNewFile": "Create a new file",
+  "downloadFrom": "From chapter",
+  "downloadTo": "To chapter",
+  "downloadMax": "Up to {count}",
+  "@downloadMax": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "downloadStart": "Download",
+  "readerChapters": "Chapters",
+  "readerTextSize": "Text size",
+  "readerSmaller": "Smaller text",
+  "readerLarger": "Larger text",
+  "readerOpenInBrowser": "Open in browser",
+  "readerPosition": "{current} / {total}",
+  "@readerPosition": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "readerLoading": "Loading chapter…",
+  "readerBrowserHint": "If a ReadTrack browser window opens, complete the website’s confirmation or sign-in there. Leave it open while reading or downloading.",
+  "readerRetry": "Try again",
+  "readerNoChapters": "No chapters yet. Load the chapter list first.",
+  "readerNoSource": "This entry's site isn't supported for reading in the app.",
+  "readerLockedChapter": "This chapter is locked on the site.",
+  "readerNotDownloaded": "This chapter isn't downloaded.",
+  "readerLatestChapter": "You've reached the latest chapter.",
+  "readerEndOfDownload": "End of this download.",
+  "sortStatus": "By reading status",
+  "filterStatus": "Status",
+  "chooseExisting": "Choose from existing",
+  "pickTags": "Choose tags",
+  "pickCategory": "Choose a category",
+  "pickAuthor": "Choose an author",
+  "pickerSearch": "Search…",
+  "pickerDone": "Done",
+  "frequentlyUsed": "Frequently used:",
+  "pickerAdd": "Add “{value}”",
+  "@pickerAdd": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "sectionPairings": "Pairings",
+  "filterPairing": "Pairing",
+  "addPairing": "Add pairing",
+  "addPairingHint": "e.g. Naruto/Hinata",
+  "pickPairings": "Choose pairings",
+  "settingsTitle": "Settings",
+  "hideAdultTags": "Hide 18+ tags",
+  "hideAdultTagsHint": "Tags with adult content stay on your entries but are not shown.",
+  "adultTagsHeading": "18+ tags",
+  "adultTagsHint": "Tags are marked automatically when they look like adult content or the site marks them. Tick or untick to correct it.",
+  "hiddenAdultTags": "{count, plural, =1{+1 hidden 18+ tag} other{+{count} hidden 18+ tags}}",
+  "@hiddenAdultTags": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exportAs": "Export as…",
+  "exportedAs": "Saved as {format}",
+  "@exportedAs": {
+    "placeholders": {
+      "format": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadFormatHint": "EPUB works in most e-book readers, FB2 in many Russian ones, HTML in any browser. Files are saved to ~/Documents/ReadTrack.",
+  "addFromFile": "Import a file",
+  "addFromFileHint": "EPUB, FB2, TXT or HTML you already have – read it in ReadTrack",
+  "bookFiles": "Books",
+  "importingFile": "Importing {name}…",
+  "@importingFile": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "importedFile": "Imported {name}",
+  "@importedFile": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "importFailed": "Couldn't import the file: {error}",
+  "@importFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "readerSettings": "Reading settings",
+  "readerFont": "Font",
+  "readerFontSystem": "System",
+  "readerFontSerif": "Serif",
+  "readerFontSans": "Sans",
+  "readerFontMono": "Mono",
+  "readerLineSpacing": "Line spacing",
+  "readerTheme": "Theme",
+  "readerThemeApp": "App",
+  "readerThemeLight": "Light",
+  "readerThemeSepia": "Sepia",
+  "readerThemeDark": "Dark",
+  "readerThemeBlack": "Night",
+  "readerJustify": "Justify text",
+  "readerThemeCustom": "Custom",
+  "readerBackgroundColor": "Background",
+  "readerTextColor": "Text",
+  "readerHexInvalid": "Use #RRGGBB",
+  "readerTextWidth": "Text width",
+  "readerWidthFull": "Full",
+  "readerWidthReset": "Default width",
+  "readerFontOther": "Other font…",
+  "readerFontPick": "Choose a font",
+  "readerFontSearch": "Search or type a font name",
+  "readerFontUse": "Use “{name}”",
+  "@readerFontUse": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "readerFontNone": "No installed fonts found. Type the name of a font.",
+  "addBookmark": "Add bookmark",
+  "bookmarkAdded": "Bookmark added",
+  "bookmarkAt": "Bookmark at {percent} %",
+  "@bookmarkAt": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "saveQuote": "Save quote",
+  "quoteSaved": "Quote saved",
+  "addNote": "Add note",
+  "editNote": "Edit note",
+  "noteSaved": "Note saved",
+  "noteHint": "Your thoughts…",
+  "annotationsTitle": "Bookmarks, quotes & notes",
+  "annotationsEmpty": "Nothing yet. Add a bookmark with the bookmark button, or select text to save a quote or note.",
+  "showAllAnnotations": "Show all ({count})",
+  "@showAllAnnotations": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterLength": "Length",
+  "atLeastWords": "{count}+ words",
+  "@atLeastWords": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "compact"
+      }
+    }
+  },
+  "filterCompletion": "Completion",
+  "completeOnly": "Complete",
+  "ongoingOnly": "Ongoing",
+  "saveShelf": "Save as shelf",
+  "saveShelfTitle": "Save these filters as a shelf",
+  "shelfNameHint": "e.g. Long finished romance",
+  "openShelf": "Show this shelf",
+  "deleteShelf": "Delete shelf",
+  "showAsGrid": "Show as grid",
+  "showAsList": "Show as list",
+  "backupHeading": "Backup",
+  "backupHint": "Saves your whole library – entries, progress, notes and downloaded books – in one zip file.",
+  "createBackup": "Create backup",
+  "backupCreated": "Backup saved: {path}",
+  "@backupCreated": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "backupFailed": "Backup failed: {error}",
+  "@backupFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "backupFiles": "ReadTrack backups",
+  "restoreBackup": "Restore backup",
+  "restoreBackupTitle": "Restore this backup?",
+  "restoreBackupWarning": "Your current library is replaced by the backup. A copy of it is kept as \"before-restore\" in the app folder.",
+  "restoreReadyTitle": "Backup ready",
+  "restoreReadyHint": "Restart ReadTrack to finish restoring the backup.",
+  "restoreFailed": "Could not restore the backup: {error}",
+  "@restoreFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "later": "Later",
+  "closeApp": "Close ReadTrack",
+  "checkForUpdates": "Check for new chapters",
+  "updatesFound": "{chapters, plural, =1{1 new chapter} other{{chapters} new chapters}} in {works, plural, =1{1 story} other{{works} stories}}",
+  "@updatesFound": {
+    "placeholders": {
+      "chapters": {
+        "type": "int"
+      },
+      "works": {
+        "type": "int"
+      }
+    }
+  },
+  "noUpdatesFound": "No new chapters",
+  "updatesFailed": "No new chapters found; {count, plural, =1{1 story} other{{count} stories}} could not be checked",
+  "@updatesFailed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "newChaptersBadge": "+{count} new",
+  "@newChaptersBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "abandonedBadge": "No update for over a year",
+  "abandonedShort": "Abandoned?",
+  "checkOnStart": "Check for new chapters on start",
+  "checkOnStartHint": "Ongoing stories that update often are checked more often, finished ones about once a month. Sites that need a browser window are only checked from the story page.",
+  "updatesHeading": "Updates",
+  "saveFailed": "Could not save: {error}",
+  "@saveFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteTitle": "Delete “{title}”?",
+  "@deleteTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteToTrashHint": "It goes to the trash in Settings, where you can restore it for six months.",
+  "movedToTrash": "“{title}” moved to the trash",
+  "@movedToTrash": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "trashTitle": "Trash",
+  "trashHint": "Deleted entries stay here for six months, then they are removed for good together with their downloaded files.",
+  "trashEmpty": "The trash is empty",
+  "trashDates": "Deleted {deleted} · removed for good on {purge}",
+  "@trashDates": {
+    "placeholders": {
+      "deleted": {
+        "type": "String"
+      },
+      "purge": {
+        "type": "String"
+      }
+    }
+  },
+  "trashCount": "{count, plural, =0{Empty} =1{1 entry} other{{count} entries}}",
+  "@trashCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "restore": "Restore",
+  "deleteForever": "Delete for good",
+  "deleteForeverTitle": "Delete “{title}” for good?",
+  "@deleteForeverTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "emptyTrash": "Empty trash",
+  "emptyTrashTitle": "{count, plural, =1{Delete 1 entry for good?} other{Delete {count} entries for good?}}",
+  "@emptyTrashTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cannotUndo": "Downloaded chapters and files are deleted too. This cannot be undone.",
+  "restoredFromTrash": "Restored from the trash"
+}

@@ -1,4 +1,4 @@
-/// Vorschläge im Tag-Feld, auch bevor eigene Tags angelegt wurden.
+/// Suggestions in the tag field, even before any tags have been created.
 const kDefaultTags = [
   'Action',
   'Adventure',

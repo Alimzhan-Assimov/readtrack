@@ -1,17 +1,43 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../data/database.dart';
 import '../data/database_scope.dart';
+import '../l10n/l10n.dart';
+import '../library/character_detection.dart';
+import '../library/keyword_tags.dart';
+import '../library/story_sync.dart';
+import '../sources/sources.dart';
+import '../ui/app_settings.dart';
 import '../ui/format.dart';
 import '../ui/labels.dart';
+import '../ui/layout.dart';
+import '../widgets/text_prompt.dart';
+import '../widgets/work_cover.dart';
+import 'anilist_dialog.dart';
+import 'franchise_screen.dart';
+import 'read_section.dart';
+import 'related_section.dart';
 import 'work_edit_screen.dart';
 
 class WorkDetailScreen extends StatefulWidget {
-  const WorkDetailScreen({super.key, required this.workId});
+  const WorkDetailScreen({
+    super.key,
+    required this.workId,
+    this.embedded = false,
+    this.onDeleted,
+  });
 
   final int workId;
+
+  /// Shown as the right-hand pane next to the list instead of as a page.
+  final bool embedded;
+
+  /// Called after deleting. Without a callback the page is closed.
+  final VoidCallback? onDeleted;
 
   @override
   State<WorkDetailScreen> createState() => _WorkDetailScreenState();
@@ -19,6 +45,8 @@ class WorkDetailScreen extends StatefulWidget {
 
 class _WorkDetailScreenState extends State<WorkDetailScreen> {
   late Stream<WorkWithDetails?> _work;
+  late Stream<List<({Tag tag, TagSuggestion suggestion})>> _tagSuggestions;
+  bool _estimating = false;
 
   AppDatabase get _db => DatabaseScope.of(context);
 
@@ -26,6 +54,19 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _work = _db.watchWork(widget.workId);
+    _tagSuggestions = _db.watchTagSuggestions(widget.workId);
+    // Opening the story counts as having seen its new chapters.
+    _db.markChaptersSeen(widget.workId);
+  }
+
+  @override
+  void didUpdateWidget(WorkDetailScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.workId != widget.workId) {
+      _work = _db.watchWork(widget.workId);
+      _tagSuggestions = _db.watchTagSuggestions(widget.workId);
+      _db.markChaptersSeen(widget.workId);
+    }
   }
 
   Future<void> _openUrl(String url) async {
@@ -37,9 +78,73 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
       );
     } catch (_) {}
     if (!opened && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Link konnte nicht geöffnet werden')),
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(context.l10n.linkOpenFailed)));
+    }
+  }
+
+  /// The site to read [w] from, if any.
+  StorySource? _sourceOf(Work w) {
+    final url = w.sourceUrl;
+    final source = url == null ? null : sourceFor(Uri.parse(url));
+    return source != null && source.canRead ? source : null;
+  }
+
+  Future<void> _estimate(Work w, StorySource source) async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _estimating = true);
+    try {
+      final words = await estimateLength(_db, w, source);
+      if (words == null) {
+        messenger.showSnackBar(SnackBar(content: Text(l10n.estimateFailed)));
+      }
+    } finally {
+      if (mounted) setState(() => _estimating = false);
+    }
+  }
+
+  bool _detecting = false;
+
+  /// Proposes default tags whose keywords appear in the title or summary.
+  Future<void> _suggestTags(Work w) async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    final found = keywordTags('${w.title}\n${w.summary ?? ''}');
+    final added = await _db.suggestTags(w.id, {
+      for (final MapEntry(key: tag, value: word) in found.entries)
+        tag: l10n.tagReasonKeyword(word),
+    });
+    messenger.showSnackBar(SnackBar(content: Text(l10n.tagsSuggested(added))));
+  }
+
+  /// Looks for the category's known characters in the downloaded text and
+  /// adds them as suggestions.
+  Future<void> _findCharacters(WorkWithDetails item) async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _detecting = true);
+    try {
+      final known = await _db.charactersOf(item.fandom!.id);
+      final text = await _db.textOf(item.work.id);
+      if (known.isEmpty || text.trim().isEmpty) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(
+              known.isEmpty ? l10n.noKnownCharacters : l10n.noTextToSearch,
+            ),
+          ),
+        );
+        return;
+      }
+      final found = detectCharacters(text, known)
+        ..removeWhere((id, _) => item.characters.any((c) => c.id == id));
+      await _db.suggestCharacters(item.work.id, found);
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.charactersFound(found.length))),
       );
+    } finally {
+      if (mounted) setState(() => _detecting = false);
     }
   }
 
@@ -55,29 +160,46 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
     );
   }
 
-  Future<void> _confirmDelete(Work w) async {
+  /// Asks first, then moves the work to the trash (with "Undo").
+  Future<void> _delete(Work w) async {
+    final db = _db;
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Eintrag löschen?'),
-        content: Text(
-          '„${w.title}“ wird endgültig aus deiner Bibliothek entfernt.',
-        ),
+        title: Text(l10n.deleteTitle(w.title)),
+        content: Text(l10n.deleteToTrashHint),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Abbrechen'),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Löschen'),
+            child: Text(l10n.deleteTooltip),
           ),
         ],
       ),
     );
-    if (confirmed != true) return;
-    await _db.deleteWork(w.id);
-    if (mounted) Navigator.of(context).pop();
+    if (confirmed != true || !mounted) return;
+    await db.moveToTrash(w.id);
+    if (!mounted) return;
+    if (widget.onDeleted case final onDeleted?) {
+      onDeleted();
+    } else {
+      Navigator.of(context).pop();
+    }
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(l10n.movedToTrash(w.title)),
+        persist: false,
+        action: SnackBarAction(
+          label: l10n.undo,
+          onPressed: () => db.restoreFromTrash(w.id),
+        ),
+      ),
+    );
   }
 
   @override
@@ -88,11 +210,11 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
         final item = snapshot.data;
         if (item == null) {
           return Scaffold(
-            appBar: AppBar(),
+            appBar: AppBar(automaticallyImplyLeading: !widget.embedded),
             body: Center(
               child: snapshot.connectionState == ConnectionState.waiting
                   ? const CircularProgressIndicator()
-                  : const Text('Eintrag nicht gefunden'),
+                  : Text(context.l10n.notFound),
             ),
           );
         }
@@ -103,176 +225,411 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
 
   Widget _buildDetails(BuildContext context, WorkWithDetails item) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     final w = item.work;
     final url = w.sourceUrl;
     final site = siteName(url);
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: !widget.embedded,
         actions: [
+          if (w.type != WorkType.fanfiction)
+            IconButton(
+              icon: const Icon(Icons.travel_explore),
+              tooltip: l10n.aniListLookUp,
+              onPressed: () async {
+                final messenger = ScaffoldMessenger.of(context);
+                final result = await lookUpOnAniList(context, item);
+                if (result != null) {
+                  messenger.showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        l10n.aniListApplied(
+                          result.characters,
+                          result.relations,
+                        ),
+                      ),
+                    ),
+                  );
+                }
+              },
+            ),
           IconButton(
             icon: const Icon(Icons.edit_outlined),
-            tooltip: 'Bearbeiten',
+            tooltip: l10n.editTooltip,
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => WorkEditScreen(existing: item)),
             ),
           ),
           IconButton(
             icon: const Icon(Icons.delete_outline),
-            tooltip: 'Löschen',
-            onPressed: () => _confirmDelete(w),
+            tooltip: l10n.deleteTooltip,
+            onPressed: () => _delete(w),
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
-        children: [
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              Chip(
-                avatar: Icon(w.type.icon, size: 18),
-                label: Text(w.type.label),
-              ),
-              Chip(
-                avatar: Icon(w.format.icon, size: 18),
-                label: Text(w.format.label),
-              ),
-              PopupMenuButton<ReadingStatus>(
-                initialValue: w.status,
-                tooltip: 'Lesestatus ändern',
-                onSelected: (s) =>
-                    _db.updateWork(w.id, WorksCompanion(status: Value(s))),
-                itemBuilder: (context) => [
-                  for (final s in ReadingStatus.values)
-                    PopupMenuItem(
-                      value: s,
-                      child: ListTile(
-                        leading: Icon(s.icon),
-                        title: Text(s.label),
+      body: LayoutBuilder(
+        builder: (context, constraints) => ListView(
+          padding: readablePadding(constraints.maxWidth, bottom: 32),
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                WorkCover(
+                  work: w,
+                  width: 96,
+                  heroTag: widget.embedded ? null : 'cover-${w.id}',
+                ),
+                const SizedBox(width: 16),
+                Expanded(child: _buildHeader(theme, l10n, item)),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                Chip(
+                  avatar: Icon(w.type.icon, size: 18),
+                  label: Text(w.type.label(l10n)),
+                ),
+                Chip(
+                  avatar: Icon(w.format.icon, size: 18),
+                  label: Text(w.format.label(l10n)),
+                ),
+                if (w.ownsPhysicalCopy)
+                  Chip(
+                    avatar: Icon(WorkFormat.physical.icon, size: 18),
+                    label: Text(l10n.paperCopy),
+                  ),
+                _StatusMenu(
+                  status: w.status,
+                  onChanged: (s) =>
+                      _db.updateWork(w.id, WorksCompanion(status: Value(s))),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                if (w.chapterCount case final n?)
+                  _StatBox(
+                    value: l10n.formatNumber(n),
+                    label: w.isComplete
+                        ? l10n.chaptersComplete
+                        : l10n.chaptersOngoing,
+                  ),
+                if (w.wordCount case final n?)
+                  _StatBox(
+                    value: estimated(l10n.formatNumber(n), w.wordsEstimated),
+                    label: l10n.fieldWords,
+                  ),
+                if (w.pageCount case final n?)
+                  _StatBox(
+                    value: estimated(l10n.formatNumber(n), w.pagesEstimated),
+                    label: l10n.fieldPages,
+                  ),
+                if (w.wordCount == null &&
+                    (w.chapterCount ?? 0) > 0 &&
+                    _sourceOf(w) != null)
+                  ActionChip(
+                    avatar: _estimating
+                        ? const SizedBox.square(
+                            dimension: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.straighten, size: 18),
+                    label: Text(l10n.estimateLength),
+                    tooltip: l10n.estimateLengthHint,
+                    onPressed: _estimating
+                        ? null
+                        : () => _estimate(w, _sourceOf(w)!),
+                  ),
+              ],
+            ),
+            if (w.format == WorkFormat.physical)
+              _buildPageProgress(l10n, w)
+            else if (w.chapterCount != null || w.currentChapter != null)
+              _buildProgress(l10n, w),
+            // Shows itself for readable sources and imported books.
+            ReadSection(work: w),
+            RelatedSection(item: item),
+            if (url != null)
+              _Section(
+                title: l10n.sectionLink,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    FilledButton.icon(
+                      icon: const Icon(Icons.open_in_new),
+                      label: Text(
+                        site != null ? l10n.readOn(site) : l10n.readOnline,
                       ),
+                      onPressed: () => _openUrl(url),
                     ),
-                ],
-                child: Chip(
-                  backgroundColor: theme.colorScheme.primaryContainer,
-                  avatar: Icon(w.status.icon, size: 18),
-                  label: Row(
-                    mainAxisSize: MainAxisSize.min,
+                    const SizedBox(height: 4),
+                    SelectableText(url, style: theme.textTheme.bodySmall),
+                  ],
+                ),
+              ),
+            if (item.characters.isNotEmpty || item.fandom != null)
+              _Section(
+                title: l10n.sectionCharacters,
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    for (final c in item.characters)
+                      if (item.suggestedCharacters.contains(c.id))
+                        InputChip(
+                          avatar: const Icon(Icons.help_outline, size: 18),
+                          label: Text(c.name),
+                          tooltip: l10n.suggestedCharacter,
+                          onPressed: () => _db.confirmCharacter(w.id, c.id),
+                          onDeleted: () => _db.removeCharacter(w.id, c.id),
+                          deleteButtonTooltipMessage: l10n.dismissSuggestion,
+                        )
+                      else
+                        Chip(
+                          avatar: const Icon(Icons.person_outline, size: 18),
+                          label: Text(c.name),
+                        ),
+                    if (item.fandom != null)
+                      TextButton.icon(
+                        icon: _detecting
+                            ? const SizedBox.square(
+                                dimension: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(
+                                Icons.person_search_outlined,
+                                size: 18,
+                              ),
+                        label: Text(l10n.findCharacters),
+                        onPressed: _detecting
+                            ? null
+                            : () => _findCharacters(item),
+                      ),
+                  ],
+                ),
+              ),
+            if (item.pairings.isNotEmpty)
+              _Section(
+                title: l10n.sectionPairings,
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: [
+                    for (final p in item.pairings)
+                      Chip(
+                        avatar: const Icon(Icons.favorite_border, size: 18),
+                        label: Text(p.name),
+                      ),
+                  ],
+                ),
+              ),
+            StreamBuilder<List<({Tag tag, TagSuggestion suggestion})>>(
+              stream: _tagSuggestions,
+              builder: (context, snapshot) {
+                final tags = SettingsScope.visibleTags(context, item.tags);
+                final suggested = snapshot.data ?? const [];
+                return _Section(
+                  title: l10n.sectionTags,
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      Text(w.status.label),
-                      const Icon(Icons.arrow_drop_down, size: 18),
+                      for (final t in tags) Chip(label: Text(t.name)),
+                      for (final s in suggested)
+                        InputChip(
+                          avatar: Icon(
+                            s.suggestion.source == 'keywords'
+                                ? Icons.lightbulb_outline
+                                : Icons.auto_awesome,
+                            size: 18,
+                          ),
+                          label: Text(s.tag.name),
+                          tooltip: l10n.tagSuggestionWhy(
+                            s.suggestion.reason ?? '',
+                          ),
+                          onPressed: () =>
+                              _db.acceptTagSuggestion(w.id, s.tag.id),
+                          onDeleted: () =>
+                              _db.dismissTagSuggestion(w.id, s.tag.id),
+                          deleteButtonTooltipMessage: l10n.dismissSuggestion,
+                        ),
+                      TextButton.icon(
+                        icon: const Icon(Icons.lightbulb_outline, size: 18),
+                        label: Text(l10n.suggestTags),
+                        onPressed: () => _suggestTags(w),
+                      ),
                     ],
                   ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(w.title, style: theme.textTheme.headlineSmall),
-          if (w.author != null)
+                );
+              },
+            ),
+            if (w.isbn case final isbn?)
+              _Section(title: l10n.sectionIsbn, child: SelectableText(isbn)),
+            if (w.summary case final summary?)
+              _Section(title: l10n.sectionSummary, child: Text(summary)),
+            if (w.notes case final notes?)
+              _Section(title: l10n.sectionNotes, child: Text(notes)),
+            const SizedBox(height: 24),
             Text(
-              'von ${w.author}',
-              style: theme.textTheme.titleMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
+              l10n.addedUpdated(w.addedAt, w.updatedAt),
+              style: theme.textTheme.bodySmall,
             ),
-          if (item.fandom != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Row(
-                children: [
-                  const Icon(Icons.category_outlined, size: 18),
-                  const SizedBox(width: 6),
-                  Text(item.fandom!.name),
-                ],
-              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(
+    ThemeData theme,
+    AppLocalizations l10n,
+    WorkWithDetails item,
+  ) {
+    final w = item.work;
+    final fandom = item.fandom;
+    final rating = w.rating;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(w.title, style: theme.textTheme.headlineSmall),
+        if (w.author case final author?)
+          Text(
+            l10n.byAuthor(author),
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
             ),
-          if (w.rating != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Row(
-                children: [
-                  for (var i = 1; i <= 5; i++)
-                    Icon(
-                      i <= w.rating! ? Icons.star : Icons.star_border,
-                      size: 20,
-                      color: theme.colorScheme.primary,
+          ),
+        if (fandom != null || item.crossovers.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                for (final (i, f) in [?fandom, ...item.crossovers].indexed)
+                  ActionChip(
+                    avatar: Icon(
+                      i == 0 && fandom != null
+                          ? Icons.category_outlined
+                          : Icons.join_inner,
+                      size: 18,
                     ),
-                ],
-              ),
+                    label: Text(f.name),
+                    tooltip: l10n.openFranchise(f.name),
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => FranchiseScreen(fandom: f),
+                      ),
+                    ),
+                  ),
+              ],
             ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
+          ),
+        if (rating != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Row(
+              children: [
+                for (var i = 1; i <= 5; i++)
+                  Icon(
+                    i <= rating ? Icons.star : Icons.star_border,
+                    size: 20,
+                    color: theme.colorScheme.primary,
+                  ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  /// Asks for the page the reader is on; pages read count in the
+  /// statistics (estimated words, like elsewhere).
+  Future<void> _setPage(Work w) async {
+    final l10n = context.l10n;
+    final input = await showTextPrompt(
+      context,
+      title: l10n.currentPageTitle,
+      initial: w.currentPage?.toString(),
+    );
+    final page = int.tryParse(input?.trim() ?? '');
+    if (page == null || page < 0) return;
+    final before = w.currentPage ?? 0;
+    await _db.updateWork(
+      w.id,
+      WorksCompanion(
+        currentPage: Value(page),
+        status: w.status == ReadingStatus.planned && page > 0
+            ? const Value(ReadingStatus.reading)
+            : w.pageCount != null && page >= w.pageCount!
+            ? const Value(ReadingStatus.finished)
+            : const Value.absent(),
+      ),
+    );
+    if (page > before) {
+      await _db.addReading(
+        w.id,
+        DateTime.now(),
+        words: (page - before) * AppDatabase.wordsPerPage,
+      );
+    }
+  }
+
+  Widget _buildPageProgress(AppLocalizations l10n, Work w) {
+    final page = w.currentPage ?? 0;
+    final total = w.pageCount;
+    return _Section(
+      title: l10n.sectionProgress,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              if (w.chapterCount != null)
-                _StatBox(
-                  value: formatNumber(w.chapterCount!),
-                  label: w.isComplete
-                      ? 'Kapitel · fertig'
-                      : 'Kapitel · laufend',
+              Expanded(
+                child: Text(
+                  total != null
+                      ? l10n.pageProgress(page, total)
+                      : l10n.pageCurrent(page),
                 ),
-              if (w.wordCount != null)
-                _StatBox(value: formatNumber(w.wordCount!), label: 'Wörter'),
-              if (w.pageCount != null)
-                _StatBox(value: formatNumber(w.pageCount!), label: 'Seiten'),
+              ),
+              FilledButton.tonalIcon(
+                icon: const Icon(Icons.edit_outlined),
+                label: Text(l10n.setPage),
+                onPressed: () => _setPage(w),
+              ),
             ],
           ),
-          if (w.chapterCount != null || w.currentChapter != null)
-            _buildProgress(w),
-          if (url != null)
-            _Section(
-              title: 'Link',
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  FilledButton.icon(
-                    icon: const Icon(Icons.open_in_new),
-                    label: Text(
-                      site != null ? 'Auf $site lesen' : 'Online lesen',
-                    ),
-                    onPressed: () => _openUrl(url),
-                  ),
-                  const SizedBox(height: 4),
-                  SelectableText(url, style: theme.textTheme.bodySmall),
-                ],
+          if (total != null && total > 0)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: LinearProgressIndicator(
+                value: (page / total).clamp(0, 1).toDouble(),
+                borderRadius: BorderRadius.circular(4),
               ),
             ),
-          if (item.tags.isNotEmpty)
-            _Section(
-              title: 'Tags',
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 4,
-                children: [
-                  for (final t in item.tags) Chip(label: Text(t.name)),
-                ],
-              ),
-            ),
-          if (w.isbn != null)
-            _Section(title: 'ISBN', child: SelectableText(w.isbn!)),
-          if (w.summary != null)
-            _Section(title: 'Zusammenfassung', child: Text(w.summary!)),
-          if (w.notes != null)
-            _Section(title: 'Notizen', child: Text(w.notes!)),
-          const SizedBox(height: 24),
-          Text(
-            'Hinzugefügt am ${formatDate(w.addedAt)} · '
-            'zuletzt geändert am ${formatDate(w.updatedAt)}',
-            style: theme.textTheme.bodySmall,
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildProgress(Work w) {
+  Widget _buildProgress(AppLocalizations l10n, Work w) {
     final current = w.currentChapter ?? 0;
     final total = w.chapterCount;
     return _Section(
-      title: 'Lesefortschritt',
+      title: l10n.sectionProgress,
       child: Column(
         children: [
           Row(
@@ -280,13 +637,13 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
               Expanded(
                 child: Text(
                   total != null
-                      ? 'Kapitel $current von $total'
-                      : 'Kapitel $current',
+                      ? l10n.chapterProgress(current, total)
+                      : l10n.chapterCurrent(current),
                 ),
               ),
               IconButton.outlined(
                 icon: const Icon(Icons.remove),
-                tooltip: 'Ein Kapitel zurück',
+                tooltip: l10n.previousChapter,
                 onPressed: current > 0
                     ? () => _setProgress(w, current - 1)
                     : null,
@@ -294,7 +651,7 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
               const SizedBox(width: 8),
               IconButton.filled(
                 icon: const Icon(Icons.add),
-                tooltip: 'Ein Kapitel weiter',
+                tooltip: l10n.nextChapter,
                 onPressed: total == null || current < total
                     ? () => _setProgress(w, current + 1)
                     : null,
@@ -310,6 +667,44 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+class _StatusMenu extends StatelessWidget {
+  const _StatusMenu({required this.status, required this.onChanged});
+
+  final ReadingStatus status;
+  final ValueChanged<ReadingStatus> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
+    return MenuAnchor(
+      menuChildren: [
+        for (final s in ReadingStatus.values)
+          MenuItemButton(
+            leadingIcon: Icon(s.icon),
+            trailingIcon: s == status ? const Icon(Icons.check) : null,
+            onPressed: () => onChanged(s),
+            child: Text(s.label(l10n)),
+          ),
+      ],
+      builder: (context, controller, _) => ActionChip(
+        tooltip: l10n.changeStatus,
+        backgroundColor: scheme.primaryContainer,
+        avatar: Icon(status.icon, size: 18),
+        label: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(status.label(l10n)),
+            const Icon(Icons.arrow_drop_down, size: 18),
+          ],
+        ),
+        onPressed: () =>
+            controller.isOpen ? controller.close() : controller.open(),
       ),
     );
   }

@@ -1,19 +1,51 @@
+import 'dart:io';
+
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
+import '../diagnostics/app_log.dart';
 import '../data/database.dart';
 import '../data/database_scope.dart';
 import '../data/default_tags.dart';
+import '../l10n/l10n.dart';
+import '../library/book_importer.dart';
+import '../library/file_import.dart';
+import '../library/library_scope.dart';
+import '../library/story_sync.dart';
+import '../sources/fetcher.dart';
+import '../sources/html_clean.dart';
+import '../sources/isbn_lookup.dart';
+import '../sources/sources.dart';
+import '../data/adult_tags.dart';
+import '../ui/app_settings.dart';
 import '../ui/labels.dart';
+import '../ui/layout.dart';
 import '../widgets/suggest_field.dart';
 import '../widgets/tag_input.dart';
-import 'work_detail_screen.dart';
+import '../widgets/value_picker.dart';
 
-/// Formular zum Anlegen ([existing] == null) oder Bearbeiten eines Werks.
+/// Form for creating ([existing] == null) or editing a work.
+/// Pops with the work's id as the result after saving.
 class WorkEditScreen extends StatefulWidget {
-  const WorkEditScreen({super.key, this.existing});
+  const WorkEditScreen({
+    super.key,
+    this.existing,
+    this.imported,
+    this.file,
+    this.details,
+  });
 
   final WorkWithDetails? existing;
+
+  /// Details loaded from a site to prefill a new entry.
+  final StoryInfo? imported;
+
+  /// A book file read for import; saving imports it with the form's values.
+  final ({ImportedBook book, String path})? file;
+
+  /// A paper book's details found by its ISBN.
+  final BookDetails? details;
 
   @override
   State<WorkEditScreen> createState() => _WorkEditScreenState();
@@ -24,6 +56,13 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
   final _title = TextEditingController();
   final _author = TextEditingController();
   final _fandom = TextEditingController();
+  final _series = TextEditingController();
+  final _crossoverInput = TextEditingController();
+  final _characterInput = TextEditingController();
+  List<String> _characters = const [];
+  List<String> _characterSuggestions = const [];
+  List<String> _crossovers = const [];
+  final _seriesIndex = TextEditingController();
   final _url = TextEditingController();
   final _chapters = TextEditingController();
   final _currentChapter = TextEditingController();
@@ -33,17 +72,30 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
   final _summary = TextEditingController();
   final _notes = TextEditingController();
   final _tagInput = TextEditingController();
+  final _pairingInput = TextEditingController();
 
   late WorkType _type;
   late WorkFormat _format;
   late ReadingStatus _status;
   late bool _isComplete;
+  bool _ownsPaperCopy = false;
   int? _rating;
   late List<String> _tags;
+  late List<String> _pairings;
+  List<String> _pairingSuggestions = const [];
+
+  /// Lower-case names of tags marked as 18+, known or from the site.
+  Set<String> _adultTags = const {};
   List<String> _fandomSuggestions = const [];
+  List<String> _seriesSuggestions = const [];
+  List<String> _authorSuggestions = const [];
   List<String> _tagSuggestions = kDefaultTags;
+  List<String> _frequentTags = const [];
   bool _suggestionsRequested = false;
   bool _saving = false;
+
+  /// Whether anything changed since opening (to confirm before leaving).
+  bool _dirty = false;
 
   AppDatabase get _db => DatabaseScope.of(context);
 
@@ -51,6 +103,10 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _title,
     _author,
     _fandom,
+    _series,
+    _seriesIndex,
+    _crossoverInput,
+    _characterInput,
     _url,
     _chapters,
     _currentChapter,
@@ -60,6 +116,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _summary,
     _notes,
     _tagInput,
+    _pairingInput,
   ];
 
   @override
@@ -71,11 +128,28 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _format = w?.format ?? _type.defaultFormat;
     _status = w?.status ?? ReadingStatus.planned;
     _isComplete = w?.isComplete ?? false;
+    _ownsPaperCopy = w?.ownsPhysicalCopy ?? false;
     _rating = w?.rating;
     _tags = [for (final t in existing?.tags ?? const <Tag>[]) t.name];
+    _pairings = [
+      for (final p in existing?.pairings ?? const <Pairing>[]) p.name,
+    ];
+    _adultTags = {
+      for (final t in existing?.tags ?? const <Tag>[])
+        if (t.isAdult) t.name.toLowerCase(),
+    };
     _title.text = w?.title ?? '';
     _author.text = w?.author ?? '';
     _fandom.text = existing?.fandom?.name ?? '';
+    _series.text = existing?.series?.name ?? '';
+    _crossovers = [
+      for (final f in existing?.crossovers ?? const <Fandom>[]) f.name,
+    ];
+    _characters = [
+      for (final c in existing?.confirmedCharacters ?? const <Character>[])
+        c.name,
+    ];
+    _seriesIndex.text = _formatIndex(w?.seriesIndex);
     _url.text = w?.sourceUrl ?? '';
     _chapters.text = w?.chapterCount?.toString() ?? '';
     _currentChapter.text = w?.currentChapter?.toString() ?? '';
@@ -84,6 +158,110 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _isbn.text = w?.isbn ?? '';
     _summary.text = w?.summary ?? '';
     _notes.text = w?.notes ?? '';
+    if (widget.imported case final info?) _prefill(info);
+    if (widget.file case final file?) _prefillFile(file.book);
+    if (widget.details case final d?) {
+      _type = WorkType.book;
+      _format = WorkFormat.physical;
+      _isComplete = true;
+      _applyDetails(d);
+      _dirty = true;
+    }
+    _initialWords = _words.text;
+    _initialPages = _pages.text;
+  }
+
+  late final String _initialWords;
+  late final String _initialPages;
+
+  void _prefill(StoryInfo info) {
+    _type = info.type;
+    _format = WorkFormat.online;
+    _isComplete = info.isComplete ?? false;
+    _tags = TagInput.merge(const [], info.tags.join(','));
+    _pairings = TagInput.merge(const [], info.pairings.join(','));
+    _adultTags = {
+      ..._adultTags,
+      for (final t in info.adultTags) t.toLowerCase(),
+    };
+    _title.text = info.title;
+    _author.text = info.author ?? '';
+    _fandom.text = info.fandom ?? '';
+    _series.text = info.series?.name ?? '';
+    _crossovers = info.crossovers;
+    _characters = info.characters;
+    _seriesIndex.text = _formatIndex(info.series?.index);
+    _url.text = info.url.toString();
+    _chapters.text = '${info.chapterCount}';
+    _words.text = info.wordCount?.toString() ?? '';
+    _pages.text = info.pageCount?.toString() ?? '';
+    _summary.text = info.summary ?? '';
+    // Not saved yet, so leaving should ask first.
+    _dirty = true;
+  }
+
+  /// Cover found by the ISBN lookup, saved with the entry.
+  Uri? _coverUrl;
+  bool _lookingUp = false;
+
+  /// Fills the empty fields from [d]; what the user typed stays.
+  void _applyDetails(BookDetails d) {
+    void fill(TextEditingController c, String? value) {
+      if (c.text.trim().isEmpty && value != null) c.text = value;
+    }
+
+    fill(_title, d.title);
+    fill(_author, d.author);
+    fill(_summary, d.summary);
+    fill(_pages, d.pageCount?.toString());
+    fill(_isbn, d.isbn);
+    if (_tags.isEmpty) _tags = TagInput.merge(const [], d.tags.join(','));
+    _coverUrl ??= d.coverUrl;
+  }
+
+  Future<void> _lookUpIsbn() async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    final isbn = isbnOf(_isbn.text);
+    if (isbn == null) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.isbnInvalid)));
+      return;
+    }
+    setState(() => _lookingUp = true);
+    final fetcher = HttpFetcher();
+    try {
+      final details = await lookupIsbn(isbn, fetcher);
+      if (!mounted) return;
+      if (details == null) {
+        messenger.showSnackBar(SnackBar(content: Text(l10n.isbnNotFound)));
+      } else {
+        _change(() => _applyDetails(details));
+      }
+    } on SourceException catch (e) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.isbnLookupFailed(e.message))),
+      );
+    } finally {
+      await fetcher.close();
+      if (mounted) setState(() => _lookingUp = false);
+    }
+  }
+
+  void _prefillFile(ImportedBook book) {
+    final m = BookImporter.metadataOf(book);
+    _type = m.type.value;
+    _format = WorkFormat.digital;
+    _isComplete = true;
+    _tags = TagInput.merge(const [], book.tags.join(','));
+    _title.text = book.title;
+    _author.text = book.author ?? '';
+    _url.text = book.sourceUrl ?? '';
+    _isbn.text = book.isbn ?? '';
+    _summary.text = book.summary ?? '';
+    _chapters.text = '${book.chapters.length}';
+    _words.text =
+        '${[for (final c in book.chapters) countWords(htmlToPlainText(c.html))].fold<int>(0, (a, b) => a + b)}';
+    _dirty = true;
   }
 
   @override
@@ -105,21 +283,82 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
 
   Future<void> _loadSuggestions() async {
     final fandoms = await _db.fandomNames();
+    final seriesNames = await _db.seriesNames();
+    final characterNames = await _db.characterNames();
+    final authors = await _db.authorNames();
     final tags = await _db.tagNames();
+    final frequent = await _db.frequentTags();
+    final allTags = await _db.allTags();
+    final pairings = await _db.pairingNames();
     if (!mounted) return;
     setState(() {
+      _pairingSuggestions = pairings;
+      _adultTags = {
+        ..._adultTags,
+        for (final t in allTags)
+          if (t.isAdult) t.name.toLowerCase(),
+      };
       _fandomSuggestions = fandoms;
+      _seriesSuggestions = seriesNames;
+      _characterSuggestions = characterNames;
+      _authorSuggestions = authors;
+      _frequentTags = frequent;
       _tagSuggestions = TagInput.merge(tags, kDefaultTags.join(','))
         ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
     });
   }
+
+  /// Adult tags are hidden while the setting is on.
+  bool _isHiddenTag(String tag) =>
+      (SettingsScope.maybeOf(context)?.hideAdultTags ?? false) &&
+      (_adultTags.contains(tag.toLowerCase()) || looksAdult(tag));
+
+  /// Lets the user pick one of [options] for the field [controller].
+  Future<void> _pickInto(
+    TextEditingController controller,
+    String title,
+    List<String> options,
+  ) async {
+    final picked = await pickValues(
+      context,
+      title: title,
+      options: options,
+      selected: [if (controller.text.trim().isNotEmpty) controller.text.trim()],
+      multiple: false,
+    );
+    if (picked != null && picked.isNotEmpty) {
+      _change(() => controller.text = picked.single);
+    }
+  }
+
+  Widget _pickButton(VoidCallback onPressed) => IconButton(
+    icon: const Icon(Icons.checklist),
+    tooltip: context.l10n.chooseExisting,
+    onPressed: onPressed,
+  );
+
+  /// Changes state and records that there are unsaved changes.
+  void _change(VoidCallback fn) => setState(() {
+    fn();
+    _dirty = true;
+  });
 
   static String? _text(TextEditingController c) {
     final t = c.text.trim();
     return t.isEmpty ? null : t;
   }
 
-  /// Erlaubt Eingaben wie „45.300“ oder „45 300“.
+  static String _formatIndex(double? i) => i == null
+      ? ''
+      : i == i.roundToDouble()
+      ? '${i.round()}'
+      : '$i';
+
+  /// "3", "2.5" or "2,5".
+  static double? _parseIndex(String raw) =>
+      double.tryParse(raw.trim().replaceAll(',', '.'));
+
+  /// Accepts input like "45,300", "45.300" or "45 300".
   static int? _parseInt(String raw) =>
       int.tryParse(raw.replaceAll(RegExp(r'[.,\s]'), ''));
 
@@ -130,10 +369,13 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
   }
 
   Future<void> _save() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (_saving || !_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
-    // Einen getippten, aber noch nicht bestätigten Tag mitnehmen.
+    // Include a tag that was typed but not confirmed yet.
     final tags = TagInput.merge(_tags, _tagInput.text);
+    final pairings = TagInput.merge(_pairings, _pairingInput.text);
+    final crossovers = TagInput.merge(_crossovers, _crossoverInput.text);
+    final characterList = TagInput.merge(_characters, _characterInput.text);
     final w = widget.existing?.work;
     final data = WorksCompanion(
       id: w == null ? const Value.absent() : Value(w.id),
@@ -150,43 +392,168 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
       currentChapter: Value(_parseInt(_currentChapter.text)),
       wordCount: Value(_parseInt(_words.text)),
       pageCount: Value(_parseInt(_pages.text)),
+      // A number the user typed is theirs; an unchanged estimate stays one.
+      wordsEstimated: _words.text == _initialWords
+          ? const Value.absent()
+          : const Value(false),
+      pagesEstimated: _pages.text == _initialPages
+          ? const Value.absent()
+          : const Value(false),
+      characterCount: widget.imported?.characterCount == null
+          ? const Value.absent()
+          : Value(widget.imported!.characterCount),
       rating: Value(_rating),
       notes: Value(_text(_notes)),
+      ownsPhysicalCopy: Value(_format != WorkFormat.physical && _ownsPaperCopy),
+      seriesIndex: Value(
+        _series.text.trim().isEmpty ? null : _parseIndex(_seriesIndex.text),
+      ),
+      coverUrl: switch (widget.imported?.coverUrl ?? _coverUrl) {
+        final cover? => Value(cover.toString()),
+        null => const Value.absent(),
+      },
+      checkedAt: widget.imported == null
+          ? const Value.absent()
+          : Value(DateTime.now()),
+      lastChapterAt: switch (widget.imported?.updatedOn) {
+        final date? => Value(date),
+        null => const Value.absent(),
+      },
     );
-    final id = await _db.saveWork(
-      data,
-      fandomName: _fandom.text,
-      tagNames: tags,
-    );
-    if (!mounted) return;
-    final navigator = Navigator.of(context);
-    if (w == null) {
-      navigator.pushReplacement(
-        MaterialPageRoute(builder: (_) => WorkDetailScreen(workId: id)),
-      );
-    } else {
-      navigator.pop();
+    final int id;
+    try {
+      final file = widget.file;
+      id = file != null
+          ? await BookImporter(_db, LibraryScope.of(context).storage).store(
+              file.book,
+              original: File(file.path),
+              work: data,
+              fandomName: _fandom.text,
+              seriesName: _series.text,
+              crossoverNames: crossovers,
+              characterNames: characterList,
+              tagNames: tags,
+              pairingNames: pairings,
+            )
+          : await _db.saveWork(
+              data,
+              fandomName: _fandom.text,
+              seriesName: _series.text,
+              crossoverNames: crossovers,
+              characterNames: characterList,
+              tagNames: tags,
+              pairingNames: pairings,
+              adultTags: widget.imported?.adultTags ?? const {},
+            );
+      if (widget.imported case final info?) {
+        await _db.saveChapterList(id, chapterListing(info));
+      }
+      await _db.fillMissingCounts(id);
+      if (widget.existing == null) {
+        await suggestKeywordTags(_db, id, '${_title.text}\n${_summary.text}');
+      }
+    } catch (e, stack) {
+      logError('save', 'Saving an entry failed', error: e, stack: stack);
+      // Never leave the button stuck without saying why.
+      if (mounted) {
+        setState(() => _saving = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(context.l10n.saveFailed('$e'))));
+      }
+      return;
     }
+    // Navigator.pop bypasses PopScope, so there is no prompt after saving.
+    if (mounted) Navigator.of(context).pop(id);
   }
 
-  InputDecoration _decoration(String label, {String? hint}) => InputDecoration(
-    labelText: label,
-    hintText: hint,
-    border: const OutlineInputBorder(),
-  );
+  Future<void> _confirmDiscard() async {
+    final l10n = context.l10n;
+    final discard = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.discardTitle),
+        content: Text(l10n.discardBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.keepEditing),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.discard),
+          ),
+        ],
+      ),
+    );
+    if (discard == true && mounted) Navigator.of(context).pop();
+  }
 
-  Widget _numberField(TextEditingController controller, String label) =>
-      TextFormField(
-        controller: controller,
-        decoration: _decoration(label),
-        keyboardType: TextInputType.number,
-        validator: (v) => v == null || v.trim().isEmpty || _parseInt(v) != null
-            ? null
-            : 'Nur Zahlen',
-      );
+  InputDecoration _decoration(String label, {String? hint}) =>
+      InputDecoration(labelText: label, hintText: hint);
+
+  Widget _numberField(
+    AppLocalizations l10n,
+    TextEditingController controller,
+    String label,
+  ) => TextFormField(
+    controller: controller,
+    decoration: _decoration(label),
+    keyboardType: TextInputType.number,
+    validator: (v) => v == null || v.trim().isEmpty || _parseInt(v) != null
+        ? null
+        : l10n.numbersOnly,
+  );
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return PopScope(
+      canPop: !_dirty,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _confirmDiscard();
+      },
+      child: CallbackShortcuts(
+        bindings: {
+          const SingleActivator(LogicalKeyboardKey.keyS, control: true): _save,
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(
+              widget.existing == null ? l10n.newEntry : l10n.editEntry,
+            ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: FilledButton(
+                  onPressed: _saving ? null : _save,
+                  child: Text(l10n.save),
+                ),
+              ),
+            ],
+          ),
+          body: Form(
+            key: _formKey,
+            onChanged: () {
+              if (!_dirty) setState(() => _dirty = true);
+            },
+            child: LayoutBuilder(
+              builder: (context, constraints) => ListView(
+                padding: readablePadding(
+                  constraints.maxWidth,
+                  top: 8,
+                  bottom: 32,
+                ),
+                children: _buildFields(l10n),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildFields(AppLocalizations l10n) {
     const gap = SizedBox(height: 16);
     final hasIsbn = const {
       WorkType.book,
@@ -194,195 +561,316 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
       WorkType.comic,
     }.contains(_type);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.existing == null ? 'Neuer Eintrag' : 'Bearbeiten'),
-        actions: [
-          TextButton(
-            onPressed: _saving ? null : _save,
-            child: const Text('Speichern'),
+    final imported = widget.imported;
+    final file = widget.file;
+    return [
+      if (file != null)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Card.filled(
+            child: ListTile(
+              leading: const Icon(Icons.file_present_outlined),
+              title: Text(
+                l10n.importingFromFile(
+                  file.path.split(Platform.pathSeparator).last,
+                ),
+              ),
+              subtitle: Text(
+                l10n.importedFileSummary(
+                  file.book.format.label,
+                  file.book.chapters.length,
+                ),
+              ),
+            ),
+          ),
+        ),
+      if (imported != null)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Card.filled(
+            child: ListTile(
+              leading: const Icon(Icons.cloud_done_outlined),
+              title: Text(l10n.importedFrom(imported.siteName)),
+              subtitle: Text(l10n.importedSummary(imported.chapterCount)),
+            ),
+          ),
+        ),
+      DropdownButtonFormField<WorkType>(
+        initialValue: _type,
+        decoration: _decoration(l10n.fieldType),
+        items: [
+          for (final t in WorkType.values)
+            DropdownMenuItem(
+              value: t,
+              child: Row(
+                children: [
+                  Icon(t.icon, size: 20),
+                  const SizedBox(width: 12),
+                  Text(t.label(l10n)),
+                ],
+              ),
+            ),
+        ],
+        onChanged: (t) {
+          if (t == null) return;
+          _change(() {
+            _type = t;
+            _format = t.defaultFormat;
+          });
+        },
+      ),
+      gap,
+      SegmentedButton<WorkFormat>(
+        segments: [
+          for (final f in WorkFormat.values)
+            ButtonSegment(
+              value: f,
+              icon: Icon(f.icon),
+              label: Text(f.label(l10n)),
+            ),
+        ],
+        selected: {_format},
+        onSelectionChanged: (s) => _change(() => _format = s.first),
+      ),
+      gap,
+      TextFormField(
+        controller: _title,
+        decoration: _decoration(l10n.fieldTitle),
+        textCapitalization: TextCapitalization.sentences,
+        autofocus: widget.existing == null,
+        validator: (v) =>
+            v == null || v.trim().isEmpty ? l10n.titleRequired : null,
+      ),
+      gap,
+      SuggestField(
+        controller: _author,
+        suggestions: _authorSuggestions,
+        decoration: _decoration(l10n.fieldAuthor).copyWith(
+          suffixIcon: _pickButton(
+            () => _pickInto(_author, l10n.pickAuthor, _authorSuggestions),
+          ),
+        ),
+      ),
+      gap,
+      SuggestField(
+        controller: _fandom,
+        suggestions: _fandomSuggestions,
+        decoration:
+            _decoration(
+              l10n.fieldCategory,
+              hint: l10n.fieldCategoryHint,
+            ).copyWith(
+              suffixIcon: _pickButton(
+                () => _pickInto(_fandom, l10n.pickCategory, _fandomSuggestions),
+              ),
+            ),
+      ),
+      gap,
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 3,
+            child: SuggestField(
+              controller: _series,
+              suggestions: _seriesSuggestions,
+              decoration:
+                  _decoration(
+                    l10n.fieldSeries,
+                    hint: l10n.fieldSeriesHint,
+                  ).copyWith(
+                    suffixIcon: _pickButton(
+                      () => _pickInto(
+                        _series,
+                        l10n.pickSeries,
+                        _seriesSuggestions,
+                      ),
+                    ),
+                  ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: TextFormField(
+              controller: _seriesIndex,
+              decoration: _decoration(l10n.fieldSeriesIndex),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              validator: (v) =>
+                  v == null || v.trim().isEmpty || _parseIndex(v) != null
+                  ? null
+                  : l10n.numbersOnly,
+            ),
           ),
         ],
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-          children: [
-            DropdownButtonFormField<WorkType>(
-              initialValue: _type,
-              decoration: _decoration('Art'),
-              items: [
-                for (final t in WorkType.values)
-                  DropdownMenuItem(
-                    value: t,
-                    child: Row(
-                      children: [
-                        Icon(t.icon, size: 20),
-                        const SizedBox(width: 12),
-                        Text(t.label),
-                      ],
-                    ),
-                  ),
-              ],
-              onChanged: (t) {
-                if (t == null) return;
-                setState(() {
-                  _type = t;
-                  _format = t.defaultFormat;
-                });
-              },
-            ),
-            gap,
-            SegmentedButton<WorkFormat>(
-              segments: [
-                for (final f in WorkFormat.values)
-                  ButtonSegment(
-                    value: f,
-                    icon: Icon(f.icon),
-                    label: Text(f.label),
-                  ),
-              ],
-              selected: {_format},
-              onSelectionChanged: (s) => setState(() => _format = s.first),
-            ),
-            gap,
-            TextFormField(
-              controller: _title,
-              decoration: _decoration('Titel *'),
-              textCapitalization: TextCapitalization.sentences,
-              validator: (v) => v == null || v.trim().isEmpty
-                  ? 'Bitte einen Titel eingeben'
-                  : null,
-            ),
-            gap,
-            TextFormField(
-              controller: _author,
-              decoration: _decoration('Autor'),
-              textCapitalization: TextCapitalization.words,
-            ),
-            gap,
-            SuggestField(
-              controller: _fandom,
-              suggestions: _fandomSuggestions,
-              decoration: _decoration(
-                'Kategorie / Fandom',
-                hint: 'z. B. Naruto, Harry Potter',
-              ),
-            ),
-            gap,
-            TextFormField(
-              controller: _url,
-              decoration: _decoration(
-                'Link',
-                hint: 'https://www.fanfiction.net/s/…',
-              ),
-              keyboardType: TextInputType.url,
-              validator: (v) {
-                final url = _normalizeUrl(v ?? '');
-                if (url == null) return null;
-                final uri = Uri.tryParse(url);
-                return uri == null || uri.host.isEmpty
-                    ? 'Ungültiger Link'
-                    : null;
-              },
-            ),
-            gap,
-            DropdownButtonFormField<ReadingStatus>(
-              initialValue: _status,
-              decoration: _decoration('Lesestatus'),
-              items: [
-                for (final s in ReadingStatus.values)
-                  DropdownMenuItem(
-                    value: s,
-                    child: Row(
-                      children: [
-                        Icon(s.icon, size: 20),
-                        const SizedBox(width: 12),
-                        Text(s.label),
-                      ],
-                    ),
-                  ),
-              ],
-              onChanged: (s) => setState(() => _status = s ?? _status),
-            ),
-            const _Heading('Umfang'),
-            Row(
-              children: [
-                Expanded(child: _numberField(_chapters, 'Kapitel')),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _numberField(_currentChapter, 'Gelesen bis Kapitel'),
-                ),
-              ],
-            ),
-            gap,
-            Row(
-              children: [
-                Expanded(child: _numberField(_words, 'Wörter')),
-                const SizedBox(width: 12),
-                Expanded(child: _numberField(_pages, 'Seiten')),
-              ],
-            ),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Vom Autor abgeschlossen'),
-              subtitle: const Text(
-                'Aus = die Geschichte wird noch fortgesetzt',
-              ),
-              value: _isComplete,
-              onChanged: (v) => setState(() => _isComplete = v),
-            ),
-            if (hasIsbn) ...[
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _isbn,
-                decoration: _decoration('ISBN'),
-                keyboardType: TextInputType.number,
-              ),
-            ],
-            const _Heading('Tags'),
-            TagInput(
-              controller: _tagInput,
-              tags: _tags,
-              suggestions: _tagSuggestions,
-              onChanged: (tags) => setState(() => _tags = tags),
-            ),
-            const _Heading('Bewertung'),
-            Row(
-              children: [
-                for (var i = 1; i <= 5; i++)
-                  IconButton(
-                    icon: Icon(
-                      _rating != null && i <= _rating!
-                          ? Icons.star
-                          : Icons.star_border,
-                    ),
-                    tooltip: '$i Sterne',
-                    // Nochmal auf denselben Stern tippen entfernt die Bewertung.
-                    onPressed: () =>
-                        setState(() => _rating = _rating == i ? null : i),
-                  ),
-              ],
-            ),
-            const _Heading('Beschreibung'),
-            TextFormField(
-              controller: _summary,
-              decoration: _decoration('Zusammenfassung'),
-              minLines: 3,
-              maxLines: null,
-            ),
-            gap,
-            TextFormField(
-              controller: _notes,
-              decoration: _decoration('Eigene Notizen'),
-              minLines: 2,
-              maxLines: null,
-            ),
-          ],
-        ),
+      gap,
+      TextFormField(
+        controller: _url,
+        decoration: _decoration(l10n.fieldLink, hint: l10n.fieldLinkHint),
+        keyboardType: TextInputType.url,
+        validator: (v) {
+          final url = _normalizeUrl(v ?? '');
+          if (url == null) return null;
+          final uri = Uri.tryParse(url);
+          return uri == null || uri.host.isEmpty ? l10n.invalidLink : null;
+        },
       ),
-    );
+      gap,
+      DropdownButtonFormField<ReadingStatus>(
+        initialValue: _status,
+        decoration: _decoration(l10n.fieldStatus),
+        items: [
+          for (final s in ReadingStatus.values)
+            DropdownMenuItem(
+              value: s,
+              child: Row(
+                children: [
+                  Icon(s.icon, size: 20),
+                  const SizedBox(width: 12),
+                  Text(s.label(l10n)),
+                ],
+              ),
+            ),
+        ],
+        onChanged: (s) => _change(() => _status = s ?? _status),
+      ),
+      _Heading(l10n.sectionLength),
+      Row(
+        children: [
+          Expanded(child: _numberField(l10n, _chapters, l10n.fieldChapters)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _numberField(
+              l10n,
+              _currentChapter,
+              l10n.fieldCurrentChapter,
+            ),
+          ),
+        ],
+      ),
+      gap,
+      Row(
+        children: [
+          Expanded(child: _numberField(l10n, _words, l10n.fieldWords)),
+          const SizedBox(width: 12),
+          Expanded(child: _numberField(l10n, _pages, l10n.fieldPages)),
+        ],
+      ),
+      if (_format != WorkFormat.physical)
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(l10n.ownsPaperCopy),
+          value: _ownsPaperCopy,
+          onChanged: (v) => _change(() => _ownsPaperCopy = v),
+        ),
+      SwitchListTile(
+        contentPadding: EdgeInsets.zero,
+        title: Text(l10n.completeTitle),
+        subtitle: Text(l10n.completeSubtitle),
+        value: _isComplete,
+        onChanged: (v) => _change(() => _isComplete = v),
+      ),
+      if (hasIsbn) ...[
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _isbn,
+          decoration: _decoration(l10n.fieldIsbn).copyWith(
+            suffixIcon: _lookingUp
+                ? const Padding(
+                    padding: EdgeInsets.all(12),
+                    child: SizedBox.square(
+                      dimension: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  )
+                : IconButton(
+                    icon: const Icon(Icons.manage_search),
+                    tooltip: l10n.isbnLookUp,
+                    onPressed: _lookUpIsbn,
+                  ),
+          ),
+          keyboardType: TextInputType.number,
+          onFieldSubmitted: (_) => _lookUpIsbn(),
+        ),
+      ],
+      _Heading(l10n.sectionTags),
+      TagInput(
+        controller: _tagInput,
+        tags: _tags,
+        suggestions: [
+          for (final t in _tagSuggestions)
+            if (!_isHiddenTag(t)) t,
+        ],
+        frequent: [
+          for (final t in _frequentTags)
+            if (!_isHiddenTag(t)) t,
+        ],
+        isHidden: _isHiddenTag,
+        onChanged: (tags) => _change(() => _tags = tags),
+      ),
+      _Heading(l10n.sectionCrossovers),
+      TagInput(
+        controller: _crossoverInput,
+        tags: _crossovers,
+        suggestions: _fandomSuggestions,
+        label: l10n.addCrossover,
+        hint: l10n.addCrossoverHint,
+        pickerTitle: l10n.pickCategory,
+        onChanged: (c) => _change(() => _crossovers = c),
+      ),
+      _Heading(l10n.sectionCharacters),
+      TagInput(
+        controller: _characterInput,
+        tags: _characters,
+        suggestions: _characterSuggestions,
+        label: l10n.addCharacter,
+        hint: l10n.addCharacterHint,
+        pickerTitle: l10n.pickCharacters,
+        onChanged: (c) => _change(() => _characters = c),
+      ),
+      _Heading(l10n.sectionPairings),
+      TagInput(
+        controller: _pairingInput,
+        tags: _pairings,
+        suggestions: _pairingSuggestions,
+        label: l10n.addPairing,
+        hint: l10n.addPairingHint,
+        pickerTitle: l10n.pickPairings,
+        onChanged: (pairings) => _change(() => _pairings = pairings),
+      ),
+      _Heading(l10n.sectionRating),
+      Row(
+        children: [
+          for (var i = 1; i <= 5; i++)
+            IconButton(
+              icon: Icon(
+                _rating != null && i <= _rating!
+                    ? Icons.star
+                    : Icons.star_border,
+              ),
+              tooltip: l10n.starTooltip(i),
+              // Tapping the same star again clears the rating.
+              onPressed: () => _change(() => _rating = _rating == i ? null : i),
+            ),
+        ],
+      ),
+      _Heading(l10n.sectionDescription),
+      TextFormField(
+        controller: _summary,
+        decoration: _decoration(l10n.fieldSummary),
+        minLines: 3,
+        maxLines: null,
+      ),
+      gap,
+      TextFormField(
+        controller: _notes,
+        decoration: _decoration(l10n.fieldNotes),
+        minLines: 2,
+        maxLines: null,
+      ),
+    ];
   }
 }
 

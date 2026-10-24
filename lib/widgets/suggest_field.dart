@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Textfeld, das beim Tippen passende Vorschläge anzeigt.
+/// Text field that shows matching suggestions while typing.
 class SuggestField extends StatefulWidget {
   const SuggestField({
     super.key,
@@ -54,8 +54,8 @@ class _SuggestFieldState extends State<SuggestField> {
         decoration: widget.decoration,
         textCapitalization: TextCapitalization.words,
         onChanged: widget.onChanged,
-        // Mit eigenem onSubmitted bleibt der Fokus im Feld, damit man
-        // mehrere Einträge (z. B. Tags) nacheinander tippen kann.
+        // With a custom onSubmitted the field keeps focus, so several
+        // entries (e.g. tags) can be typed one after another.
         onEditingComplete: widget.onSubmitted == null ? null : () {},
         onFieldSubmitted: widget.onSubmitted,
       ),

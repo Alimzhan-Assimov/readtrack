@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import 'database.dart';
 
-/// Stellt die Datenbank allen Screens unterhalb zur Verfügung.
+/// Provides the database to all screens below it.
 class DatabaseScope extends InheritedWidget {
   const DatabaseScope({super.key, required this.db, required super.child});
 

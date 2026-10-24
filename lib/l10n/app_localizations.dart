@@ -1,0 +1,2804 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/intl.dart' as intl;
+
+import 'app_localizations_en.dart';
+
+// ignore_for_file: type=lint
+
+/// Callers can lookup localized strings with an instance of AppLocalizations
+/// returned by `AppLocalizations.of(context)`.
+///
+/// Applications need to include `AppLocalizations.delegate()` in their app's
+/// `localizationDelegates` list, and the locales they support in the app's
+/// `supportedLocales` list. For example:
+///
+/// ```dart
+/// import 'l10n/app_localizations.dart';
+///
+/// return MaterialApp(
+///   localizationsDelegates: AppLocalizations.localizationsDelegates,
+///   supportedLocales: AppLocalizations.supportedLocales,
+///   home: MyApplicationHome(),
+/// );
+/// ```
+///
+/// ## Update pubspec.yaml
+///
+/// Please make sure to update your pubspec.yaml to include the following
+/// packages:
+///
+/// ```yaml
+/// dependencies:
+///   # Internationalization support.
+///   flutter_localizations:
+///     sdk: flutter
+///   intl: any # Use the pinned version from flutter_localizations
+///
+///   # Rest of dependencies
+/// ```
+///
+/// ## iOS Applications
+///
+/// iOS applications define key application metadata, including supported
+/// locales, in an Info.plist file that is built into the application bundle.
+/// To configure the locales supported by your app, you’ll need to edit this
+/// file.
+///
+/// First, open your project’s ios/Runner.xcworkspace Xcode workspace file.
+/// Then, in the Project Navigator, open the Info.plist file under the Runner
+/// project’s Runner folder.
+///
+/// Next, select the Information Property List item, select Add Item from the
+/// Editor menu, then select Localizations from the pop-up menu.
+///
+/// Select and expand the newly-created Localizations item then, for each
+/// locale your application supports, add a new item and select the locale
+/// you wish to add from the pop-up menu in the Value field. This list should
+/// be consistent with the languages listed in the AppLocalizations.supportedLocales
+/// property.
+abstract class AppLocalizations {
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+
+  final String localeName;
+
+  static AppLocalizations of(BuildContext context) {
+    return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
+  }
+
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
+
+  /// A list of this localizations delegate along with the default localizations
+  /// delegates.
+  ///
+  /// Returns a list of localizations delegates containing this delegate along with
+  /// GlobalMaterialLocalizations.delegate, GlobalCupertinoLocalizations.delegate,
+  /// and GlobalWidgetsLocalizations.delegate.
+  ///
+  /// Additional delegates can be added by appending to this list in
+  /// MaterialApp. This list does not have to be used at all if a custom list
+  /// of delegates is preferred or required.
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
+
+  /// A list of this localizations delegate's supported locales.
+  static const List<Locale> supportedLocales = <Locale>[Locale('en')];
+
+  /// No description provided for @appTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'ReadTrack'**
+  String get appTitle;
+
+  /// No description provided for @typeBook.
+  ///
+  /// In en, this message translates to:
+  /// **'Book'**
+  String get typeBook;
+
+  /// No description provided for @typeFanfiction.
+  ///
+  /// In en, this message translates to:
+  /// **'Fanfiction'**
+  String get typeFanfiction;
+
+  /// No description provided for @typeWebnovel.
+  ///
+  /// In en, this message translates to:
+  /// **'Web novel'**
+  String get typeWebnovel;
+
+  /// No description provided for @typeManga.
+  ///
+  /// In en, this message translates to:
+  /// **'Manga'**
+  String get typeManga;
+
+  /// No description provided for @typeComic.
+  ///
+  /// In en, this message translates to:
+  /// **'Comic'**
+  String get typeComic;
+
+  /// No description provided for @formatPhysical.
+  ///
+  /// In en, this message translates to:
+  /// **'Physical'**
+  String get formatPhysical;
+
+  /// No description provided for @formatDigital.
+  ///
+  /// In en, this message translates to:
+  /// **'Digital'**
+  String get formatDigital;
+
+  /// No description provided for @formatOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'Online'**
+  String get formatOnline;
+
+  /// No description provided for @statusPlanned.
+  ///
+  /// In en, this message translates to:
+  /// **'Want to read'**
+  String get statusPlanned;
+
+  /// No description provided for @statusReading.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading'**
+  String get statusReading;
+
+  /// No description provided for @statusFinished.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished'**
+  String get statusFinished;
+
+  /// No description provided for @statusPaused.
+  ///
+  /// In en, this message translates to:
+  /// **'On hold'**
+  String get statusPaused;
+
+  /// No description provided for @statusDropped.
+  ///
+  /// In en, this message translates to:
+  /// **'Dropped'**
+  String get statusDropped;
+
+  /// No description provided for @sortUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently updated'**
+  String get sortUpdated;
+
+  /// No description provided for @sortAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently added'**
+  String get sortAdded;
+
+  /// No description provided for @sortTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title A–Z'**
+  String get sortTitle;
+
+  /// No description provided for @sortRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Highest rated'**
+  String get sortRating;
+
+  /// No description provided for @chapterCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 chapter} other{{count} chapters}}'**
+  String chapterCount(int count);
+
+  /// No description provided for @wordCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 word} other{{count} words}}'**
+  String wordCount(int count);
+
+  /// No description provided for @pageCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 page} other{{count} pages}}'**
+  String pageCount(int count);
+
+  /// No description provided for @libraryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My Library'**
+  String get libraryTitle;
+
+  /// No description provided for @searchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search title, author, category, tags'**
+  String get searchHint;
+
+  /// No description provided for @clearSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear search'**
+  String get clearSearch;
+
+  /// No description provided for @sortTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort'**
+  String get sortTooltip;
+
+  /// No description provided for @filterCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get filterCategory;
+
+  /// No description provided for @filterTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Tag'**
+  String get filterTag;
+
+  /// No description provided for @filterType.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get filterType;
+
+  /// No description provided for @clearFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear filters'**
+  String get clearFilters;
+
+  /// No description provided for @filtersButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Filters'**
+  String get filtersButton;
+
+  /// No description provided for @removeFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove filter'**
+  String get removeFilter;
+
+  /// No description provided for @showEntries.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No matching entries} =1{Show 1 entry} other{Show {count} entries}}'**
+  String showEntries(int count);
+
+  /// No description provided for @showEntriesLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Show entries'**
+  String get showEntriesLoading;
+
+  /// No description provided for @searchFilterValues.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get searchFilterValues;
+
+  /// No description provided for @sortByName.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort by name'**
+  String get sortByName;
+
+  /// No description provided for @sortByCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort by number of entries'**
+  String get sortByCount;
+
+  /// No description provided for @filterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get filterAll;
+
+  /// No description provided for @pickerEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing here yet'**
+  String get pickerEmpty;
+
+  /// No description provided for @entryCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry} other{{count} entries}}'**
+  String entryCount(int count);
+
+  /// No description provided for @addButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get addButton;
+
+  /// No description provided for @addTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'New entry (Ctrl+N)'**
+  String get addTooltip;
+
+  /// No description provided for @emptyLibraryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your library is empty'**
+  String get emptyLibraryTitle;
+
+  /// No description provided for @emptyLibraryBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your first book or fanfic with “Add”.'**
+  String get emptyLibraryBody;
+
+  /// No description provided for @noResultsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing found'**
+  String get noResultsTitle;
+
+  /// No description provided for @noResultsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Try different filters or search terms.'**
+  String get noResultsBody;
+
+  /// No description provided for @noSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Select an entry on the left'**
+  String get noSelection;
+
+  /// No description provided for @errorMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {error}'**
+  String errorMessage(Object error);
+
+  /// No description provided for @editTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get editTooltip;
+
+  /// No description provided for @deleteTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get deleteTooltip;
+
+  /// No description provided for @notFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Entry not found'**
+  String get notFound;
+
+  /// No description provided for @linkOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open the link'**
+  String get linkOpenFailed;
+
+  /// No description provided for @undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get undo;
+
+  /// No description provided for @byAuthor.
+  ///
+  /// In en, this message translates to:
+  /// **'by {author}'**
+  String byAuthor(String author);
+
+  /// No description provided for @changeStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Change reading status'**
+  String get changeStatus;
+
+  /// No description provided for @chaptersComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapters · complete'**
+  String get chaptersComplete;
+
+  /// No description provided for @chaptersOngoing.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapters · ongoing'**
+  String get chaptersOngoing;
+
+  /// No description provided for @sectionProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading progress'**
+  String get sectionProgress;
+
+  /// No description provided for @chapterProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter {current} of {total}'**
+  String chapterProgress(int current, int total);
+
+  /// No description provided for @chapterCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter {current}'**
+  String chapterCurrent(int current);
+
+  /// No description provided for @previousChapter.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous chapter'**
+  String get previousChapter;
+
+  /// No description provided for @nextChapter.
+  ///
+  /// In en, this message translates to:
+  /// **'Next chapter'**
+  String get nextChapter;
+
+  /// No description provided for @sectionLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Link'**
+  String get sectionLink;
+
+  /// No description provided for @readOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Read on {site}'**
+  String readOn(String site);
+
+  /// No description provided for @readOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'Read online'**
+  String get readOnline;
+
+  /// No description provided for @sectionTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get sectionTags;
+
+  /// No description provided for @sectionIsbn.
+  ///
+  /// In en, this message translates to:
+  /// **'ISBN'**
+  String get sectionIsbn;
+
+  /// No description provided for @sectionSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary'**
+  String get sectionSummary;
+
+  /// No description provided for @sectionNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get sectionNotes;
+
+  /// No description provided for @addedUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Added {added} · updated {updated}'**
+  String addedUpdated(DateTime added, DateTime updated);
+
+  /// No description provided for @newEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'New entry'**
+  String get newEntry;
+
+  /// No description provided for @editEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit entry'**
+  String get editEntry;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// No description provided for @discardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard changes?'**
+  String get discardTitle;
+
+  /// No description provided for @discardBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your changes haven\'t been saved.'**
+  String get discardBody;
+
+  /// No description provided for @keepEditing.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep editing'**
+  String get keepEditing;
+
+  /// No description provided for @discard.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get discard;
+
+  /// No description provided for @numbersOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Numbers only'**
+  String get numbersOnly;
+
+  /// No description provided for @fieldType.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get fieldType;
+
+  /// No description provided for @fieldTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title *'**
+  String get fieldTitle;
+
+  /// No description provided for @titleRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a title'**
+  String get titleRequired;
+
+  /// No description provided for @fieldAuthor.
+  ///
+  /// In en, this message translates to:
+  /// **'Author'**
+  String get fieldAuthor;
+
+  /// No description provided for @fieldCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category / fandom'**
+  String get fieldCategory;
+
+  /// No description provided for @fieldCategoryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Naruto, Harry Potter'**
+  String get fieldCategoryHint;
+
+  /// No description provided for @fieldLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Link'**
+  String get fieldLink;
+
+  /// No description provided for @fieldLinkHint.
+  ///
+  /// In en, this message translates to:
+  /// **'https://www.fanfiction.net/s/…'**
+  String get fieldLinkHint;
+
+  /// No description provided for @invalidLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid link'**
+  String get invalidLink;
+
+  /// No description provided for @fieldStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading status'**
+  String get fieldStatus;
+
+  /// No description provided for @sectionLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Length'**
+  String get sectionLength;
+
+  /// No description provided for @fieldChapters.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapters'**
+  String get fieldChapters;
+
+  /// No description provided for @fieldCurrentChapter.
+  ///
+  /// In en, this message translates to:
+  /// **'Read up to chapter'**
+  String get fieldCurrentChapter;
+
+  /// No description provided for @fieldWords.
+  ///
+  /// In en, this message translates to:
+  /// **'Words'**
+  String get fieldWords;
+
+  /// No description provided for @fieldPages.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages'**
+  String get fieldPages;
+
+  /// No description provided for @completeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed by the author'**
+  String get completeTitle;
+
+  /// No description provided for @completeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Off = the story is still being updated'**
+  String get completeSubtitle;
+
+  /// No description provided for @fieldIsbn.
+  ///
+  /// In en, this message translates to:
+  /// **'ISBN'**
+  String get fieldIsbn;
+
+  /// No description provided for @addTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Add tag'**
+  String get addTag;
+
+  /// No description provided for @addTagHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Action, Harem, Kingdom Building'**
+  String get addTagHint;
+
+  /// No description provided for @sectionRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Rating'**
+  String get sectionRating;
+
+  /// No description provided for @starTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 star} other{{count} stars}}'**
+  String starTooltip(int count);
+
+  /// No description provided for @sectionDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get sectionDescription;
+
+  /// No description provided for @fieldSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary'**
+  String get fieldSummary;
+
+  /// No description provided for @fieldNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal notes'**
+  String get fieldNotes;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @moreOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'More options'**
+  String get moreOptions;
+
+  /// No description provided for @addFromLink.
+  ///
+  /// In en, this message translates to:
+  /// **'From a link'**
+  String get addFromLink;
+
+  /// No description provided for @addFromLinkHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Fanfic, web novel or book page – details are filled in for you'**
+  String get addFromLinkHint;
+
+  /// No description provided for @addManually.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter manually'**
+  String get addManually;
+
+  /// No description provided for @addManuallyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For example a book on your shelf'**
+  String get addManuallyHint;
+
+  /// No description provided for @importTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add from link'**
+  String get importTitle;
+
+  /// No description provided for @importIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste the link to a story. ReadTrack loads its title, author, chapters and more, and you can check everything before saving.'**
+  String get importIntro;
+
+  /// No description provided for @importLinkLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Link to the story'**
+  String get importLinkLabel;
+
+  /// No description provided for @importPaste.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste'**
+  String get importPaste;
+
+  /// No description provided for @importDetected.
+  ///
+  /// In en, this message translates to:
+  /// **'Recognized: {site}'**
+  String importDetected(String site);
+
+  /// No description provided for @importFetch.
+  ///
+  /// In en, this message translates to:
+  /// **'Load details'**
+  String get importFetch;
+
+  /// No description provided for @importLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading…'**
+  String get importLoading;
+
+  /// No description provided for @importInvalidLink.
+  ///
+  /// In en, this message translates to:
+  /// **'That doesn\'t look like a link.'**
+  String get importInvalidLink;
+
+  /// No description provided for @importUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'This site isn\'t supported yet. You can still add the entry manually.'**
+  String get importUnsupported;
+
+  /// No description provided for @importAlreadyInLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'This story is already in your library.'**
+  String get importAlreadyInLibrary;
+
+  /// No description provided for @importSupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Supported sites'**
+  String get importSupported;
+
+  /// No description provided for @importBrowserNote.
+  ///
+  /// In en, this message translates to:
+  /// **'FanFiction.Net, Scribble Hub, WebNovel and sometimes AO3 and Royal Road are protected against bots. For them a small browser window opens while ReadTrack loads pages. If it shows a verification, solve it once.'**
+  String get importBrowserNote;
+
+  /// No description provided for @importedFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported from {site}'**
+  String importedFrom(String site);
+
+  /// No description provided for @importedSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 chapter found} other{{count} chapters found}} – check the details and save.'**
+  String importedSummary(int count);
+
+  /// No description provided for @sectionRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get sectionRead;
+
+  /// No description provided for @readOnlineInApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Read online'**
+  String get readOnlineInApp;
+
+  /// No description provided for @continueOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue online · chapter {chapter}'**
+  String continueOnline(int chapter);
+
+  /// No description provided for @loadChapterList.
+  ///
+  /// In en, this message translates to:
+  /// **'Load chapter list'**
+  String get loadChapterList;
+
+  /// No description provided for @checkForNewChapters.
+  ///
+  /// In en, this message translates to:
+  /// **'Check for new chapters'**
+  String get checkForNewChapters;
+
+  /// No description provided for @newChaptersFound.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 new chapter} other{{count} new chapters}}'**
+  String newChaptersFound(int count);
+
+  /// No description provided for @noNewChapters.
+  ///
+  /// In en, this message translates to:
+  /// **'No new chapters'**
+  String get noNewChapters;
+
+  /// No description provided for @downloadsHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads'**
+  String get downloadsHeading;
+
+  /// No description provided for @noDownloadsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing downloaded yet. Downloads can be read offline.'**
+  String get noDownloadsYet;
+
+  /// No description provided for @downloadRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapters {from}–{to}'**
+  String downloadRange(int from, int to);
+
+  /// No description provided for @downloadSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{format} · updated {date}'**
+  String downloadSubtitle(String format, DateTime date);
+
+  /// No description provided for @readDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get readDownload;
+
+  /// No description provided for @openFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Open file'**
+  String get openFile;
+
+  /// No description provided for @logTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Diagnostic log'**
+  String get logTitle;
+
+  /// No description provided for @logHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Errors and download problems, for bug reports. No passwords or book text.'**
+  String get logHint;
+
+  /// No description provided for @logEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing logged yet.'**
+  String get logEmpty;
+
+  /// No description provided for @copyLog.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy log'**
+  String get copyLog;
+
+  /// No description provided for @exportLog.
+  ///
+  /// In en, this message translates to:
+  /// **'Save log as file'**
+  String get exportLog;
+
+  /// No description provided for @clearLog.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear log'**
+  String get clearLog;
+
+  /// No description provided for @clearLogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear the diagnostic log?'**
+  String get clearLogTitle;
+
+  /// No description provided for @logExported.
+  ///
+  /// In en, this message translates to:
+  /// **'Log saved: {path}'**
+  String logExported(String path);
+
+  /// No description provided for @showLog.
+  ///
+  /// In en, this message translates to:
+  /// **'Show log'**
+  String get showLog;
+
+  /// No description provided for @crashNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'ReadTrack didn\'t close normally last time. The log may show why.'**
+  String get crashNotice;
+
+  /// No description provided for @crashDuringDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'ReadTrack stopped unexpectedly while downloading “{title}” ({done} of {total} chapters). Downloaded chapters are kept; start the download again to continue.'**
+  String crashDuringDownload(String title, String done, String total);
+
+  /// No description provided for @openFileFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Open {format} file'**
+  String openFileFormat(String format);
+
+  /// No description provided for @deleteDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete download'**
+  String get deleteDownload;
+
+  /// No description provided for @suggestTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest tags'**
+  String get suggestTags;
+
+  /// No description provided for @tagSuggestionWhy.
+  ///
+  /// In en, this message translates to:
+  /// **'{reason}. Tap to add the tag.'**
+  String tagSuggestionWhy(String reason);
+
+  /// No description provided for @tagReasonKeyword.
+  ///
+  /// In en, this message translates to:
+  /// **'The summary mentions “{word}”'**
+  String tagReasonKeyword(String word);
+
+  /// No description provided for @tagsSuggested.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No new tag suggestions} =1{1 tag suggested} other{{count} tags suggested}}'**
+  String tagsSuggested(int count);
+
+  /// No description provided for @findCharacters.
+  ///
+  /// In en, this message translates to:
+  /// **'Find in the text'**
+  String get findCharacters;
+
+  /// No description provided for @suggestedCharacter.
+  ///
+  /// In en, this message translates to:
+  /// **'Found in the text. Tap to confirm.'**
+  String get suggestedCharacter;
+
+  /// No description provided for @dismissSuggestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Not in this story'**
+  String get dismissSuggestion;
+
+  /// No description provided for @noKnownCharacters.
+  ///
+  /// In en, this message translates to:
+  /// **'No characters are known for this category yet. Add some, or look the franchise up on AniList.'**
+  String get noKnownCharacters;
+
+  /// No description provided for @noTextToSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no downloaded text to search yet.'**
+  String get noTextToSearch;
+
+  /// No description provided for @charactersFound.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No more known characters found} =1{Found 1 character; confirm it with a tap} other{Found {count} characters; confirm them with a tap}}'**
+  String charactersFound(int count);
+
+  /// No description provided for @aniListLookUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Look up on AniList'**
+  String get aniListLookUp;
+
+  /// No description provided for @aniListTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AniList'**
+  String get aniListTitle;
+
+  /// No description provided for @aniListHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick the matching one. Empty fields are filled in; tags, characters and links to sequels or prequels in your library are added.'**
+  String get aniListHint;
+
+  /// No description provided for @aniListApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Took AniList\'s details: {characters, plural, =0{no new characters} =1{1 new character} other{{characters} new characters}}, {relations, plural, =0{no links} =1{1 link} other{{relations} links}}'**
+  String aniListApplied(int characters, int relations);
+
+  /// No description provided for @categoriesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get categoriesTitle;
+
+  /// No description provided for @categoriesTileHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename or merge franchises'**
+  String get categoriesTileHint;
+
+  /// No description provided for @categoriesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Merging a category into another moves its entries, crossovers and characters, and remembers its name, so stories imported later with that name land in the right place.'**
+  String get categoriesHint;
+
+  /// No description provided for @renameCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get renameCategory;
+
+  /// No description provided for @mergeCategoryInto.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge into another category…'**
+  String get mergeCategoryInto;
+
+  /// No description provided for @mergeCategoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge “{name}” into'**
+  String mergeCategoryTitle(String name);
+
+  /// No description provided for @categoryAliases.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 other name} other{{count} other names}}'**
+  String categoryAliases(int count);
+
+  /// No description provided for @pageCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {current}'**
+  String pageCurrent(int current);
+
+  /// No description provided for @pageProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {current} of {total}'**
+  String pageProgress(int current, int total);
+
+  /// No description provided for @setPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Set page'**
+  String get setPage;
+
+  /// No description provided for @currentPageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Which page are you on?'**
+  String get currentPageTitle;
+
+  /// No description provided for @autoDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download new chapters'**
+  String get autoDownload;
+
+  /// No description provided for @autoDownloadHint.
+  ///
+  /// In en, this message translates to:
+  /// **'When a check finds new chapters, stories you have downloaded get them too, in the same file.'**
+  String get autoDownloadHint;
+
+  /// No description provided for @autoDownloaded.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Downloaded 1 new chapter} other{Downloaded {count} new chapters}}'**
+  String autoDownloaded(int count);
+
+  /// No description provided for @mangaMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Page layout'**
+  String get mangaMode;
+
+  /// No description provided for @mangaPages.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages, left to right'**
+  String get mangaPages;
+
+  /// No description provided for @mangaPagesRtl.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages, right to left (manga)'**
+  String get mangaPagesRtl;
+
+  /// No description provided for @mangaScroll.
+  ///
+  /// In en, this message translates to:
+  /// **'Long strip (webtoon)'**
+  String get mangaScroll;
+
+  /// No description provided for @mangaDoublePage.
+  ///
+  /// In en, this message translates to:
+  /// **'Two pages side by side (wide windows)'**
+  String get mangaDoublePage;
+
+  /// No description provided for @ownsPaperCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'I also own it on paper'**
+  String get ownsPaperCopy;
+
+  /// No description provided for @paperCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Paper copy'**
+  String get paperCopy;
+
+  /// No description provided for @mergeTagInto.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge into another tag…'**
+  String get mergeTagInto;
+
+  /// No description provided for @mergeTagTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge “{name}” into'**
+  String mergeTagTitle(String name);
+
+  /// No description provided for @tagAlsoCalled.
+  ///
+  /// In en, this message translates to:
+  /// **'Also: {names}'**
+  String tagAlsoCalled(String names);
+
+  /// No description provided for @removeSynonym.
+  ///
+  /// In en, this message translates to:
+  /// **'Forget “{name}”'**
+  String removeSynonym(String name);
+
+  /// No description provided for @sectionCharacters.
+  ///
+  /// In en, this message translates to:
+  /// **'Characters'**
+  String get sectionCharacters;
+
+  /// No description provided for @addCharacter.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a character'**
+  String get addCharacter;
+
+  /// No description provided for @addCharacterHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Fujiwara Chika'**
+  String get addCharacterHint;
+
+  /// No description provided for @pickCharacters.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose characters'**
+  String get pickCharacters;
+
+  /// No description provided for @filterCharacter.
+  ///
+  /// In en, this message translates to:
+  /// **'Character'**
+  String get filterCharacter;
+
+  /// No description provided for @sectionCrossovers.
+  ///
+  /// In en, this message translates to:
+  /// **'Crossover with'**
+  String get sectionCrossovers;
+
+  /// No description provided for @addCrossover.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a category'**
+  String get addCrossover;
+
+  /// No description provided for @addCrossoverHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The other franchises of a crossover'**
+  String get addCrossoverHint;
+
+  /// No description provided for @openFranchise.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything for {name}'**
+  String openFranchise(String name);
+
+  /// No description provided for @franchiseSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{own, plural, =1{1 entry} other{{own} entries}}, {crossovers, plural, =0{no crossovers} =1{1 crossover} other{{crossovers} crossovers}}'**
+  String franchiseSummary(int own, int crossovers);
+
+  /// No description provided for @franchiseCrossovers.
+  ///
+  /// In en, this message translates to:
+  /// **'Crossovers from other categories'**
+  String get franchiseCrossovers;
+
+  /// No description provided for @fieldSeries.
+  ///
+  /// In en, this message translates to:
+  /// **'Series'**
+  String get fieldSeries;
+
+  /// No description provided for @fieldSeriesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Harry Potter'**
+  String get fieldSeriesHint;
+
+  /// No description provided for @fieldSeriesIndex.
+  ///
+  /// In en, this message translates to:
+  /// **'No.'**
+  String get fieldSeriesIndex;
+
+  /// No description provided for @pickSeries.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a series'**
+  String get pickSeries;
+
+  /// No description provided for @filterSeries.
+  ///
+  /// In en, this message translates to:
+  /// **'Series'**
+  String get filterSeries;
+
+  /// No description provided for @sectionSeries.
+  ///
+  /// In en, this message translates to:
+  /// **'Series: {name}'**
+  String sectionSeries(String name);
+
+  /// No description provided for @sectionRelated.
+  ///
+  /// In en, this message translates to:
+  /// **'Related'**
+  String get sectionRelated;
+
+  /// No description provided for @addRelation.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get addRelation;
+
+  /// No description provided for @addRelationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Related to “{title}”'**
+  String addRelationTitle(String title);
+
+  /// No description provided for @removeRelation.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove relation'**
+  String get removeRelation;
+
+  /// No description provided for @relationSequel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sequel'**
+  String get relationSequel;
+
+  /// No description provided for @relationPrequel.
+  ///
+  /// In en, this message translates to:
+  /// **'Prequel'**
+  String get relationPrequel;
+
+  /// No description provided for @relationSpinOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Spin-off'**
+  String get relationSpinOff;
+
+  /// No description provided for @relationSpinOffOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Spin-off of'**
+  String get relationSpinOffOf;
+
+  /// No description provided for @relationSideStory.
+  ///
+  /// In en, this message translates to:
+  /// **'Side story'**
+  String get relationSideStory;
+
+  /// No description provided for @relationSideStoryOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Side story of'**
+  String get relationSideStoryOf;
+
+  /// No description provided for @statsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Statistics'**
+  String get statsTitle;
+
+  /// No description provided for @statsIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Counts reading in ReadTrack\'s reader: time while you scroll or turn pages, and the words of each chapter read to the end.'**
+  String get statsIntro;
+
+  /// No description provided for @statsLast30Days.
+  ///
+  /// In en, this message translates to:
+  /// **'Words per day, last 30 days'**
+  String get statsLast30Days;
+
+  /// No description provided for @statsNothingYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing read in the app yet.'**
+  String get statsNothingYet;
+
+  /// No description provided for @statsMostInADay.
+  ///
+  /// In en, this message translates to:
+  /// **'Most in a day: {words} words'**
+  String statsMostInADay(String words);
+
+  /// No description provided for @statsTotals.
+  ///
+  /// In en, this message translates to:
+  /// **'Totals'**
+  String get statsTotals;
+
+  /// No description provided for @statsThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'this week'**
+  String get statsThisWeek;
+
+  /// No description provided for @statsThisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'this month'**
+  String get statsThisMonth;
+
+  /// No description provided for @statsThisYear.
+  ///
+  /// In en, this message translates to:
+  /// **'this year'**
+  String get statsThisYear;
+
+  /// No description provided for @statsWordsIn.
+  ///
+  /// In en, this message translates to:
+  /// **'words {span}'**
+  String statsWordsIn(String span);
+
+  /// No description provided for @statsStreaks.
+  ///
+  /// In en, this message translates to:
+  /// **'Streaks'**
+  String get statsStreaks;
+
+  /// No description provided for @statsCurrentStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Current streak'**
+  String get statsCurrentStreak;
+
+  /// No description provided for @statsLongestStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Longest streak'**
+  String get statsLongestStreak;
+
+  /// No description provided for @statsDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day} other{{count} days}}'**
+  String statsDays(int count);
+
+  /// No description provided for @statsYearInReview.
+  ///
+  /// In en, this message translates to:
+  /// **'{year} in review'**
+  String statsYearInReview(String year);
+
+  /// No description provided for @statsRead.
+  ///
+  /// In en, this message translates to:
+  /// **'read'**
+  String get statsRead;
+
+  /// No description provided for @statsDaysRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Days with reading'**
+  String get statsDaysRead;
+
+  /// No description provided for @statsFinished.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished'**
+  String get statsFinished;
+
+  /// No description provided for @statsMostRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Most read'**
+  String get statsMostRead;
+
+  /// No description provided for @statsFinishedList.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished'**
+  String get statsFinishedList;
+
+  /// No description provided for @statsMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min'**
+  String statsMinutes(int minutes);
+
+  /// No description provided for @statsHours.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours} h {minutes} min'**
+  String statsHours(int hours, int minutes);
+
+  /// No description provided for @addByIsbn.
+  ///
+  /// In en, this message translates to:
+  /// **'By ISBN'**
+  String get addByIsbn;
+
+  /// No description provided for @addByIsbnHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A paper book: details and cover from Open Library'**
+  String get addByIsbnHint;
+
+  /// No description provided for @isbnLookUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Look up this ISBN'**
+  String get isbnLookUp;
+
+  /// No description provided for @isbnInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'That isn\'t a valid ISBN-10 or ISBN-13.'**
+  String get isbnInvalid;
+
+  /// No description provided for @isbnNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No details found for this ISBN. Please fill them in.'**
+  String get isbnNotFound;
+
+  /// No description provided for @isbnLookupFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The lookup failed: {error}'**
+  String isbnLookupFailed(String error);
+
+  /// No description provided for @addFromCatalog.
+  ///
+  /// In en, this message translates to:
+  /// **'From a free catalog'**
+  String get addFromCatalog;
+
+  /// No description provided for @addFromCatalogHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Project Gutenberg, Standard Ebooks or your own OPDS catalog (e.g. Calibre)'**
+  String get addFromCatalogHint;
+
+  /// No description provided for @catalogsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Catalogs'**
+  String get catalogsTitle;
+
+  /// No description provided for @catalogsIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Free, legal books in OPDS catalogs. Add your own, such as a Calibre content server.'**
+  String get catalogsIntro;
+
+  /// No description provided for @addCatalog.
+  ///
+  /// In en, this message translates to:
+  /// **'Add catalog'**
+  String get addCatalog;
+
+  /// No description provided for @removeCatalog.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove catalog'**
+  String get removeCatalog;
+
+  /// No description provided for @catalogUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'OPDS address'**
+  String get catalogUrl;
+
+  /// No description provided for @catalogName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name (optional)'**
+  String get catalogName;
+
+  /// No description provided for @catalogNoSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'This catalog can\'t be searched.'**
+  String get catalogNoSearch;
+
+  /// No description provided for @catalogSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search {name}'**
+  String catalogSearch(String name);
+
+  /// No description provided for @searchButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get searchButton;
+
+  /// No description provided for @catalogEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing here.'**
+  String get catalogEmpty;
+
+  /// No description provided for @catalogNoFile.
+  ///
+  /// In en, this message translates to:
+  /// **'No EPUB, FB2 or text file offered'**
+  String get catalogNoFile;
+
+  /// No description provided for @catalogAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to library'**
+  String get catalogAdd;
+
+  /// No description provided for @catalogAttach.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach to this entry'**
+  String get catalogAttach;
+
+  /// No description provided for @catalogAttached.
+  ///
+  /// In en, this message translates to:
+  /// **'Attached “{title}”. It can be read in the app now.'**
+  String catalogAttached(String title);
+
+  /// No description provided for @catalogMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load more'**
+  String get catalogMore;
+
+  /// No description provided for @freeEditionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Free editions: {query}'**
+  String freeEditionsTitle(String query);
+
+  /// No description provided for @noTextHint.
+  ///
+  /// In en, this message translates to:
+  /// **'No text for this entry yet.'**
+  String get noTextHint;
+
+  /// No description provided for @attachFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach a book file'**
+  String get attachFile;
+
+  /// No description provided for @findFreeEditions.
+  ///
+  /// In en, this message translates to:
+  /// **'Find free editions'**
+  String get findFreeEditions;
+
+  /// No description provided for @addFromList.
+  ///
+  /// In en, this message translates to:
+  /// **'From a list on a site'**
+  String get addFromList;
+
+  /// No description provided for @addFromListHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookmarks, favorites, collections or reading lists'**
+  String get addFromListHint;
+
+  /// No description provided for @listImportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add from a list'**
+  String get listImportTitle;
+
+  /// No description provided for @listImportIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste the link to a list page: AO3 bookmarks, collections, series or a user\'s works; Royal Road favorites; FanFiction.net favorites; a Wattpad reading list; or a list page on another supported site. Private lists only load if the site shows them without signing in.'**
+  String get listImportIntro;
+
+  /// No description provided for @listImportUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Link to the list'**
+  String get listImportUrl;
+
+  /// No description provided for @listImportLoad.
+  ///
+  /// In en, this message translates to:
+  /// **'Load list'**
+  String get listImportLoad;
+
+  /// No description provided for @listImportUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'This isn\'t a link to a supported site.'**
+  String get listImportUnsupported;
+
+  /// No description provided for @listImportIsStory.
+  ///
+  /// In en, this message translates to:
+  /// **'This link is a single story. Use “From a link” to add it.'**
+  String get listImportIsStory;
+
+  /// No description provided for @listImportEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No stories found on this page.'**
+  String get listImportEmpty;
+
+  /// No description provided for @listImportFound.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 story} other{{count} stories}}, {inLibrary} already in your library'**
+  String listImportFound(int count, int inLibrary);
+
+  /// No description provided for @listImportToggleAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Select all / none'**
+  String get listImportToggleAll;
+
+  /// No description provided for @listImportStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Add as'**
+  String get listImportStatus;
+
+  /// No description provided for @listImportInLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Already in your library'**
+  String get listImportInLibrary;
+
+  /// No description provided for @listImportAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Add 1 story} other{Add {count} stories}}'**
+  String listImportAdd(int count);
+
+  /// No description provided for @listImportProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Adding {done} of {total}…'**
+  String listImportProgress(int done, int total);
+
+  /// No description provided for @listImportDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Added {added}, {failed} failed'**
+  String listImportDone(int added, int failed);
+
+  /// No description provided for @listImportClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get listImportClose;
+
+  /// No description provided for @importingFromFile.
+  ///
+  /// In en, this message translates to:
+  /// **'From file: {name}'**
+  String importingFromFile(String name);
+
+  /// No description provided for @importedFileSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{format} · {count, plural, =1{1 chapter} other{{count} chapters}}. Check the details, then save to add the book.'**
+  String importedFileSummary(String format, int count);
+
+  /// No description provided for @estimateLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimate length'**
+  String get estimateLength;
+
+  /// No description provided for @estimateLengthHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Reads three sample chapters from the site and scales them up.'**
+  String get estimateLengthHint;
+
+  /// No description provided for @estimateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'No sample chapter could be loaded.'**
+  String get estimateFailed;
+
+  /// No description provided for @downloadWithImages.
+  ///
+  /// In en, this message translates to:
+  /// **'Include images'**
+  String get downloadWithImages;
+
+  /// No description provided for @downloadWithImagesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Off: only the text is downloaded and saved, which uses less data and space.'**
+  String get downloadWithImagesHint;
+
+  /// No description provided for @downloadKeepsImages.
+  ///
+  /// In en, this message translates to:
+  /// **'Images are included, as in this download.'**
+  String get downloadKeepsImages;
+
+  /// No description provided for @downloadKeepsNoImages.
+  ///
+  /// In en, this message translates to:
+  /// **'Without images, as in this download.'**
+  String get downloadKeepsNoImages;
+
+  /// No description provided for @downloadIncomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 chapter missing} other{{count} chapters missing}}'**
+  String downloadIncomplete(int count);
+
+  /// No description provided for @loadMissingChapters.
+  ///
+  /// In en, this message translates to:
+  /// **'Load missing chapters'**
+  String get loadMissingChapters;
+
+  /// No description provided for @downloadButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Download…'**
+  String get downloadButton;
+
+  /// No description provided for @downloadPreparing.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing download…'**
+  String get downloadPreparing;
+
+  /// No description provided for @downloadProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading chapter {current} of {total}…'**
+  String downloadProgress(int current, int total);
+
+  /// No description provided for @downloadDone.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Download updated} =1{Downloaded 1 chapter} other{Downloaded {count} chapters}}'**
+  String downloadDone(int count);
+
+  /// No description provided for @downloadDoneWithErrors.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloaded {done}, {failed} failed'**
+  String downloadDoneWithErrors(int done, int failed);
+
+  /// No description provided for @downloadCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Download cancelled after {count} chapters'**
+  String downloadCancelled(int count);
+
+  /// No description provided for @downloadTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Download chapters'**
+  String get downloadTitle;
+
+  /// No description provided for @downloadChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking {site} for new chapters…'**
+  String downloadChecking(String site);
+
+  /// No description provided for @downloadCheckFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t check for new chapters: {error}'**
+  String downloadCheckFailed(String error);
+
+  /// No description provided for @downloadAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 chapter available} other{{count} chapters available}}'**
+  String downloadAvailable(int count);
+
+  /// No description provided for @downloadNewChapters.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 of them is new} other{{count} of them are new}}'**
+  String downloadNewChapters(int count);
+
+  /// No description provided for @downloadLockedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 chapter is locked on the site and will be skipped.} other{{count} chapters are locked on the site and will be skipped.}}'**
+  String downloadLockedNote(int count);
+
+  /// No description provided for @downloadNoChapters.
+  ///
+  /// In en, this message translates to:
+  /// **'No chapters found on the site.'**
+  String get downloadNoChapters;
+
+  /// No description provided for @downloadUpToDate.
+  ///
+  /// In en, this message translates to:
+  /// **'All chapters are downloaded already. You can still create another file.'**
+  String get downloadUpToDate;
+
+  /// No description provided for @downloadAppend.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to “Chapters {from}–{to}” → chapters {from}–{newTo}'**
+  String downloadAppend(int from, int to, int newTo);
+
+  /// No description provided for @downloadNewFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a new file'**
+  String get downloadNewFile;
+
+  /// No description provided for @downloadFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From chapter'**
+  String get downloadFrom;
+
+  /// No description provided for @downloadTo.
+  ///
+  /// In en, this message translates to:
+  /// **'To chapter'**
+  String get downloadTo;
+
+  /// No description provided for @downloadMax.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to {count}'**
+  String downloadMax(int count);
+
+  /// No description provided for @downloadStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get downloadStart;
+
+  /// No description provided for @readerChapters.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapters'**
+  String get readerChapters;
+
+  /// No description provided for @readerTextSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Text size'**
+  String get readerTextSize;
+
+  /// No description provided for @readerSmaller.
+  ///
+  /// In en, this message translates to:
+  /// **'Smaller text'**
+  String get readerSmaller;
+
+  /// No description provided for @readerLarger.
+  ///
+  /// In en, this message translates to:
+  /// **'Larger text'**
+  String get readerLarger;
+
+  /// No description provided for @readerOpenInBrowser.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in browser'**
+  String get readerOpenInBrowser;
+
+  /// No description provided for @readerPosition.
+  ///
+  /// In en, this message translates to:
+  /// **'{current} / {total}'**
+  String readerPosition(int current, int total);
+
+  /// No description provided for @readerLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading chapter…'**
+  String get readerLoading;
+
+  /// No description provided for @readerBrowserHint.
+  ///
+  /// In en, this message translates to:
+  /// **'If a ReadTrack browser window opens, complete the website’s confirmation or sign-in there. Leave it open while reading or downloading.'**
+  String get readerBrowserHint;
+
+  /// No description provided for @readerRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get readerRetry;
+
+  /// No description provided for @readerNoChapters.
+  ///
+  /// In en, this message translates to:
+  /// **'No chapters yet. Load the chapter list first.'**
+  String get readerNoChapters;
+
+  /// No description provided for @readerNoSource.
+  ///
+  /// In en, this message translates to:
+  /// **'This entry\'s site isn\'t supported for reading in the app.'**
+  String get readerNoSource;
+
+  /// No description provided for @readerLockedChapter.
+  ///
+  /// In en, this message translates to:
+  /// **'This chapter is locked on the site.'**
+  String get readerLockedChapter;
+
+  /// No description provided for @readerNotDownloaded.
+  ///
+  /// In en, this message translates to:
+  /// **'This chapter isn\'t downloaded.'**
+  String get readerNotDownloaded;
+
+  /// No description provided for @readerLatestChapter.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve reached the latest chapter.'**
+  String get readerLatestChapter;
+
+  /// No description provided for @readerEndOfDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'End of this download.'**
+  String get readerEndOfDownload;
+
+  /// No description provided for @sortStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'By reading status'**
+  String get sortStatus;
+
+  /// No description provided for @filterStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get filterStatus;
+
+  /// No description provided for @chooseExisting.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from existing'**
+  String get chooseExisting;
+
+  /// No description provided for @pickTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose tags'**
+  String get pickTags;
+
+  /// No description provided for @pickCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a category'**
+  String get pickCategory;
+
+  /// No description provided for @pickAuthor.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an author'**
+  String get pickAuthor;
+
+  /// No description provided for @pickerSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search…'**
+  String get pickerSearch;
+
+  /// No description provided for @pickerDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get pickerDone;
+
+  /// No description provided for @frequentlyUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Frequently used:'**
+  String get frequentlyUsed;
+
+  /// No description provided for @pickerAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add “{value}”'**
+  String pickerAdd(String value);
+
+  /// No description provided for @sectionPairings.
+  ///
+  /// In en, this message translates to:
+  /// **'Pairings'**
+  String get sectionPairings;
+
+  /// No description provided for @filterPairing.
+  ///
+  /// In en, this message translates to:
+  /// **'Pairing'**
+  String get filterPairing;
+
+  /// No description provided for @addPairing.
+  ///
+  /// In en, this message translates to:
+  /// **'Add pairing'**
+  String get addPairing;
+
+  /// No description provided for @addPairingHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Naruto/Hinata'**
+  String get addPairingHint;
+
+  /// No description provided for @pickPairings.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose pairings'**
+  String get pickPairings;
+
+  /// No description provided for @settingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsTitle;
+
+  /// No description provided for @hideAdultTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide 18+ tags'**
+  String get hideAdultTags;
+
+  /// No description provided for @hideAdultTagsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags with adult content stay on your entries but are not shown.'**
+  String get hideAdultTagsHint;
+
+  /// No description provided for @adultTagsHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'18+ tags'**
+  String get adultTagsHeading;
+
+  /// No description provided for @adultTagsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags are marked automatically when they look like adult content or the site marks them. Tick or untick to correct it.'**
+  String get adultTagsHint;
+
+  /// No description provided for @hiddenAdultTags.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{+1 hidden 18+ tag} other{+{count} hidden 18+ tags}}'**
+  String hiddenAdultTags(int count);
+
+  /// No description provided for @exportAs.
+  ///
+  /// In en, this message translates to:
+  /// **'Export as…'**
+  String get exportAs;
+
+  /// No description provided for @exportedAs.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved as {format}'**
+  String exportedAs(String format);
+
+  /// No description provided for @downloadFormatHint.
+  ///
+  /// In en, this message translates to:
+  /// **'EPUB works in most e-book readers, FB2 in many Russian ones, HTML in any browser. Files are saved to ~/Documents/ReadTrack.'**
+  String get downloadFormatHint;
+
+  /// No description provided for @addFromFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Import a file'**
+  String get addFromFile;
+
+  /// No description provided for @addFromFileHint.
+  ///
+  /// In en, this message translates to:
+  /// **'EPUB, FB2, TXT or HTML you already have – read it in ReadTrack'**
+  String get addFromFileHint;
+
+  /// No description provided for @bookFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Books'**
+  String get bookFiles;
+
+  /// No description provided for @importingFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Importing {name}…'**
+  String importingFile(String name);
+
+  /// No description provided for @importedFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported {name}'**
+  String importedFile(String name);
+
+  /// No description provided for @importFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t import the file: {error}'**
+  String importFailed(String error);
+
+  /// No description provided for @readerSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading settings'**
+  String get readerSettings;
+
+  /// No description provided for @readerFont.
+  ///
+  /// In en, this message translates to:
+  /// **'Font'**
+  String get readerFont;
+
+  /// No description provided for @readerFontSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get readerFontSystem;
+
+  /// No description provided for @readerFontSerif.
+  ///
+  /// In en, this message translates to:
+  /// **'Serif'**
+  String get readerFontSerif;
+
+  /// No description provided for @readerFontSans.
+  ///
+  /// In en, this message translates to:
+  /// **'Sans'**
+  String get readerFontSans;
+
+  /// No description provided for @readerFontMono.
+  ///
+  /// In en, this message translates to:
+  /// **'Mono'**
+  String get readerFontMono;
+
+  /// No description provided for @readerLineSpacing.
+  ///
+  /// In en, this message translates to:
+  /// **'Line spacing'**
+  String get readerLineSpacing;
+
+  /// No description provided for @readerTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get readerTheme;
+
+  /// No description provided for @readerThemeApp.
+  ///
+  /// In en, this message translates to:
+  /// **'App'**
+  String get readerThemeApp;
+
+  /// No description provided for @readerThemeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get readerThemeLight;
+
+  /// No description provided for @readerThemeSepia.
+  ///
+  /// In en, this message translates to:
+  /// **'Sepia'**
+  String get readerThemeSepia;
+
+  /// No description provided for @readerThemeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get readerThemeDark;
+
+  /// No description provided for @readerThemeBlack.
+  ///
+  /// In en, this message translates to:
+  /// **'Night'**
+  String get readerThemeBlack;
+
+  /// No description provided for @readerJustify.
+  ///
+  /// In en, this message translates to:
+  /// **'Justify text'**
+  String get readerJustify;
+
+  /// No description provided for @readerThemeCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get readerThemeCustom;
+
+  /// No description provided for @readerBackgroundColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Background'**
+  String get readerBackgroundColor;
+
+  /// No description provided for @readerTextColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get readerTextColor;
+
+  /// No description provided for @readerHexInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Use #RRGGBB'**
+  String get readerHexInvalid;
+
+  /// No description provided for @readerTextWidth.
+  ///
+  /// In en, this message translates to:
+  /// **'Text width'**
+  String get readerTextWidth;
+
+  /// No description provided for @readerWidthFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Full'**
+  String get readerWidthFull;
+
+  /// No description provided for @readerWidthReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Default width'**
+  String get readerWidthReset;
+
+  /// No description provided for @readerFontOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other font…'**
+  String get readerFontOther;
+
+  /// No description provided for @readerFontPick.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a font'**
+  String get readerFontPick;
+
+  /// No description provided for @readerFontSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search or type a font name'**
+  String get readerFontSearch;
+
+  /// No description provided for @readerFontUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Use “{name}”'**
+  String readerFontUse(String name);
+
+  /// No description provided for @readerFontNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No installed fonts found. Type the name of a font.'**
+  String get readerFontNone;
+
+  /// No description provided for @addBookmark.
+  ///
+  /// In en, this message translates to:
+  /// **'Add bookmark'**
+  String get addBookmark;
+
+  /// No description provided for @bookmarkAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookmark added'**
+  String get bookmarkAdded;
+
+  /// No description provided for @bookmarkAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookmark at {percent} %'**
+  String bookmarkAt(int percent);
+
+  /// No description provided for @saveQuote.
+  ///
+  /// In en, this message translates to:
+  /// **'Save quote'**
+  String get saveQuote;
+
+  /// No description provided for @quoteSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Quote saved'**
+  String get quoteSaved;
+
+  /// No description provided for @addNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Add note'**
+  String get addNote;
+
+  /// No description provided for @editNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit note'**
+  String get editNote;
+
+  /// No description provided for @noteSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Note saved'**
+  String get noteSaved;
+
+  /// No description provided for @noteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your thoughts…'**
+  String get noteHint;
+
+  /// No description provided for @annotationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookmarks, quotes & notes'**
+  String get annotationsTitle;
+
+  /// No description provided for @annotationsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing yet. Add a bookmark with the bookmark button, or select text to save a quote or note.'**
+  String get annotationsEmpty;
+
+  /// No description provided for @showAllAnnotations.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all ({count})'**
+  String showAllAnnotations(int count);
+
+  /// No description provided for @filterLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Length'**
+  String get filterLength;
+
+  /// No description provided for @atLeastWords.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}+ words'**
+  String atLeastWords(int count);
+
+  /// No description provided for @filterCompletion.
+  ///
+  /// In en, this message translates to:
+  /// **'Completion'**
+  String get filterCompletion;
+
+  /// No description provided for @completeOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete'**
+  String get completeOnly;
+
+  /// No description provided for @ongoingOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Ongoing'**
+  String get ongoingOnly;
+
+  /// No description provided for @saveShelf.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as shelf'**
+  String get saveShelf;
+
+  /// No description provided for @saveShelfTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save these filters as a shelf'**
+  String get saveShelfTitle;
+
+  /// No description provided for @shelfNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Long finished romance'**
+  String get shelfNameHint;
+
+  /// No description provided for @openShelf.
+  ///
+  /// In en, this message translates to:
+  /// **'Show this shelf'**
+  String get openShelf;
+
+  /// No description provided for @deleteShelf.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete shelf'**
+  String get deleteShelf;
+
+  /// No description provided for @showAsGrid.
+  ///
+  /// In en, this message translates to:
+  /// **'Show as grid'**
+  String get showAsGrid;
+
+  /// No description provided for @showAsList.
+  ///
+  /// In en, this message translates to:
+  /// **'Show as list'**
+  String get showAsList;
+
+  /// No description provided for @backupHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup'**
+  String get backupHeading;
+
+  /// No description provided for @backupHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Saves your whole library – entries, progress, notes and downloaded books – in one zip file.'**
+  String get backupHint;
+
+  /// No description provided for @createBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Create backup'**
+  String get createBackup;
+
+  /// No description provided for @backupCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup saved: {path}'**
+  String backupCreated(String path);
+
+  /// No description provided for @backupFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup failed: {error}'**
+  String backupFailed(String error);
+
+  /// No description provided for @backupFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'ReadTrack backups'**
+  String get backupFiles;
+
+  /// No description provided for @restoreBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore backup'**
+  String get restoreBackup;
+
+  /// No description provided for @restoreBackupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore this backup?'**
+  String get restoreBackupTitle;
+
+  /// No description provided for @restoreBackupWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Your current library is replaced by the backup. A copy of it is kept as \"before-restore\" in the app folder.'**
+  String get restoreBackupWarning;
+
+  /// No description provided for @restoreReadyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup ready'**
+  String get restoreReadyTitle;
+
+  /// No description provided for @restoreReadyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Restart ReadTrack to finish restoring the backup.'**
+  String get restoreReadyHint;
+
+  /// No description provided for @restoreFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not restore the backup: {error}'**
+  String restoreFailed(String error);
+
+  /// No description provided for @later.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get later;
+
+  /// No description provided for @closeApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Close ReadTrack'**
+  String get closeApp;
+
+  /// No description provided for @checkForUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Check for new chapters'**
+  String get checkForUpdates;
+
+  /// No description provided for @updatesFound.
+  ///
+  /// In en, this message translates to:
+  /// **'{chapters, plural, =1{1 new chapter} other{{chapters} new chapters}} in {works, plural, =1{1 story} other{{works} stories}}'**
+  String updatesFound(int chapters, int works);
+
+  /// No description provided for @noUpdatesFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No new chapters'**
+  String get noUpdatesFound;
+
+  /// No description provided for @updatesFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'No new chapters found; {count, plural, =1{1 story} other{{count} stories}} could not be checked'**
+  String updatesFailed(int count);
+
+  /// No description provided for @newChaptersBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'+{count} new'**
+  String newChaptersBadge(int count);
+
+  /// No description provided for @abandonedBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'No update for over a year'**
+  String get abandonedBadge;
+
+  /// No description provided for @abandonedShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Abandoned?'**
+  String get abandonedShort;
+
+  /// No description provided for @checkOnStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Check for new chapters on start'**
+  String get checkOnStart;
+
+  /// No description provided for @checkOnStartHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Ongoing stories that update often are checked more often, finished ones about once a month. Sites that need a browser window are only checked from the story page.'**
+  String get checkOnStartHint;
+
+  /// No description provided for @updatesHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Updates'**
+  String get updatesHeading;
+
+  /// No description provided for @saveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save: {error}'**
+  String saveFailed(String error);
+
+  /// No description provided for @deleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete “{title}”?'**
+  String deleteTitle(String title);
+
+  /// No description provided for @deleteToTrashHint.
+  ///
+  /// In en, this message translates to:
+  /// **'It goes to the trash in Settings, where you can restore it for six months.'**
+  String get deleteToTrashHint;
+
+  /// No description provided for @movedToTrash.
+  ///
+  /// In en, this message translates to:
+  /// **'“{title}” moved to the trash'**
+  String movedToTrash(String title);
+
+  /// No description provided for @trashTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Trash'**
+  String get trashTitle;
+
+  /// No description provided for @trashHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted entries stay here for six months, then they are removed for good together with their downloaded files.'**
+  String get trashHint;
+
+  /// No description provided for @trashEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'The trash is empty'**
+  String get trashEmpty;
+
+  /// No description provided for @trashDates.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted {deleted} · removed for good on {purge}'**
+  String trashDates(String deleted, String purge);
+
+  /// No description provided for @trashCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Empty} =1{1 entry} other{{count} entries}}'**
+  String trashCount(int count);
+
+  /// No description provided for @restore.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get restore;
+
+  /// No description provided for @deleteForever.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete for good'**
+  String get deleteForever;
+
+  /// No description provided for @deleteForeverTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete “{title}” for good?'**
+  String deleteForeverTitle(String title);
+
+  /// No description provided for @emptyTrash.
+  ///
+  /// In en, this message translates to:
+  /// **'Empty trash'**
+  String get emptyTrash;
+
+  /// No description provided for @emptyTrashTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Delete 1 entry for good?} other{Delete {count} entries for good?}}'**
+  String emptyTrashTitle(int count);
+
+  /// No description provided for @cannotUndo.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloaded chapters and files are deleted too. This cannot be undone.'**
+  String get cannotUndo;
+
+  /// No description provided for @restoredFromTrash.
+  ///
+  /// In en, this message translates to:
+  /// **'Restored from the trash'**
+  String get restoredFromTrash;
+}
+
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
+  const _AppLocalizationsDelegate();
+
+  @override
+  Future<AppLocalizations> load(Locale locale) {
+    return SynchronousFuture<AppLocalizations>(lookupAppLocalizations(locale));
+  }
+
+  @override
+  bool isSupported(Locale locale) =>
+      <String>['en'].contains(locale.languageCode);
+
+  @override
+  bool shouldReload(_AppLocalizationsDelegate old) => false;
+}
+
+AppLocalizations lookupAppLocalizations(Locale locale) {
+  // Lookup logic when only language code is specified.
+  switch (locale.languageCode) {
+    case 'en':
+      return AppLocalizationsEn();
+  }
+
+  throw FlutterError(
+    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.',
+  );
+}
