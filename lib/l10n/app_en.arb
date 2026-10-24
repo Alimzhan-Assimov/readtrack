@@ -46,13 +46,27 @@
     }
   },
   "libraryTitle": "My Library",
-  "searchHint": "Search title, author or category",
+  "searchHint": "Search title, author, category, tags",
   "clearSearch": "Clear search",
   "sortTooltip": "Sort",
   "filterCategory": "Category",
   "filterTag": "Tag",
   "filterType": "Type",
   "clearFilters": "Clear filters",
+  "filtersButton": "Filters",
+  "removeFilter": "Remove filter",
+  "showEntries": "{count, plural, =0{No matching entries} =1{Show 1 entry} other{Show {count} entries}}",
+  "@showEntries": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "showEntriesLoading": "Show entries",
+  "searchFilterValues": "Search",
+  "sortByName": "Sort by name",
+  "sortByCount": "Sort by number of entries",
   "filterAll": "All",
   "pickerEmpty": "Nothing here yet",
   "entryCount": "{count, plural, =1{1 entry} other{{count} entries}}",

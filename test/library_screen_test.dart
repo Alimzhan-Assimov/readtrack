@@ -256,24 +256,67 @@ void main() {
     await unmount(tester);
   });
 
-  testWidgets('all filters fit into the list pane without scrolling', (
+  testWidgets('the filter panel narrows the list; chips remove filters', (
     tester,
   ) async {
     await pumpApp(tester, width: 1200);
-    for (final label in ['Type', 'Category', 'Tag']) {
-      // The list pane is 400 dp wide; every chip must end inside it.
+    // The list pane is 400 dp wide; the filter row must fit inside it.
+    for (final label in ['Filters', 'Recently updated']) {
       expect(tester.getRect(find.text(label)).right, lessThan(400));
     }
 
-    await tester.tap(find.text('Type'));
+    await tester.tap(find.text('Filters'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Book').last);
+    expect(find.text('Show 1 entry'), findsOneWidget);
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Book'));
+    await tester.pumpAndSettle();
+    expect(find.text('No matching entries'), findsOneWidget);
+    await tester.tap(find.text('No matching entries'));
     await tester.pumpAndSettle();
     expect(find.text('Nothing found'), findsOneWidget);
 
-    await tester.tap(find.text('Clear filters'));
+    // The active filter shows as a chip; removing it brings the entry back.
+    expect(find.widgetWithText(InputChip, 'Book'), findsOneWidget);
+    await tester.tap(find.byTooltip('Remove filter'));
     await tester.pumpAndSettle();
     expect(find.text('The New Dawn'), findsOneWidget);
+    await unmount(tester);
+  });
+
+  testWidgets('category, tag and pairing values are searchable with counts', (
+    tester,
+  ) async {
+    await pumpApp(tester, width: 400);
+    await tester.tap(find.text('Filters'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Tag'),
+      200,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.tap(find.text('Tag'));
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(ListTile, 'Action'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.widgetWithText(ListTile, 'Action'),
+        matching: find.text('1'),
+      ),
+      findsOneWidget,
+    );
+    await tester.enterText(find.byType(TextField).last, 'xyz');
+    await tester.pumpAndSettle();
+    expect(find.text('Nothing here yet'), findsOneWidget);
+    await tester.enterText(find.byType(TextField).last, 'act');
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.text('Action'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Show 1 entry'), findsOneWidget);
     await unmount(tester);
   });
 
@@ -384,9 +427,16 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Length'));
+    await tester.tap(find.text('Filters'));
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Category'),
+      200,
+      scrollable: find.byType(Scrollable).last,
+    );
     await tester.tap(find.text('50K+ words'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('No matching entries'));
     await tester.pumpAndSettle();
     expect(find.text('The New Dawn'), findsNothing);
 
@@ -397,13 +447,13 @@ void main() {
     await tester.pumpAndSettle();
     expect(settings.shelves.single.filter.minWords, 50000);
 
-    await tester.tap(find.text('Clear filters'));
+    await tester.tap(find.byTooltip('Remove filter'));
     await tester.pumpAndSettle();
     expect(find.text('The New Dawn'), findsOneWidget);
     await tester.tap(find.text('Long reads'));
     await tester.pumpAndSettle();
     expect(find.text('The New Dawn'), findsNothing);
-    await tester.tap(find.text('Clear filters'));
+    await tester.tap(find.byTooltip('Remove filter'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.byTooltip('Show as grid'));

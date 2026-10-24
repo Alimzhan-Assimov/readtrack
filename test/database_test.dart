@@ -217,6 +217,25 @@ void main() {
     expect((w.pageCount, w.pagesEstimated), (400, true));
   });
 
+  test('search ignores case in any script and looks at tags', () async {
+    await db.saveWork(
+      WorksCompanion.insert(
+        type: WorkType.book,
+        format: WorkFormat.digital,
+        title: 'Война и мир',
+        author: const Value('Лев Толстой'),
+      ),
+      tagNames: ['Исторический'],
+    );
+    Future<List<String>> find(String q) async => [
+      for (final w in await db.watchWorks(search: q).first) w.work.title,
+    ];
+    expect(await find('война'), ['Война и мир']);
+    expect(await find('ТОЛСТОЙ мир'), ['Война и мир']);
+    expect(await find('исторический'), ['Война и мир']);
+    expect(await find('война проза'), isEmpty);
+  });
+
   test('sorting by title ignores case', () async {
     for (final title in ['beta', 'Gamma', 'Alpha']) {
       await db.saveWork(fic(title));

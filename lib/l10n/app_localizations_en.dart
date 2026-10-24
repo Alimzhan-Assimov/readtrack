@@ -112,7 +112,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get libraryTitle => 'My Library';
 
   @override
-  String get searchHint => 'Search title, author or category';
+  String get searchHint => 'Search title, author, category, tags';
 
   @override
   String get clearSearch => 'Clear search';
@@ -131,6 +131,36 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get clearFilters => 'Clear filters';
+
+  @override
+  String get filtersButton => 'Filters';
+
+  @override
+  String get removeFilter => 'Remove filter';
+
+  @override
+  String showEntries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Show $count entries',
+      one: 'Show 1 entry',
+      zero: 'No matching entries',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get showEntriesLoading => 'Show entries';
+
+  @override
+  String get searchFilterValues => 'Search';
+
+  @override
+  String get sortByName => 'Sort by name';
+
+  @override
+  String get sortByCount => 'Sort by number of entries';
 
   @override
   String get filterAll => 'All';

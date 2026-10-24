@@ -190,6 +190,8 @@ class Downloads extends Table {
 /// [url] is null for chapters of imported files.
 typedef ChapterListing = ({int number, String title, String? url, bool locked});
 
+enum UsageKind { fandom, tag, pairing }
+
 class WorkWithDetails {
   WorkWithDetails(
     this.work,
@@ -350,15 +352,6 @@ class AppDatabase extends _$AppDatabase {
     WorkSort sort = WorkSort.updated,
   }) {
     final query = _worksWithFandom()..where(works.deletedAt.isNull());
-    final term = search.trim();
-    if (term.isNotEmpty) {
-      final pattern = '%$term%';
-      query.where(
-        works.title.like(pattern) |
-            works.author.like(pattern) |
-            fandoms.name.like(pattern),
-      );
-    }
     if (type != null) query.where(works.type.equalsValue(type));
     if (fandomId != null) query.where(works.fandomId.equals(fandomId));
     if (status != null) query.where(works.status.equalsValue(status));
@@ -402,7 +395,60 @@ class AppDatabase extends _$AppDatabase {
         byTitle,
       ],
     });
-    return query.watch().asyncMap(_withTags);
+    final words = search.toLowerCase().split(RegExp(r'\s+'))
+      ..removeWhere((w) => w.isEmpty);
+    return query.watch().asyncMap((rows) async {
+      var result = await _withTags(rows);
+      // In Dart, because SQLite's LIKE ignores case only for A–Z.
+      if (words.isNotEmpty) {
+        result = [
+          for (final w in result)
+            if (words.every(_searchTextOf(w).contains)) w,
+        ];
+      }
+      if (sort == WorkSort.title) {
+        result.sort(
+          (a, b) =>
+              a.work.title.toLowerCase().compareTo(b.work.title.toLowerCase()),
+        );
+      }
+      return result;
+    });
+  }
+
+  /// What the library search looks through, lowercased.
+  static String _searchTextOf(WorkWithDetails w) => [
+    w.work.title,
+    w.work.author ?? '',
+    w.fandom?.name ?? '',
+    for (final t in w.tags) t.name,
+    for (final p in w.pairings) p.name,
+  ].join('\n').toLowerCase();
+
+  /// How many entries (not in the trash) use each category, tag or pairing,
+  /// by id.
+  Future<Map<int, int>> usageCounts(UsageKind kind) async {
+    final (sql, column) = switch (kind) {
+      UsageKind.fandom => (
+        'SELECT fandom_id AS id, COUNT(*) AS n FROM works '
+            'WHERE deleted_at IS NULL AND fandom_id IS NOT NULL GROUP BY fandom_id',
+        'id',
+      ),
+      UsageKind.tag => (
+        'SELECT t.tag_id AS id, COUNT(*) AS n FROM work_tags t '
+            'JOIN works w ON w.id = t.work_id WHERE w.deleted_at IS NULL '
+            'GROUP BY t.tag_id',
+        'id',
+      ),
+      UsageKind.pairing => (
+        'SELECT p.pairing_id AS id, COUNT(*) AS n FROM work_pairings p '
+            'JOIN works w ON w.id = p.work_id WHERE w.deleted_at IS NULL '
+            'GROUP BY p.pairing_id',
+        'id',
+      ),
+    };
+    final rows = await customSelect(sql).get();
+    return {for (final r in rows) r.read<int>(column): r.read<int>('n')};
   }
 
   /// Reading first, then what's planned or paused, then finished and dropped.

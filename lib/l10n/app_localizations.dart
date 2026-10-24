@@ -229,7 +229,7 @@ abstract class AppLocalizations {
   /// No description provided for @searchHint.
   ///
   /// In en, this message translates to:
-  /// **'Search title, author or category'**
+  /// **'Search title, author, category, tags'**
   String get searchHint;
 
   /// No description provided for @clearSearch.
@@ -267,6 +267,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clear filters'**
   String get clearFilters;
+
+  /// No description provided for @filtersButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Filters'**
+  String get filtersButton;
+
+  /// No description provided for @removeFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove filter'**
+  String get removeFilter;
+
+  /// No description provided for @showEntries.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No matching entries} =1{Show 1 entry} other{Show {count} entries}}'**
+  String showEntries(int count);
+
+  /// No description provided for @showEntriesLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Show entries'**
+  String get showEntriesLoading;
+
+  /// No description provided for @searchFilterValues.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get searchFilterValues;
+
+  /// No description provided for @sortByName.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort by name'**
+  String get sortByName;
+
+  /// No description provided for @sortByCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort by number of entries'**
+  String get sortByCount;
 
   /// No description provided for @filterAll.
   ///

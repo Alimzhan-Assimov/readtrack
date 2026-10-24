@@ -11,12 +11,12 @@ import '../library/file_import.dart';
 import '../library/library_scope.dart';
 import '../library/shelves.dart';
 import '../ui/app_settings.dart';
-import '../ui/labels.dart';
 import '../ui/layout.dart';
 import '../widgets/text_prompt.dart';
 import '../widgets/work_grid_tile.dart';
 import '../widgets/work_tile.dart';
 import 'import_screen.dart';
+import 'library_filters.dart';
 import 'list_import_screen.dart';
 import 'settings_screen.dart';
 import 'work_detail_screen.dart';
@@ -38,31 +38,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
   final _search = TextEditingController();
   final _searchFocus = FocusNode();
   Timer? _searchDebounce;
-  WorkType? _type;
-  Fandom? _fandom;
-  Tag? _tag;
-  Pairing? _pairing;
-  ReadingStatus? _status;
-  int? _minWords;
-  bool? _complete;
-  WorkSort _sort = WorkSort.updated;
-
-  /// Word-count thresholds offered by the length filter.
-  static const _lengths = [10000, 50000, 100000, 250000];
+  LibraryFilters _filters = LibraryFilters();
   int? _selectedId;
   late Stream<List<WorkWithDetails>> _works;
 
   AppDatabase get _db => DatabaseScope.of(context);
 
   bool get _isFiltered =>
-      _search.text.trim().isNotEmpty ||
-      _type != null ||
-      _fandom != null ||
-      _tag != null ||
-      _pairing != null ||
-      _status != null ||
-      _minWords != null ||
-      _complete != null;
+      _search.text.trim().isNotEmpty || _filters.activeCount > 0;
 
   bool _checking = false;
   bool _checkedOnStart = false;
@@ -123,28 +106,18 @@ class _LibraryScreenState extends State<LibraryScreen> {
   }
 
   void _updateQuery() {
-    _works = _db.watchWorks(
-      search: _search.text,
-      type: _type,
-      fandomId: _fandom?.id,
-      tagId: _tag?.id,
-      pairingId: _pairing?.id,
-      status: _status,
-      minWords: _minWords,
-      complete: _complete,
-      sort: _sort,
-    );
+    _works = _filters.watch(_db, search: _search.text);
   }
 
   LibraryFilter get _filter => LibraryFilter(
-    type: _type,
-    fandomId: _fandom?.id,
-    tagId: _tag?.id,
-    pairingId: _pairing?.id,
-    status: _status,
-    minWords: _minWords,
-    complete: _complete,
-    sort: _sort,
+    type: _filters.type,
+    fandomId: _filters.fandom?.id,
+    tagId: _filters.tag?.id,
+    pairingId: _filters.pairing?.id,
+    status: _filters.status,
+    minWords: _filters.minWords,
+    complete: _filters.complete,
+    sort: _filters.sort,
   );
 
   /// Applies a saved shelf; categories, tags and pairings are looked up by id.
@@ -154,16 +127,18 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final tags = await _db.usedTags();
     final pairings = await _db.usedPairings();
     if (!mounted) return;
-    _setFilter(() {
-      _type = f.type;
-      _fandom = fandoms.where((x) => x.id == f.fandomId).firstOrNull;
-      _tag = tags.where((x) => x.id == f.tagId).firstOrNull;
-      _pairing = pairings.where((x) => x.id == f.pairingId).firstOrNull;
-      _status = f.status;
-      _minWords = f.minWords;
-      _complete = f.complete;
-      _sort = f.sort;
-    });
+    _setFilters(
+      LibraryFilters(
+        type: f.type,
+        fandom: fandoms.where((x) => x.id == f.fandomId).firstOrNull,
+        tag: tags.where((x) => x.id == f.tagId).firstOrNull,
+        pairing: pairings.where((x) => x.id == f.pairingId).firstOrNull,
+        status: f.status,
+        minWords: f.minWords,
+        complete: f.complete,
+        sort: f.sort,
+      ),
+    );
   }
 
   Future<void> _saveShelf() async {
@@ -183,6 +158,21 @@ class _LibraryScreenState extends State<LibraryScreen> {
     change();
     _updateQuery();
   });
+
+  void _setFilters(LibraryFilters filters) =>
+      _setFilter(() => _filters = filters);
+
+  void _openFilterPanel() => showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    showDragHandle: true,
+    builder: (_) => FilterPanel(
+      db: _db,
+      filters: _filters,
+      search: _search.text,
+      onChanged: _setFilters,
+    ),
+  );
 
   /// Only queries the database once typing pauses briefly.
   void _onSearchChanged(String _) {
@@ -408,20 +398,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
                       MaterialPageRoute(builder: (_) => const SettingsScreen()),
                     ),
                   ),
-                  PopupMenuButton<WorkSort>(
-                    icon: const Icon(Icons.sort),
-                    tooltip: l10n.sortTooltip,
-                    initialValue: _sort,
-                    onSelected: (s) => _setFilter(() => _sort = s),
-                    itemBuilder: (context) => [
-                      for (final s in WorkSort.values)
-                        CheckedPopupMenuItem(
-                          value: s,
-                          checked: s == _sort,
-                          child: Text(s.label(l10n)),
-                        ),
-                    ],
-                  ),
                 ],
               ),
               SliverToBoxAdapter(
@@ -448,7 +424,16 @@ class _LibraryScreenState extends State<LibraryScreen> {
               if (SettingsScope.maybeOf(context)?.shelves case final shelves?
                   when shelves.isNotEmpty)
                 SliverToBoxAdapter(child: _buildShelves(l10n, shelves)),
-              SliverToBoxAdapter(child: _buildFilters(l10n)),
+              SliverToBoxAdapter(
+                child: ActiveFilters(
+                  filters: _filters,
+                  onOpenPanel: _openFilterPanel,
+                  onChanged: _setFilters,
+                  onSaveShelf: SettingsScope.maybeOf(context) == null
+                      ? null
+                      : _saveShelf,
+                ),
+              ),
               if (snapshot.hasError)
                 SliverFillRemaining(
                   hasScrollBody: false,
@@ -559,191 +544,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
       ),
     );
   }
-
-  bool get _isFilteredByChips =>
-      _type != null ||
-      _fandom != null ||
-      _tag != null ||
-      _pairing != null ||
-      _status != null ||
-      _minWords != null ||
-      _complete != null;
-
-  void _clearFilters() => _setFilter(() {
-    _type = null;
-    _fandom = null;
-    _tag = null;
-    _pairing = null;
-    _status = null;
-    _minWords = null;
-    _complete = null;
-  });
-
-  /// All filters are compact picker chips, so they fit the 400 dp list pane
-  /// without horizontal scrolling; long selections wrap to a second line.
-  Widget _buildFilters(AppLocalizations l10n) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          _PickerChip<WorkType>(
-            icon: Icons.auto_stories_outlined,
-            emptyLabel: l10n.filterType,
-            selected: _type,
-            loadOptions: () async => WorkType.values,
-            nameOf: (t) => t.label(l10n),
-            iconOf: (t) => t.icon,
-            onSelected: (t) => _setFilter(() => _type = t),
-          ),
-          _PickerChip<Fandom>(
-            icon: Icons.category_outlined,
-            emptyLabel: l10n.filterCategory,
-            selected: _fandom,
-            loadOptions: _db.usedFandoms,
-            nameOf: (f) => f.name,
-            onSelected: (f) => _setFilter(() => _fandom = f),
-          ),
-          _PickerChip<Tag>(
-            icon: Icons.sell_outlined,
-            emptyLabel: l10n.filterTag,
-            selected: _tag,
-            loadOptions: () async {
-              final tags = await _db.usedTags();
-              return mounted ? SettingsScope.visibleTags(context, tags) : tags;
-            },
-            nameOf: (t) => t.name,
-            onSelected: (t) => _setFilter(() => _tag = t),
-          ),
-          _PickerChip<Pairing>(
-            icon: Icons.favorite_border,
-            emptyLabel: l10n.filterPairing,
-            selected: _pairing,
-            loadOptions: _db.usedPairings,
-            nameOf: (p) => p.name,
-            onSelected: (p) => _setFilter(() => _pairing = p),
-          ),
-          _PickerChip<ReadingStatus>(
-            icon: Icons.bookmark_outline,
-            emptyLabel: l10n.filterStatus,
-            selected: _status,
-            loadOptions: () async => ReadingStatus.values,
-            nameOf: (s) => s.label(l10n),
-            iconOf: (s) => s.icon,
-            onSelected: (s) => _setFilter(() => _status = s),
-          ),
-          _PickerChip<int>(
-            icon: Icons.straighten,
-            emptyLabel: l10n.filterLength,
-            selected: _minWords,
-            loadOptions: () async => _lengths,
-            nameOf: (n) => l10n.atLeastWords(n),
-            onSelected: (n) => _setFilter(() => _minWords = n),
-          ),
-          _PickerChip<bool>(
-            icon: Icons.flag_outlined,
-            emptyLabel: l10n.filterCompletion,
-            selected: _complete,
-            loadOptions: () async => const [true, false],
-            nameOf: (c) => c ? l10n.completeOnly : l10n.ongoingOnly,
-            onSelected: (c) => _setFilter(() => _complete = c),
-          ),
-          if (_isFilteredByChips) ...[
-            ActionChip(
-              avatar: const Icon(Icons.bookmark_add_outlined, size: 18),
-              label: Text(l10n.saveShelf),
-              onPressed: _saveShelf,
-            ),
-            ActionChip(
-              avatar: const Icon(Icons.filter_alt_off_outlined, size: 18),
-              label: Text(l10n.clearFilters),
-              onPressed: _clearFilters,
-            ),
-          ],
-        ],
-      ),
-    );
-  }
 }
 
 enum _AddKind { link, list, file, manual }
-
-/// Filter chip that opens a list of options when tapped.
-class _PickerChip<T> extends StatelessWidget {
-  const _PickerChip({
-    required this.icon,
-    required this.emptyLabel,
-    required this.selected,
-    required this.loadOptions,
-    required this.nameOf,
-    required this.onSelected,
-    this.iconOf,
-  });
-
-  final IconData icon;
-  final String emptyLabel;
-  final T? selected;
-  final Future<List<T>> Function() loadOptions;
-  final String Function(T) nameOf;
-  final ValueChanged<T?> onSelected;
-
-  /// Optional icon per option, shown in the list and on the selected chip.
-  final IconData Function(T)? iconOf;
-
-  Future<void> _pick(BuildContext context) async {
-    final l10n = context.l10n;
-    final options = await loadOptions();
-    if (!context.mounted) return;
-    // A record instead of T? so "All" (null) is distinguishable from dismissing.
-    final result = await showModalBottomSheet<(T?,)>(
-      context: context,
-      showDragHandle: true,
-      builder: (context) => ListView(
-        shrinkWrap: true,
-        children: [
-          ListTile(
-            leading: const Icon(Icons.clear_all),
-            title: Text(l10n.filterAll),
-            selected: selected == null,
-            onTap: () => Navigator.pop<(T?,)>(context, (null,)),
-          ),
-          if (options.isEmpty)
-            ListTile(enabled: false, title: Text(l10n.pickerEmpty)),
-          for (final option in options)
-            ListTile(
-              leading: iconOf == null ? null : Icon(iconOf!(option)),
-              title: Text(nameOf(option)),
-              selected: option == selected,
-              onTap: () => Navigator.pop<(T?,)>(context, (option,)),
-            ),
-        ],
-      ),
-    );
-    if (result != null) onSelected(result.$1);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final sel = selected;
-    return FilterChip(
-      avatar: Icon(
-        sel != null && iconOf != null ? iconOf!(sel) : icon,
-        size: 18,
-      ),
-      showCheckmark: false,
-      label: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(sel == null ? emptyLabel : nameOf(sel)),
-          const Icon(Icons.arrow_drop_down, size: 18),
-        ],
-      ),
-      selected: sel != null,
-      onSelected: (_) => _pick(context),
-    );
-  }
-}
 
 class _EmptyState extends StatelessWidget {
   const _EmptyState({required this.filtered});
