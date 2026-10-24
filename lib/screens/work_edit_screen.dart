@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,7 +9,13 @@ import '../data/database.dart';
 import '../data/database_scope.dart';
 import '../data/default_tags.dart';
 import '../l10n/l10n.dart';
+import '../library/book_importer.dart';
+import '../library/file_import.dart';
+import '../library/library_scope.dart';
 import '../library/story_sync.dart';
+import '../sources/fetcher.dart';
+import '../sources/html_clean.dart';
+import '../sources/isbn_lookup.dart';
 import '../sources/sources.dart';
 import '../data/adult_tags.dart';
 import '../ui/app_settings.dart';
@@ -20,12 +28,24 @@ import '../widgets/value_picker.dart';
 /// Form for creating ([existing] == null) or editing a work.
 /// Pops with the work's id as the result after saving.
 class WorkEditScreen extends StatefulWidget {
-  const WorkEditScreen({super.key, this.existing, this.imported});
+  const WorkEditScreen({
+    super.key,
+    this.existing,
+    this.imported,
+    this.file,
+    this.details,
+  });
 
   final WorkWithDetails? existing;
 
   /// Details loaded from a site to prefill a new entry.
   final StoryInfo? imported;
+
+  /// A book file read for import; saving imports it with the form's values.
+  final ({ImportedBook book, String path})? file;
+
+  /// A paper book's details found by its ISBN.
+  final BookDetails? details;
 
   @override
   State<WorkEditScreen> createState() => _WorkEditScreenState();
@@ -36,6 +56,13 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
   final _title = TextEditingController();
   final _author = TextEditingController();
   final _fandom = TextEditingController();
+  final _series = TextEditingController();
+  final _crossoverInput = TextEditingController();
+  final _characterInput = TextEditingController();
+  List<String> _characters = const [];
+  List<String> _characterSuggestions = const [];
+  List<String> _crossovers = const [];
+  final _seriesIndex = TextEditingController();
   final _url = TextEditingController();
   final _chapters = TextEditingController();
   final _currentChapter = TextEditingController();
@@ -51,6 +78,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
   late WorkFormat _format;
   late ReadingStatus _status;
   late bool _isComplete;
+  bool _ownsPaperCopy = false;
   int? _rating;
   late List<String> _tags;
   late List<String> _pairings;
@@ -59,6 +87,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
   /// Lower-case names of tags marked as 18+, known or from the site.
   Set<String> _adultTags = const {};
   List<String> _fandomSuggestions = const [];
+  List<String> _seriesSuggestions = const [];
   List<String> _authorSuggestions = const [];
   List<String> _tagSuggestions = kDefaultTags;
   List<String> _frequentTags = const [];
@@ -74,6 +103,10 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _title,
     _author,
     _fandom,
+    _series,
+    _seriesIndex,
+    _crossoverInput,
+    _characterInput,
     _url,
     _chapters,
     _currentChapter,
@@ -95,6 +128,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _format = w?.format ?? _type.defaultFormat;
     _status = w?.status ?? ReadingStatus.planned;
     _isComplete = w?.isComplete ?? false;
+    _ownsPaperCopy = w?.ownsPhysicalCopy ?? false;
     _rating = w?.rating;
     _tags = [for (final t in existing?.tags ?? const <Tag>[]) t.name];
     _pairings = [
@@ -107,6 +141,15 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _title.text = w?.title ?? '';
     _author.text = w?.author ?? '';
     _fandom.text = existing?.fandom?.name ?? '';
+    _series.text = existing?.series?.name ?? '';
+    _crossovers = [
+      for (final f in existing?.crossovers ?? const <Fandom>[]) f.name,
+    ];
+    _characters = [
+      for (final c in existing?.confirmedCharacters ?? const <Character>[])
+        c.name,
+    ];
+    _seriesIndex.text = _formatIndex(w?.seriesIndex);
     _url.text = w?.sourceUrl ?? '';
     _chapters.text = w?.chapterCount?.toString() ?? '';
     _currentChapter.text = w?.currentChapter?.toString() ?? '';
@@ -116,6 +159,14 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _summary.text = w?.summary ?? '';
     _notes.text = w?.notes ?? '';
     if (widget.imported case final info?) _prefill(info);
+    if (widget.file case final file?) _prefillFile(file.book);
+    if (widget.details case final d?) {
+      _type = WorkType.book;
+      _format = WorkFormat.physical;
+      _isComplete = true;
+      _applyDetails(d);
+      _dirty = true;
+    }
     _initialWords = _words.text;
     _initialPages = _pages.text;
   }
@@ -136,12 +187,80 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _title.text = info.title;
     _author.text = info.author ?? '';
     _fandom.text = info.fandom ?? '';
+    _series.text = info.series?.name ?? '';
+    _crossovers = info.crossovers;
+    _characters = info.characters;
+    _seriesIndex.text = _formatIndex(info.series?.index);
     _url.text = info.url.toString();
     _chapters.text = '${info.chapterCount}';
     _words.text = info.wordCount?.toString() ?? '';
     _pages.text = info.pageCount?.toString() ?? '';
     _summary.text = info.summary ?? '';
     // Not saved yet, so leaving should ask first.
+    _dirty = true;
+  }
+
+  /// Cover found by the ISBN lookup, saved with the entry.
+  Uri? _coverUrl;
+  bool _lookingUp = false;
+
+  /// Fills the empty fields from [d]; what the user typed stays.
+  void _applyDetails(BookDetails d) {
+    void fill(TextEditingController c, String? value) {
+      if (c.text.trim().isEmpty && value != null) c.text = value;
+    }
+
+    fill(_title, d.title);
+    fill(_author, d.author);
+    fill(_summary, d.summary);
+    fill(_pages, d.pageCount?.toString());
+    fill(_isbn, d.isbn);
+    if (_tags.isEmpty) _tags = TagInput.merge(const [], d.tags.join(','));
+    _coverUrl ??= d.coverUrl;
+  }
+
+  Future<void> _lookUpIsbn() async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    final isbn = isbnOf(_isbn.text);
+    if (isbn == null) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.isbnInvalid)));
+      return;
+    }
+    setState(() => _lookingUp = true);
+    final fetcher = HttpFetcher();
+    try {
+      final details = await lookupIsbn(isbn, fetcher);
+      if (!mounted) return;
+      if (details == null) {
+        messenger.showSnackBar(SnackBar(content: Text(l10n.isbnNotFound)));
+      } else {
+        _change(() => _applyDetails(details));
+      }
+    } on SourceException catch (e) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.isbnLookupFailed(e.message))),
+      );
+    } finally {
+      await fetcher.close();
+      if (mounted) setState(() => _lookingUp = false);
+    }
+  }
+
+  void _prefillFile(ImportedBook book) {
+    final m = BookImporter.metadataOf(book);
+    _type = m.type.value;
+    _format = WorkFormat.digital;
+    _isComplete = true;
+    _tags = TagInput.merge(const [], book.tags.join(','));
+    _title.text = book.title;
+    _author.text = book.author ?? '';
+    _url.text = book.sourceUrl ?? '';
+    _isbn.text = book.isbn ?? '';
+    _summary.text = book.summary ?? '';
+    _chapters.text = '${book.chapters.length}';
+    _words.text =
+        '${[for (final c in book.chapters) countWords(htmlToPlainText(c.html))].fold<int>(0, (a, b) => a + b)}';
     _dirty = true;
   }
 
@@ -164,6 +283,8 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
 
   Future<void> _loadSuggestions() async {
     final fandoms = await _db.fandomNames();
+    final seriesNames = await _db.seriesNames();
+    final characterNames = await _db.characterNames();
     final authors = await _db.authorNames();
     final tags = await _db.tagNames();
     final frequent = await _db.frequentTags();
@@ -178,6 +299,8 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
           if (t.isAdult) t.name.toLowerCase(),
       };
       _fandomSuggestions = fandoms;
+      _seriesSuggestions = seriesNames;
+      _characterSuggestions = characterNames;
       _authorSuggestions = authors;
       _frequentTags = frequent;
       _tagSuggestions = TagInput.merge(tags, kDefaultTags.join(','))
@@ -225,6 +348,16 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     return t.isEmpty ? null : t;
   }
 
+  static String _formatIndex(double? i) => i == null
+      ? ''
+      : i == i.roundToDouble()
+      ? '${i.round()}'
+      : '$i';
+
+  /// "3", "2.5" or "2,5".
+  static double? _parseIndex(String raw) =>
+      double.tryParse(raw.trim().replaceAll(',', '.'));
+
   /// Accepts input like "45,300", "45.300" or "45 300".
   static int? _parseInt(String raw) =>
       int.tryParse(raw.replaceAll(RegExp(r'[.,\s]'), ''));
@@ -241,6 +374,8 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     // Include a tag that was typed but not confirmed yet.
     final tags = TagInput.merge(_tags, _tagInput.text);
     final pairings = TagInput.merge(_pairings, _pairingInput.text);
+    final crossovers = TagInput.merge(_crossovers, _crossoverInput.text);
+    final characterList = TagInput.merge(_characters, _characterInput.text);
     final w = widget.existing?.work;
     final data = WorksCompanion(
       id: w == null ? const Value.absent() : Value(w.id),
@@ -269,7 +404,11 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
           : Value(widget.imported!.characterCount),
       rating: Value(_rating),
       notes: Value(_text(_notes)),
-      coverUrl: switch (widget.imported?.coverUrl) {
+      ownsPhysicalCopy: Value(_format != WorkFormat.physical && _ownsPaperCopy),
+      seriesIndex: Value(
+        _series.text.trim().isEmpty ? null : _parseIndex(_seriesIndex.text),
+      ),
+      coverUrl: switch (widget.imported?.coverUrl ?? _coverUrl) {
         final cover? => Value(cover.toString()),
         null => const Value.absent(),
       },
@@ -283,17 +422,36 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     );
     final int id;
     try {
-      id = await _db.saveWork(
-        data,
-        fandomName: _fandom.text,
-        tagNames: tags,
-        pairingNames: pairings,
-        adultTags: widget.imported?.adultTags ?? const {},
-      );
+      final file = widget.file;
+      id = file != null
+          ? await BookImporter(_db, LibraryScope.of(context).storage).store(
+              file.book,
+              original: File(file.path),
+              work: data,
+              fandomName: _fandom.text,
+              seriesName: _series.text,
+              crossoverNames: crossovers,
+              characterNames: characterList,
+              tagNames: tags,
+              pairingNames: pairings,
+            )
+          : await _db.saveWork(
+              data,
+              fandomName: _fandom.text,
+              seriesName: _series.text,
+              crossoverNames: crossovers,
+              characterNames: characterList,
+              tagNames: tags,
+              pairingNames: pairings,
+              adultTags: widget.imported?.adultTags ?? const {},
+            );
       if (widget.imported case final info?) {
         await _db.saveChapterList(id, chapterListing(info));
       }
       await _db.fillMissingCounts(id);
+      if (widget.existing == null) {
+        await suggestKeywordTags(_db, id, '${_title.text}\n${_summary.text}');
+      }
     } catch (e, stack) {
       logError('save', 'Saving an entry failed', error: e, stack: stack);
       // Never leave the button stuck without saying why.
@@ -404,7 +562,28 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     }.contains(_type);
 
     final imported = widget.imported;
+    final file = widget.file;
     return [
+      if (file != null)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Card.filled(
+            child: ListTile(
+              leading: const Icon(Icons.file_present_outlined),
+              title: Text(
+                l10n.importingFromFile(
+                  file.path.split(Platform.pathSeparator).last,
+                ),
+              ),
+              subtitle: Text(
+                l10n.importedFileSummary(
+                  file.book.format.label,
+                  file.book.chapters.length,
+                ),
+              ),
+            ),
+          ),
+        ),
       if (imported != null)
         Padding(
           padding: const EdgeInsets.only(bottom: 16),
@@ -487,6 +666,46 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
             ),
       ),
       gap,
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 3,
+            child: SuggestField(
+              controller: _series,
+              suggestions: _seriesSuggestions,
+              decoration:
+                  _decoration(
+                    l10n.fieldSeries,
+                    hint: l10n.fieldSeriesHint,
+                  ).copyWith(
+                    suffixIcon: _pickButton(
+                      () => _pickInto(
+                        _series,
+                        l10n.pickSeries,
+                        _seriesSuggestions,
+                      ),
+                    ),
+                  ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: TextFormField(
+              controller: _seriesIndex,
+              decoration: _decoration(l10n.fieldSeriesIndex),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              validator: (v) =>
+                  v == null || v.trim().isEmpty || _parseIndex(v) != null
+                  ? null
+                  : l10n.numbersOnly,
+            ),
+          ),
+        ],
+      ),
+      gap,
       TextFormField(
         controller: _url,
         decoration: _decoration(l10n.fieldLink, hint: l10n.fieldLinkHint),
@@ -539,6 +758,13 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
           Expanded(child: _numberField(l10n, _pages, l10n.fieldPages)),
         ],
       ),
+      if (_format != WorkFormat.physical)
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(l10n.ownsPaperCopy),
+          value: _ownsPaperCopy,
+          onChanged: (v) => _change(() => _ownsPaperCopy = v),
+        ),
       SwitchListTile(
         contentPadding: EdgeInsets.zero,
         title: Text(l10n.completeTitle),
@@ -550,8 +776,23 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
         const SizedBox(height: 8),
         TextFormField(
           controller: _isbn,
-          decoration: _decoration(l10n.fieldIsbn),
+          decoration: _decoration(l10n.fieldIsbn).copyWith(
+            suffixIcon: _lookingUp
+                ? const Padding(
+                    padding: EdgeInsets.all(12),
+                    child: SizedBox.square(
+                      dimension: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  )
+                : IconButton(
+                    icon: const Icon(Icons.manage_search),
+                    tooltip: l10n.isbnLookUp,
+                    onPressed: _lookUpIsbn,
+                  ),
+          ),
           keyboardType: TextInputType.number,
+          onFieldSubmitted: (_) => _lookUpIsbn(),
         ),
       ],
       _Heading(l10n.sectionTags),
@@ -568,6 +809,26 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
         ],
         isHidden: _isHiddenTag,
         onChanged: (tags) => _change(() => _tags = tags),
+      ),
+      _Heading(l10n.sectionCrossovers),
+      TagInput(
+        controller: _crossoverInput,
+        tags: _crossovers,
+        suggestions: _fandomSuggestions,
+        label: l10n.addCrossover,
+        hint: l10n.addCrossoverHint,
+        pickerTitle: l10n.pickCategory,
+        onChanged: (c) => _change(() => _crossovers = c),
+      ),
+      _Heading(l10n.sectionCharacters),
+      TagInput(
+        controller: _characterInput,
+        tags: _characters,
+        suggestions: _characterSuggestions,
+        label: l10n.addCharacter,
+        hint: l10n.addCharacterHint,
+        pickerTitle: l10n.pickCharacters,
+        onChanged: (c) => _change(() => _characters = c),
       ),
       _Heading(l10n.sectionPairings),
       TagInput(

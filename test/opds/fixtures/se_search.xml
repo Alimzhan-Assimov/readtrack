@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet href="https://standardebooks.org/feeds/opds/style" type="text/xsl"?>
+	<feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:schema="http://schema.org/" xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/">
+		<script xmlns="http://www.w3.org/1999/xhtml" src="https://standardebooks.org/scripts/xslt-polyfill.min.js"/>
+		<id>https://standardebooks.org/feeds/opds/all?query=tolstoy&amp;page=1&amp;per-page=12</id>
+		<link href="https://standardebooks.org/feeds/opds/all?query=tolstoy&amp;page=1&amp;per-page=12" rel="self" type="application/atom+xml;profile=opds-catalog; charset=utf-8"/>
+		<link rel="first" href="https://standardebooks.org/feeds/opds/all?query=tolstoy&amp;page=1&amp;per-page=12" type="application/atom+xml;profile=opds-catalog; charset=utf-8"/>
+						<link rel="last" href="https://standardebooks.org/feeds/opds/all?query=tolstoy&amp;page=1&amp;per-page=12" type="application/atom+xml;profile=opds-catalog; charset=utf-8"/>
+		<link rel="search" href="https://standardebooks.org/opensearch" type="application/opensearchdescription+xml" title="Standard Ebooks"/>
+		<link href="https://standardebooks.org/ebooks/ebooks?query=tolstoy&amp;page=1&amp;per-page=12" rel="alternate" type="application/xhtml+xml"/>
+		<opensearch:totalResults>9</opensearch:totalResults>
+		<opensearch:startIndex>1</opensearch:startIndex>
+		<opensearch:itemsPerPage>12</opensearch:itemsPerPage>
+		<link href="https://standardebooks.org/feeds/opds" rel="start" type="application/atom+xml;profile=opds-catalog;kind=navigation; charset=utf-8"/>
+		<link href="https://standardebooks.org/feeds/opds/all" rel="http://opds-spec.org/crawlable" type="application/atom+xml;profile=opds-catalog;kind=acquisition; charset=utf-8"/>
+		<title>Search Results</title>
+		<subtitle>Results for “tolstoy”</subtitle>
+		<icon>https://standardebooks.org/images/logo.png</icon>
+		<updated>2026-10-24T06:39:18Z</updated>
+		<author>
+			<name>Standard Ebooks</name>
+			<uri>https://standardebooks.org</uri>
+		</author>
+					<entry>
+	<id>https://standardebooks.org/ebooks/leo-tolstoy/the-power-of-darkness/louise-maude_aylmer-maude</id>
+	<dc:identifier>https://standardebooks.org/ebooks/leo-tolstoy/the-power-of-darkness/louise-maude_aylmer-maude</dc:identifier>
+	<title>The Power of Darkness</title>
+			<author>
+			<name>Leo Tolstoy</name>
+			<uri>https://standardebooks.org/ebooks/leo-tolstoy</uri>
+							<schema:alternateName>Count Lev Nikolayevich Tolstoy</schema:alternateName>
+										<schema:sameAs>https://en.wikipedia.org/wiki/Leo_Tolstoy</schema:sameAs>
+										<schema:sameAs>https://id.loc.gov/authorities/names/n79068416.html</schema:sameAs>
+					</author>
+		<published>2022-01-20T19:35:39Z</published>
+	<dc:issued>2022-01-20T19:35:39Z</dc:issued>
+	<updated>2026-09-18T16:29:57Z</updated>
+	<dc:language>en-GB</dc:language>
+	<dc:publisher>Standard Ebooks</dc:publisher>
+	<rights>Public domain in the United States. Users located outside of the United States must check their local laws before using this ebook. Original content released to the public domain via the Creative Commons CC0 1.0 Universal Public Domain Dedication.</rights>
+	<summary type="text">Two Russian peasants tragically succumb to selfish, immoral temptations.</summary>
+	<content type="html">&lt;p&gt;&lt;i&gt;The Power of Darkness&lt;/i&gt; is a five-act drama that follows the downfall of the peasants Anísya and Nikíta as they succumb to a series of sordid temptations, from adultery and drunkenness to outright murder. Written in 1886 but suppressed by censors until 1902, the play is a realist portrayal of some of the darkest elements of Russian peasant life. Similar to some other late &lt;a href=&quot;https://standardebooks.org/ebooks/leo-tolstoy&quot;&gt;Tolstoy&lt;/a&gt; works, like &lt;a href=&quot;https://standardebooks.org/ebooks/leo-tolstoy/resurrection/louise-maude&quot;&gt;&lt;i&gt;Resurrection&lt;/i&gt;&lt;/a&gt;, the play’s psychological exploration of human depravity is accompanied by a sharp social critique of the Russian Empire and its role in perpetuating poverty and ignorance among its lowest and most marginalized classes.&lt;/p&gt;</content>
+			<category scheme="http://purl.org/dc/terms/LCSH" term="Russian drama--Translations into English"/>
+				<category scheme="https://standardebooks.org/vocab/subjects" term="Drama"/>
+		<link href="https://standardebooks.org/ebooks/leo-tolstoy/the-power-of-darkness/louise-maude_aylmer-maude/downloads/cover.jpg" rel="http://opds-spec.org/image" type="image/jpeg"/>
+	<link href="https://standardebooks.org/ebooks/leo-tolstoy/the-power-of-darkness/louise-maude_aylmer-maude/downloads/cover-thumbnail.jpg" rel="http://opds-spec.org/image/thumbnail" type="image/jpeg"/>
+	<link href="https://standardebooks.org/ebooks/leo-tolstoy/the-power-of-darkness/louise-maude_aylmer-maude" rel="alternate" title="This ebook’s page at Standard Ebooks" type="application/xhtml+xml"/>
+			<link href="https://standardebooks.org/ebooks/leo-tolstoy/the-power-of-darkness/louise-maude_aylmer-maude/downloads/leo-tolstoy_the-power-of-darkness_louise-maude-aylmer-maude.epub?source=feed" length="686454" rel="http://opds-spec.org/acquisition/open-access" title="Recommended compatible epub" type="application/epub+zip" />
+				<link href="https://standardebooks.org/ebooks/leo-tolstoy/the-power-of-darkness/louise-maude_aylmer-maude/downloads/leo-tolstoy_the-power-of-darkness_louise-maude-aylmer-maude_advanced.epub?source=feed" length="1458450" rel="http://opds-spec.org/acquisition/open-access" title="Advanced epub" type="application/epub+zip" />
+				<link href="https://standardebooks.org/ebooks/leo-tolstoy/the-power-of-darkness/louise-maude_aylmer-maude/downloads/leo-tolstoy_the-power-of-darkness_louise-maude-aylmer-maude.kepub.epub?source=feed" length="560217" rel="http://opds-spec.org/acquisition/open-access" title="Kobo Kepub epub" type="application/kepub+zip" />
+				<link href="https://standardebooks.org/ebooks/leo-tolstoy/the-power-of-darkness/louise-maude_aylmer-maude/downloads/leo-tolstoy_the-power-of-darkness_louise-maude-aylmer-maude.azw3?source=feed" length="662037" rel="http://opds-spec.org/acquisition/open-access" title="Amazon Kindle azw3" type="application/x-mobipocket-ebook" />
+				<link href="https://standardebooks.org/ebooks/leo-tolstoy/the-power-of-darkness/louise-maude_aylmer-maude/text/single-page" length="378254" rel="http://opds-spec.org/acquisition/open-access" title="XHTML" type="application/xhtml+xml" />
+	</entry>
+					<entry>
+	<id>https://standardebooks.org/ebooks/leo-tolstoy/what-is-art/aylmer-maude</id>
+	<dc:identifier>https://standardebooks.org/ebooks/leo-tolstoy/what-is-art/aylmer-maude</dc:identifier>
+	<title>What Is Art?</title>
+			<author>
+			<name>Leo Tolstoy</name>
+			<uri>https://standardebooks.org/ebooks/leo-tolstoy</uri>
+							<schema:alternateName>Count Lev Nikolayevich Tolstoy</schema:alternateName>
+										<schema:sameAs>https://en.wikipedia.org/wiki/Leo_Tolstoy</schema:sameAs>
+										<schema:sameAs>https://id.loc.gov/authorities/names/n79068416.html</schema:sameAs>
+					</author>
+		<published>2021-12-06T23:30:26Z</published>
+	<dc:issued>2021-12-06T23:30:26Z</dc:issued>
+	<updated>2026-09-07T16:45:58Z</updated>
+	<dc:language>en-GB</dc:language>
+	<dc:publisher>Standard Ebooks</dc:publisher>
+	<rights>Public domain in the United States. Users located outside of the United States must check their local laws before using this ebook. Original content released to the public domain via the Creative Commons CC0 1.0 Universal Public Domain Dedication.</rights>
+	<summary type="text">Leo Tolstoy outlines his philosophy of aesthetics.</summary>
+	<content type="html">&lt;p&gt;&lt;i&gt;What Is Art?&lt;/i&gt; is an 1897 philosophical treatise by &lt;a href=&quot;https://standardebooks.org/ebooks/leo-tolstoy&quot;&gt;Leo Tolstoy&lt;/a&gt; that lays out his philosophy of aesthetics. Rejecting notions of aesthetics that center around beauty, Tolstoy instead posits that art is defined by its role in transmitting feelings between human beings. Furthermore, he argues that the quality of art is not assessed by the pleasure it gives, but whether the feelings the art evokes align with the meaning of life revealed by a given society’s religious perception. In line with his spiritual views set out in &lt;a href=&quot;https://standardebooks.org/ebooks/leo-tolstoy/the-kingdom-of-god-is-within-you/leo-wiener&quot;&gt;&lt;i&gt;The Kingdom of God Is Within You&lt;/i&gt;&lt;/a&gt;, Tolstoy argues that the proper purpose of art is to transmit feelings of human unity and “to set up, in place of the existing reign of force, that kingdom of God, i.e. of love, which we all recognize to be the highest aim of human life.”&lt;/p&gt;
+			&lt;p&gt;Tolstoy makes a number of unconventional aesthetic judgments in the course of the book, dismissing such works as Wagner’s operas, &lt;a href=&quot;https://standardebooks.org/ebooks/william-shakespeare/romeo-and-juliet&quot;&gt;&lt;i&gt;Romeo and Juliet&lt;/i&gt;&lt;/a&gt;, and his own past works like &lt;a href=&quot;https://standardebooks.org/ebooks/leo-tolstoy/war-and-peace/louise-maude_aylmer-maude&quot;&gt;&lt;i&gt;War and Peace&lt;/i&gt;&lt;/a&gt; and &lt;a href=&quot;https://standardebooks.org/ebooks/leo-tolstoy/anna-karenina/constance-garnett&quot;&gt;&lt;i&gt;Anna Karenina&lt;/i&gt;&lt;/a&gt; as “bad art.” In turn, he praises such works as &lt;a href=&quot;https://standardebooks.org/ebooks/charles-dickens&quot;&gt;Dickens’&lt;/a&gt; &lt;a href=&quot;https://standardebooks.org/ebooks/charles-dickens/a-christmas-carol&quot;&gt;&lt;i&gt;A Christmas Carol&lt;/i&gt;&lt;/a&gt; and &lt;a href=&quot;https://standardebooks.org/ebooks/victor-hugo&quot;&gt;Hugo’s&lt;/a&gt; &lt;a href=&quot;https://standardebooks.org/ebooks/victor-hugo/les-miserables/isabel-f-hapgood&quot;&gt;&lt;i&gt;Les Misérables&lt;/i&gt;&lt;/a&gt; as “examples of the highest art, flowing from the love of God and the love of man.”&lt;/p&gt;</content>
+			<category scheme="http://purl.org/dc/terms/LCSH" term="Arts--Philosophy"/>
+			<category scheme="http://purl.org/dc/terms/LCSH" term="Arts and morals"/>
+				<category scheme="https://standardebooks.org/vocab/subjects" term="Philosophy"/>
+		<link href="https://standardebooks.org/ebooks/leo-tolstoy/what-is-art/aylmer-maude/downloads/cover.jpg" rel="http://opds-spec.org/image" type="image/jpeg"/>
+	<link href="https://standardebooks.org/ebooks/leo-tolstoy/what-is-art/aylmer-maude/downloads/cover-thumbnail.jpg" rel="http://opds-spec.org/image/thumbnail" type="image/jpeg"/>
+	<link href="https://standardebooks.org/ebooks/leo-tolstoy/what-is-art/aylmer-maude" rel="alternate" title="This ebook’s page at Standard Ebooks" type="application/xhtml+xml"/>
+			<link href="https://standardebooks.org/ebooks/leo-tolstoy/what-is-art/aylmer-maude/downloads/leo-tolstoy_what-is-art_aylmer-maude.epub?source=feed" length="571201" rel="http://opds-spec.org/acquisition/open-access" title="Recommended compatible epub" type="application/epub+zip" />
+				<link href="https://standardebooks.org/ebooks/leo-tolstoy/what-is-art/aylmer-maude/downloads/leo-tolstoy_what-is-art_aylmer-maude_advanced.epub?source=feed" length="768669" rel="http://opds-spec.org/acquisition/open-access" title="Advanced epub" type="application/epub+zip" />
+				<link href="https://standardebooks.org/ebooks/leo-tolstoy/what-is-art/aylmer-maude/downloads/leo-tolstoy_what-is-art_aylmer-maude.kepub.epub?source=feed" length="490105" rel="http://opds-spec.org/acquisition/open-access" title="Kobo Kepub epub" type="application/kepub+zip" />
+				<link href="https://standardebooks.org/ebooks/leo-tolstoy/what-is-art/aylmer-maude/downloads/leo-tolstoy_what-is-art_aylmer-maude.azw3?source=feed" length="650480" rel="http://opds-spec.org/acquisition/open-access" title="Amazon Kindle azw3" type="application/x-mobipocket-ebook" />
+				<link href="https://standardebooks.org/ebooks/leo-tolstoy/what-is-art/aylmer-maude/text/single-page" length="628712" rel="http://opds-spec.org/acquisition/open-access" title="XHTML" type="application/xhtml+xml" />
+	</entry>
+			</feed>

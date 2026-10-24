@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:drift/drift.dart' show Value;
 
 import '../data/database.dart';
+import '../sources/html_clean.dart';
+import 'keyword_tags.dart';
 import '../sources/sources.dart';
 
 /// Loads a story's details from its site, opening and closing the fetcher.
@@ -90,3 +92,142 @@ ChapterRef chapterRefOf(Chapter chapter) => ChapterRef(
   url: Uri.parse(chapter.url!),
   locked: chapter.isLocked,
 );
+
+/// Estimates the length of a story the site gives no size for: fetches up
+/// to [samples] chapters spread over it (start, middle, end), and scales
+/// their average up to all chapters. Returns the estimated words, or null
+/// if no chapter could be read. The texts are not stored.
+Future<int?> estimateLength(
+  AppDatabase db,
+  Work work,
+  StorySource source, {
+  int samples = 3,
+  PageFetcher Function(StorySource source) open = openFetcher,
+}) async {
+  final chapters = await db.chaptersOf(work.id);
+  final readable = [
+    for (final c in chapters)
+      if (!c.isLocked && c.url != null) c,
+  ];
+  if (readable.isEmpty) return null;
+  final picks = {
+    for (var i = 0; i < samples; i++)
+      readable[samples == 1
+          ? 0
+          : (i * (readable.length - 1) / (samples - 1)).round()],
+  };
+  final fetcher = open(source);
+  final counts = <int>[];
+  try {
+    for (final c in picks) {
+      try {
+        final content = await source.fetchChapter(chapterRefOf(c), fetcher);
+        counts.add(countWords(htmlToPlainText(content.html)));
+      } on SourceException {
+        // Try the others.
+      }
+    }
+  } finally {
+    await fetcher.close();
+  }
+  if (counts.isEmpty) return null;
+  final average = counts.reduce((a, b) => a + b) / counts.length;
+  final total = max(work.chapterCount ?? 0, chapters.length);
+  final words = (average * total).round();
+  await db.updateWork(
+    work.id,
+    WorksCompanion(wordCount: Value(words), wordsEstimated: const Value(true)),
+    touch: false,
+  );
+  await db.fillMissingCounts(work.id);
+  return words;
+}
+
+/// Adds a story loaded from its site, as the edit form would with its
+/// prefilled values, and returns the new id.
+Future<int> addStory(
+  AppDatabase db,
+  StoryInfo info, {
+  ReadingStatus status = ReadingStatus.planned,
+  DateTime? now,
+}) async {
+  final id = await db.saveWork(
+    WorksCompanion.insert(
+      type: info.type,
+      format: WorkFormat.online,
+      title: info.title,
+      author: Value(info.author),
+      summary: Value(info.summary),
+      sourceUrl: Value(info.url.toString()),
+      coverUrl: Value(info.coverUrl?.toString()),
+      status: Value(status),
+      isComplete: Value(info.isComplete ?? false),
+      chapterCount: Value(info.chapterCount),
+      wordCount: Value(info.wordCount),
+      pageCount: Value(info.pageCount),
+      characterCount: Value(info.characterCount),
+      seriesIndex: Value(info.series?.index),
+      checkedAt: Value(now ?? DateTime.now()),
+      lastChapterAt: Value(info.updatedOn),
+    ),
+    fandomName: info.fandom,
+    seriesName: info.series?.name,
+    crossoverNames: info.crossovers,
+    characterNames: info.characters,
+    tagNames: info.tags,
+    pairingNames: info.pairings,
+    adultTags: info.adultTags,
+  );
+  await db.saveChapterList(id, chapterListing(info));
+  await db.fillMissingCounts(id);
+  await suggestKeywordTags(db, id, '${info.title}\n${info.summary ?? ''}');
+  return id;
+}
+
+/// Proposes default tags whose keywords appear in [text] (a title and
+/// summary), with the English reason. Returns how many are new.
+Future<int> suggestKeywordTags(AppDatabase db, int workId, String text) =>
+    db.suggestTags(workId, {
+      for (final MapEntry(key: tag, value: word) in keywordTags(text).entries)
+        tag: 'The summary mentions “$word”',
+    });
+
+/// Adds [fresh] chapters after the known ones (e.g. from a site's feed) and
+/// counts them as new; records the check either way.
+Future<void> appendChapters(
+  AppDatabase db,
+  Work work,
+  List<ChapterRef> fresh, {
+  DateTime? lastChapterAt,
+  DateTime? now,
+}) async {
+  final time = now ?? DateTime.now();
+  final last = (await db.chaptersOf(work.id)).lastOrNull?.number ?? 0;
+  await db.saveChapterList(work.id, [
+    for (final (i, c) in fresh.indexed)
+      (
+        number: last + i + 1,
+        title: c.title,
+        url: c.url.toString(),
+        locked: c.locked,
+      ),
+  ]);
+  final unseen = (await db.workById(work.id))?.newChapters ?? 0;
+  await db.updateWork(
+    work.id,
+    WorksCompanion(
+      checkedAt: Value(time),
+      chapterCount: fresh.isEmpty
+          ? const Value.absent()
+          : Value(last + fresh.length),
+      newChapters: fresh.isEmpty
+          ? const Value.absent()
+          : Value(unseen + fresh.length),
+      lastChapterAt: fresh.isEmpty
+          ? const Value.absent()
+          : Value(lastChapterAt ?? time),
+    ),
+    touch: false,
+  );
+  if (fresh.isNotEmpty) await db.fillMissingCounts(work.id);
+}

@@ -4,6 +4,19 @@ import 'package:flutter/material.dart';
 
 import '../data/database.dart';
 import '../library/shelves.dart';
+import '../opds/opds.dart';
+
+/// Reading modes for image chapters.
+enum MangaMode {
+  /// Page by page, left to right.
+  pages,
+
+  /// Page by page, right to left (Japanese manga).
+  pagesRtl,
+
+  /// One long strip (webtoons).
+  scroll,
+}
 
 enum ReaderFont {
   system(null),
@@ -75,6 +88,7 @@ class AppSettings extends ChangeNotifier {
   ReaderPrefs _reader = const ReaderPrefs();
   bool _gridView = false;
   List<Shelf> _shelves = const [];
+  List<OpdsCatalog> _catalogs = const [];
 
   bool _checkOnStart = true;
 
@@ -90,6 +104,18 @@ class AppSettings extends ChangeNotifier {
     await _db.setSetting(_checkOnStartKey, '$check');
   }
 
+  static const _autoDownloadKey = 'updates.autoDownload';
+  bool _autoDownload = false;
+
+  /// Whether new chapters found by a check extend existing downloads.
+  bool get autoDownload => _autoDownload;
+
+  Future<void> setAutoDownload(bool value) async {
+    _autoDownload = value;
+    notifyListeners();
+    await _db.setSetting(_autoDownloadKey, '$value');
+  }
+
   static const _shelvesKey = 'library.shelves';
 
   /// Whether the library shows covers in a grid instead of a list.
@@ -99,6 +125,28 @@ class AppSettings extends ChangeNotifier {
     _gridView = grid;
     notifyListeners();
     await _db.setSetting(_gridViewKey, '$grid');
+  }
+
+  static const _mangaModeKey = 'manga.mode', _doublePageKey = 'manga.double';
+  MangaMode _mangaMode = MangaMode.pages;
+  bool _doublePage = false;
+
+  /// How chapters made only of images (manga, comics) are shown.
+  MangaMode get mangaMode => _mangaMode;
+
+  /// Two pages side by side in wide windows.
+  bool get doublePage => _doublePage;
+
+  Future<void> setMangaMode(MangaMode mode) async {
+    _mangaMode = mode;
+    notifyListeners();
+    await _db.setSetting(_mangaModeKey, mode.name);
+  }
+
+  Future<void> setDoublePage(bool double) async {
+    _doublePage = double;
+    notifyListeners();
+    await _db.setSetting(_doublePageKey, '$double');
   }
 
   List<Shelf> get shelves => _shelves;
@@ -121,6 +169,32 @@ class AppSettings extends ChangeNotifier {
     await _db.setSetting(
       _shelvesKey,
       jsonEncode([for (final s in shelves) s.toJson()]),
+    );
+  }
+
+  static const _catalogsKey = 'opds.catalogs';
+
+  /// The user's own OPDS catalogs (the free ones in [kDefaultCatalogs]
+  /// are always offered too).
+  List<OpdsCatalog> get catalogs => _catalogs;
+
+  Future<void> addCatalog(OpdsCatalog catalog) => _storeCatalogs([
+    for (final c in _catalogs)
+      if (c.url != catalog.url) c,
+    catalog,
+  ]);
+
+  Future<void> removeCatalog(Uri url) => _storeCatalogs([
+    for (final c in _catalogs)
+      if (c.url != url) c,
+  ]);
+
+  Future<void> _storeCatalogs(List<OpdsCatalog> catalogs) async {
+    _catalogs = catalogs;
+    notifyListeners();
+    await _db.setSetting(
+      _catalogsKey,
+      jsonEncode([for (final c in catalogs) c.toJson()]),
     );
   }
 
@@ -150,7 +224,12 @@ class AppSettings extends ChangeNotifier {
   Future<void> load() async {
     _hideAdultTags = await _db.setting(_hideAdultTagsKey) == 'true';
     _gridView = await _db.setting(_gridViewKey) == 'true';
+    _mangaMode =
+        MangaMode.values.asNameMap()[await _db.setting(_mangaModeKey)] ??
+        MangaMode.pages;
+    _doublePage = await _db.setting(_doublePageKey) == 'true';
     _checkOnStart = await _db.setting(_checkOnStartKey) != 'false';
+    _autoDownload = await _db.setting(_autoDownloadKey) == 'true';
     final shelves = await _db.setting(_shelvesKey);
     if (shelves != null) {
       try {
@@ -160,6 +239,17 @@ class AppSettings extends ChangeNotifier {
         ];
       } on FormatException {
         _shelves = const [];
+      }
+    }
+    final catalogs = await _db.setting(_catalogsKey);
+    if (catalogs != null) {
+      try {
+        _catalogs = [
+          for (final c in jsonDecode(catalogs) as List)
+            OpdsCatalog.fromJson((c as Map).cast<String, Object?>()),
+        ];
+      } on FormatException {
+        _catalogs = const [];
       }
     }
     const defaults = ReaderPrefs();
