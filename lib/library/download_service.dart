@@ -76,7 +76,10 @@ class DownloadService extends ChangeNotifier {
     required int to,
     Download? appendTo,
     ExportFormat format = ExportFormat.txt,
+    bool withImages = true,
   }) async {
+    // An extended download keeps its settings.
+    if (appendTo != null) withImages = appendTo.withImages;
     if (isRunning(work.id)) throw StateError('A download is already running.');
     final id = work.id;
     _cancelled.remove(id);
@@ -138,7 +141,9 @@ class DownloadService extends ChangeNotifier {
             chapterRefOf(chapter),
             fetcher,
           );
-          final html = await _saveImages(id, content.html, fetcher);
+          final html = withImages
+              ? await _saveImages(id, content.html, fetcher)
+              : content.html;
           await _db.saveChapterText(
             id,
             chapter.number,
@@ -200,6 +205,7 @@ class DownloadService extends ChangeNotifier {
         appendTo,
         // An extended download keeps its format.
         appendTo == null ? format : ExportFormat.fromName(appendTo.format),
+        withImages,
       );
       return done(
         DownloadResult(
@@ -236,8 +242,9 @@ class DownloadService extends ChangeNotifier {
     int to,
     Download? appendTo,
     ExportFormat format,
+    bool withImages,
   ) async {
-    final file = await _write(work.id, from, to, format);
+    final file = await _write(work.id, from, to, format, withImages);
     if (appendTo == null) {
       await _db.addDownload(
         DownloadsCompanion.insert(
@@ -245,6 +252,7 @@ class DownloadService extends ChangeNotifier {
           fromChapter: from,
           toChapter: to,
           format: Value(format.name),
+          withImages: Value(withImages),
           filePath: Value(file.path),
         ),
       );
@@ -259,7 +267,13 @@ class DownloadService extends ChangeNotifier {
     return file;
   }
 
-  Future<File> _write(int workId, int from, int to, ExportFormat format) async {
+  Future<File> _write(
+    int workId,
+    int from,
+    int to,
+    ExportFormat format,
+    bool withImages,
+  ) async {
     final details = (await _db.watchWork(workId).first)!;
     final file = storage.exportFile(
       details.work.title,
@@ -276,6 +290,7 @@ class DownloadService extends ChangeNotifier {
         to: to,
         storage: storage,
         tags: [for (final t in details.tags) t.name],
+        withImages: withImages,
       ),
       file,
     );
@@ -284,8 +299,13 @@ class DownloadService extends ChangeNotifier {
 
   /// Saves an existing download again in another [format], next to it.
   /// The download itself (and its file) stays as it is.
-  Future<File> exportAs(Download download, ExportFormat format) =>
-      _write(download.workId, download.fromChapter, download.toChapter, format);
+  Future<File> exportAs(Download download, ExportFormat format) => _write(
+    download.workId,
+    download.fromChapter,
+    download.toChapter,
+    format,
+    download.withImages,
+  );
 
   Future<void> _saveCover(Work work, PageFetcher fetcher) async {
     final url = work.coverUrl;

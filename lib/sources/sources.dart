@@ -69,6 +69,14 @@ StorySource? sourceFor(Uri url) {
   return null;
 }
 
+/// The source for any page on a supported site, e.g. a list of stories.
+StorySource? siteFor(Uri url) {
+  for (final source in kSources) {
+    if (source.matches(url)) return source;
+  }
+  return null;
+}
+
 /// Parses user input such as "fanfiction.net/s/123" into a URL.
 Uri? parseUserUrl(String input) {
   final text = input.trim();

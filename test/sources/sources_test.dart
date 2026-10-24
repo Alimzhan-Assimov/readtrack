@@ -98,6 +98,7 @@ void main() {
         <h3 class="byline heading"><a rel="author" href="/users/a">lilac</a></h3>
         <dd class="fandom tags"><a class="tag">Naruto (Anime &amp; Manga)</a></dd>
         <dd class="relationship tags"><a class="tag">Sasuke/Naruto</a></dd>
+        <dd class="character tags"><a class="tag">Uzumaki Naruto</a><a class="tag">Uchiha Sasuke</a></dd>
         <dd class="freeform tags"><a class="tag">Marriage</a><a class="tag">Child Care</a></dd>
         <dd class="published">2023-01-05</dd><dd class="status">2024-03-01</dd>
         <dd class="words">4,215</dd><dd class="chapters">2/2</dd>
@@ -112,6 +113,7 @@ void main() {
     const source = Ao3Source();
     final info = await source.fetchStory(story, fetcher);
     expect(info.fandom, 'Naruto (Anime & Manga)');
+    expect(info.characters, ['Uzumaki Naruto', 'Uchiha Sasuke']);
     expect(info.tags, ['Marriage', 'Child Care']);
     expect(info.pairings, ['Sasuke/Naruto']);
     expect(info.wordCount, 4215);
@@ -217,6 +219,19 @@ void main() {
       () => source.fetchChapter(info.chapters.last, fetcher),
       throwsA(isA<SourceException>()),
     );
+  });
+
+  test('Author.Today: reads the size in characters', () async {
+    final story = Uri.parse('https://author.today/work/564935');
+    final fetcher = FakeFetcher({
+      '$story': '''
+        <h1 class="book-title">Книга</h1><div class="book-authors"><a>Автор</a></div>
+        <span class="hint-top" data-hint="Размер, кол-во знаков с пробелами">2 110 486 <noindex>зн.</noindex></span>, 52,76 <abbr>а.л.</abbr>
+        <ul class="table-of-content"><li><a href="/reader/564935/1">Глава 1</a></li></ul>''',
+    });
+    final info = await const AuthorTodaySource().fetchStory(story, fetcher);
+    expect(info.characterCount, 2110486);
+    expect((info.wordCount, info.pageCount), (null, null));
   });
 
   test(

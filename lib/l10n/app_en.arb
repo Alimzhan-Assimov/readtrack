@@ -46,13 +46,27 @@
     }
   },
   "libraryTitle": "My Library",
-  "searchHint": "Search title, author or category",
+  "searchHint": "Search title, author, category, tags",
   "clearSearch": "Clear search",
   "sortTooltip": "Sort",
   "filterCategory": "Category",
   "filterTag": "Tag",
   "filterType": "Type",
   "clearFilters": "Clear filters",
+  "filtersButton": "Filters",
+  "removeFilter": "Remove filter",
+  "showEntries": "{count, plural, =0{No matching entries} =1{Show 1 entry} other{Show {count} entries}}",
+  "@showEntries": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "showEntriesLoading": "Show entries",
+  "searchFilterValues": "Search",
+  "sortByName": "Sort by name",
+  "sortByCount": "Sort by number of entries",
   "filterAll": "All",
   "pickerEmpty": "Nothing here yet",
   "entryCount": "{count, plural, =1{1 entry} other{{count} entries}}",
@@ -315,6 +329,402 @@
     }
   },
   "deleteDownload": "Delete download",
+  "suggestTags": "Suggest tags",
+  "tagSuggestionWhy": "{reason}. Tap to add the tag.",
+  "@tagSuggestionWhy": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "tagReasonKeyword": "The summary mentions “{word}”",
+  "@tagReasonKeyword": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "tagsSuggested": "{count, plural, =0{No new tag suggestions} =1{1 tag suggested} other{{count} tags suggested}}",
+  "@tagsSuggested": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "findCharacters": "Find in the text",
+  "suggestedCharacter": "Found in the text. Tap to confirm.",
+  "dismissSuggestion": "Not in this story",
+  "noKnownCharacters": "No characters are known for this category yet. Add some, or look the franchise up on AniList.",
+  "noTextToSearch": "There is no downloaded text to search yet.",
+  "charactersFound": "{count, plural, =0{No more known characters found} =1{Found 1 character; confirm it with a tap} other{Found {count} characters; confirm them with a tap}}",
+  "@charactersFound": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aniListLookUp": "Look up on AniList",
+  "aniListTitle": "AniList",
+  "aniListHint": "Pick the matching one. Empty fields are filled in; tags, characters and links to sequels or prequels in your library are added.",
+  "aniListApplied": "Took AniList's details: {characters, plural, =0{no new characters} =1{1 new character} other{{characters} new characters}}, {relations, plural, =0{no links} =1{1 link} other{{relations} links}}",
+  "@aniListApplied": {
+    "placeholders": {
+      "characters": {
+        "type": "int"
+      },
+      "relations": {
+        "type": "int"
+      }
+    }
+  },
+  "categoriesTitle": "Categories",
+  "categoriesTileHint": "Rename or merge franchises",
+  "categoriesHint": "Merging a category into another moves its entries, crossovers and characters, and remembers its name, so stories imported later with that name land in the right place.",
+  "renameCategory": "Rename",
+  "mergeCategoryInto": "Merge into another category…",
+  "mergeCategoryTitle": "Merge “{name}” into",
+  "@mergeCategoryTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryAliases": "{count, plural, =1{1 other name} other{{count} other names}}",
+  "@categoryAliases": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pageCurrent": "Page {current}",
+  "@pageCurrent": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      }
+    }
+  },
+  "pageProgress": "Page {current} of {total}",
+  "@pageProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "setPage": "Set page",
+  "currentPageTitle": "Which page are you on?",
+  "autoDownload": "Download new chapters",
+  "autoDownloadHint": "When a check finds new chapters, stories you have downloaded get them too, in the same file.",
+  "autoDownloaded": "{count, plural, =1{Downloaded 1 new chapter} other{Downloaded {count} new chapters}}",
+  "@autoDownloaded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mangaMode": "Page layout",
+  "mangaPages": "Pages, left to right",
+  "mangaPagesRtl": "Pages, right to left (manga)",
+  "mangaScroll": "Long strip (webtoon)",
+  "mangaDoublePage": "Two pages side by side (wide windows)",
+  "ownsPaperCopy": "I also own it on paper",
+  "paperCopy": "Paper copy",
+  "mergeTagInto": "Merge into another tag…",
+  "mergeTagTitle": "Merge “{name}” into",
+  "@mergeTagTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "tagAlsoCalled": "Also: {names}",
+  "@tagAlsoCalled": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "removeSynonym": "Forget “{name}”",
+  "@removeSynonym": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sectionCharacters": "Characters",
+  "addCharacter": "Add a character",
+  "addCharacterHint": "e.g. Fujiwara Chika",
+  "pickCharacters": "Choose characters",
+  "filterCharacter": "Character",
+  "sectionCrossovers": "Crossover with",
+  "addCrossover": "Add a category",
+  "addCrossoverHint": "The other franchises of a crossover",
+  "openFranchise": "Everything for {name}",
+  "@openFranchise": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "franchiseSummary": "{own, plural, =1{1 entry} other{{own} entries}}, {crossovers, plural, =0{no crossovers} =1{1 crossover} other{{crossovers} crossovers}}",
+  "@franchiseSummary": {
+    "placeholders": {
+      "own": {
+        "type": "int"
+      },
+      "crossovers": {
+        "type": "int"
+      }
+    }
+  },
+  "franchiseCrossovers": "Crossovers from other categories",
+  "fieldSeries": "Series",
+  "fieldSeriesHint": "e.g. Harry Potter",
+  "fieldSeriesIndex": "No.",
+  "pickSeries": "Choose a series",
+  "filterSeries": "Series",
+  "sectionSeries": "Series: {name}",
+  "@sectionSeries": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sectionRelated": "Related",
+  "addRelation": "Add",
+  "addRelationTitle": "Related to “{title}”",
+  "@addRelationTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "removeRelation": "Remove relation",
+  "relationSequel": "Sequel",
+  "relationPrequel": "Prequel",
+  "relationSpinOff": "Spin-off",
+  "relationSpinOffOf": "Spin-off of",
+  "relationSideStory": "Side story",
+  "relationSideStoryOf": "Side story of",
+  "statsTitle": "Statistics",
+  "statsIntro": "Counts reading in ReadTrack's reader: time while you scroll or turn pages, and the words of each chapter read to the end.",
+  "statsLast30Days": "Words per day, last 30 days",
+  "statsNothingYet": "Nothing read in the app yet.",
+  "statsMostInADay": "Most in a day: {words} words",
+  "@statsMostInADay": {
+    "placeholders": {
+      "words": {
+        "type": "String"
+      }
+    }
+  },
+  "statsTotals": "Totals",
+  "statsThisWeek": "this week",
+  "statsThisMonth": "this month",
+  "statsThisYear": "this year",
+  "statsWordsIn": "words {span}",
+  "@statsWordsIn": {
+    "placeholders": {
+      "span": {
+        "type": "String"
+      }
+    }
+  },
+  "statsStreaks": "Streaks",
+  "statsCurrentStreak": "Current streak",
+  "statsLongestStreak": "Longest streak",
+  "statsDays": "{count, plural, =1{1 day} other{{count} days}}",
+  "@statsDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsYearInReview": "{year} in review",
+  "@statsYearInReview": {
+    "placeholders": {
+      "year": {
+        "type": "String"
+      }
+    }
+  },
+  "statsRead": "read",
+  "statsDaysRead": "Days with reading",
+  "statsFinished": "Finished",
+  "statsMostRead": "Most read",
+  "statsFinishedList": "Finished",
+  "statsMinutes": "{minutes} min",
+  "@statsMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "statsHours": "{hours} h {minutes} min",
+  "@statsHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "addByIsbn": "By ISBN",
+  "addByIsbnHint": "A paper book: details and cover from Open Library",
+  "isbnLookUp": "Look up this ISBN",
+  "isbnInvalid": "That isn't a valid ISBN-10 or ISBN-13.",
+  "isbnNotFound": "No details found for this ISBN. Please fill them in.",
+  "isbnLookupFailed": "The lookup failed: {error}",
+  "@isbnLookupFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "addFromCatalog": "From a free catalog",
+  "addFromCatalogHint": "Project Gutenberg, Standard Ebooks or your own OPDS catalog (e.g. Calibre)",
+  "catalogsTitle": "Catalogs",
+  "catalogsIntro": "Free, legal books in OPDS catalogs. Add your own, such as a Calibre content server.",
+  "addCatalog": "Add catalog",
+  "removeCatalog": "Remove catalog",
+  "catalogUrl": "OPDS address",
+  "catalogName": "Name (optional)",
+  "catalogNoSearch": "This catalog can't be searched.",
+  "catalogSearch": "Search {name}",
+  "@catalogSearch": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "searchButton": "Search",
+  "catalogEmpty": "Nothing here.",
+  "catalogNoFile": "No EPUB, FB2 or text file offered",
+  "catalogAdd": "Add to library",
+  "catalogAttach": "Attach to this entry",
+  "catalogAttached": "Attached “{title}”. It can be read in the app now.",
+  "@catalogAttached": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "catalogMore": "Load more",
+  "freeEditionsTitle": "Free editions: {query}",
+  "@freeEditionsTitle": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "noTextHint": "No text for this entry yet.",
+  "attachFile": "Attach a book file",
+  "findFreeEditions": "Find free editions",
+  "addFromList": "From a list on a site",
+  "addFromListHint": "Bookmarks, favorites, collections or reading lists",
+  "listImportTitle": "Add from a list",
+  "listImportIntro": "Paste the link to a list page: AO3 bookmarks, collections, series or a user's works; Royal Road favorites; FanFiction.net favorites; a Wattpad reading list; or a list page on another supported site. Private lists only load if the site shows them without signing in.",
+  "listImportUrl": "Link to the list",
+  "listImportLoad": "Load list",
+  "listImportUnsupported": "This isn't a link to a supported site.",
+  "listImportIsStory": "This link is a single story. Use “From a link” to add it.",
+  "listImportEmpty": "No stories found on this page.",
+  "listImportFound": "{count, plural, =1{1 story} other{{count} stories}}, {inLibrary} already in your library",
+  "@listImportFound": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "inLibrary": {
+        "type": "int"
+      }
+    }
+  },
+  "listImportToggleAll": "Select all / none",
+  "listImportStatus": "Add as",
+  "listImportInLibrary": "Already in your library",
+  "listImportAdd": "{count, plural, =1{Add 1 story} other{Add {count} stories}}",
+  "@listImportAdd": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "listImportProgress": "Adding {done} of {total}…",
+  "@listImportProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "listImportDone": "Added {added}, {failed} failed",
+  "@listImportDone": {
+    "placeholders": {
+      "added": {
+        "type": "int"
+      },
+      "failed": {
+        "type": "int"
+      }
+    }
+  },
+  "listImportClose": "Done",
+  "importingFromFile": "From file: {name}",
+  "@importingFromFile": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "importedFileSummary": "{format} · {count, plural, =1{1 chapter} other{{count} chapters}}. Check the details, then save to add the book.",
+  "@importedFileSummary": {
+    "placeholders": {
+      "format": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "estimateLength": "Estimate length",
+  "estimateLengthHint": "Reads three sample chapters from the site and scales them up.",
+  "estimateFailed": "No sample chapter could be loaded.",
+  "downloadWithImages": "Include images",
+  "downloadWithImagesHint": "Off: only the text is downloaded and saved, which uses less data and space.",
+  "downloadKeepsImages": "Images are included, as in this download.",
+  "downloadKeepsNoImages": "Without images, as in this download.",
   "downloadIncomplete": "{count, plural, =1{1 chapter missing} other{{count} chapters missing}}",
   "@downloadIncomplete": {
     "placeholders": {

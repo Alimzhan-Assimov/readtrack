@@ -4,10 +4,12 @@ import 'dart:ui';
 
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import 'data/database.dart';
+import 'data/fandom_list.dart';
 import 'data/database_scope.dart';
 import 'diagnostics/app_log.dart';
 import 'l10n/l10n.dart';
@@ -24,6 +26,7 @@ import 'ui/theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  FandomList.load(await rootBundle.loadString('assets/fandoms.json'));
   final log = await AppLog.open(
     Directory(p.join((await getApplicationSupportDirectory()).path, 'logs')),
   );
