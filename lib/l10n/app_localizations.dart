@@ -940,6 +940,108 @@ abstract class AppLocalizations {
   /// **'Delete download'**
   String get deleteDownload;
 
+  /// No description provided for @addFromList.
+  ///
+  /// In en, this message translates to:
+  /// **'From a list on a site'**
+  String get addFromList;
+
+  /// No description provided for @addFromListHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookmarks, favorites, collections or reading lists'**
+  String get addFromListHint;
+
+  /// No description provided for @listImportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add from a list'**
+  String get listImportTitle;
+
+  /// No description provided for @listImportIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste the link to a list page: AO3 bookmarks, collections, series or a user\'s works; Royal Road favorites; FanFiction.net favorites; a Wattpad reading list; or a list page on another supported site. Private lists only load if the site shows them without signing in.'**
+  String get listImportIntro;
+
+  /// No description provided for @listImportUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Link to the list'**
+  String get listImportUrl;
+
+  /// No description provided for @listImportLoad.
+  ///
+  /// In en, this message translates to:
+  /// **'Load list'**
+  String get listImportLoad;
+
+  /// No description provided for @listImportUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'This isn\'t a link to a supported site.'**
+  String get listImportUnsupported;
+
+  /// No description provided for @listImportIsStory.
+  ///
+  /// In en, this message translates to:
+  /// **'This link is a single story. Use “From a link” to add it.'**
+  String get listImportIsStory;
+
+  /// No description provided for @listImportEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No stories found on this page.'**
+  String get listImportEmpty;
+
+  /// No description provided for @listImportFound.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 story} other{{count} stories}}, {inLibrary} already in your library'**
+  String listImportFound(int count, int inLibrary);
+
+  /// No description provided for @listImportToggleAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Select all / none'**
+  String get listImportToggleAll;
+
+  /// No description provided for @listImportStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Add as'**
+  String get listImportStatus;
+
+  /// No description provided for @listImportInLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Already in your library'**
+  String get listImportInLibrary;
+
+  /// No description provided for @listImportAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Add 1 story} other{Add {count} stories}}'**
+  String listImportAdd(int count);
+
+  /// No description provided for @listImportProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Adding {done} of {total}…'**
+  String listImportProgress(int done, int total);
+
+  /// No description provided for @listImportDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Added {added}, {failed} failed'**
+  String listImportDone(int added, int failed);
+
+  /// No description provided for @listImportClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get listImportClose;
+
   /// No description provided for @importingFromFile.
   ///
   /// In en, this message translates to:

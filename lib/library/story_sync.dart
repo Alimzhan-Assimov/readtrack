@@ -141,3 +141,39 @@ Future<int?> estimateLength(
   await db.fillMissingCounts(work.id);
   return words;
 }
+
+/// Adds a story loaded from its site, as the edit form would with its
+/// prefilled values, and returns the new id.
+Future<int> addStory(
+  AppDatabase db,
+  StoryInfo info, {
+  ReadingStatus status = ReadingStatus.planned,
+  DateTime? now,
+}) async {
+  final id = await db.saveWork(
+    WorksCompanion.insert(
+      type: info.type,
+      format: WorkFormat.online,
+      title: info.title,
+      author: Value(info.author),
+      summary: Value(info.summary),
+      sourceUrl: Value(info.url.toString()),
+      coverUrl: Value(info.coverUrl?.toString()),
+      status: Value(status),
+      isComplete: Value(info.isComplete ?? false),
+      chapterCount: Value(info.chapterCount),
+      wordCount: Value(info.wordCount),
+      pageCount: Value(info.pageCount),
+      characterCount: Value(info.characterCount),
+      checkedAt: Value(now ?? DateTime.now()),
+      lastChapterAt: Value(info.updatedOn),
+    ),
+    fandomName: info.fandom,
+    tagNames: info.tags,
+    pairingNames: info.pairings,
+    adultTags: info.adultTags,
+  );
+  await db.saveChapterList(id, chapterListing(info));
+  await db.fillMissingCounts(id);
+  return id;
+}

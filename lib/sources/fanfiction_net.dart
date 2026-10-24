@@ -62,6 +62,13 @@ class FanFictionNetSource extends StorySource {
     return Uri.https(_host, '/s/${match.group(1)}/1');
   }
 
+  /// A profile's favorites, else any story list (communities, searches).
+  @override
+  List<String> get listLinkSelectors => const [
+    '.favstories a.stitle',
+    '.z-list a.stitle',
+  ];
+
   @override
   Future<StoryInfo> fetchStory(Uri storyUrl, PageFetcher fetcher) async {
     final doc = parseHtml(await fetcher.getText(storyUrl));

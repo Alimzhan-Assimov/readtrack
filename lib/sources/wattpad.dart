@@ -35,6 +35,34 @@ class WattpadSource extends StorySource {
     return null;
   }
 
+  /// Reading lists (/list/123-name) come from the API.
+  @override
+  Future<List<ListedStory>> fetchList(
+    Uri url,
+    PageFetcher fetcher, {
+    int maxPages = 50,
+  }) async {
+    final id = RegExp(r'^/list/(\d+)').firstMatch(url.path)?.group(1);
+    if (id == null) return super.fetchList(url, fetcher, maxPages: maxPages);
+    final stories = <ListedStory>[];
+    Uri? page = Uri.https(_host, '/api/v3/lists/$id/stories', {
+      'limit': '100',
+      'fields': 'stories(id,title),nextUrl',
+    });
+    for (var n = 0; page != null && n < maxPages; n++) {
+      final json = jsonDecode(await fetcher.getText(page)) as Map;
+      for (final s in (json['stories'] as List? ?? const [])) {
+        stories.add((
+          url: Uri.https(_host, '/story/${(s as Map)['id']}'),
+          title: '${s['title']}',
+        ));
+      }
+      final next = json['nextUrl'] as String?;
+      page = next == null ? null : Uri.parse(next);
+    }
+    return stories;
+  }
+
   @override
   Future<StoryInfo> fetchStory(Uri storyUrl, PageFetcher fetcher) async {
     var id = RegExp(r'^/story/(\d+)').firstMatch(storyUrl.path)?.group(1);

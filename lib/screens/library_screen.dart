@@ -17,6 +17,7 @@ import '../widgets/text_prompt.dart';
 import '../widgets/work_grid_tile.dart';
 import '../widgets/work_tile.dart';
 import 'import_screen.dart';
+import 'list_import_screen.dart';
 import 'settings_screen.dart';
 import 'work_detail_screen.dart';
 import 'work_edit_screen.dart';
@@ -226,6 +227,12 @@ class _LibraryScreenState extends State<LibraryScreen> {
               onTap: () => Navigator.pop(context, _AddKind.link),
             ),
             ListTile(
+              leading: const Icon(Icons.playlist_add),
+              title: Text(l10n.addFromList),
+              subtitle: Text(l10n.addFromListHint),
+              onTap: () => Navigator.pop(context, _AddKind.list),
+            ),
+            ListTile(
               leading: const Icon(Icons.file_open_outlined),
               title: Text(l10n.addFromFile),
               subtitle: Text(l10n.addFromFileHint),
@@ -243,6 +250,12 @@ class _LibraryScreenState extends State<LibraryScreen> {
       ),
     );
     if (kind == null || !mounted) return;
+    if (kind == _AddKind.list) {
+      await Navigator.of(
+        context,
+      ).push<int>(MaterialPageRoute(builder: (_) => const ListImportScreen()));
+      return;
+    }
     final int? id;
     if (kind == _AddKind.file) {
       id = await _importFile();
@@ -654,7 +667,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
   }
 }
 
-enum _AddKind { link, file, manual }
+enum _AddKind { link, list, file, manual }
 
 /// Filter chip that opens a list of options when tapped.
 class _PickerChip<T> extends StatelessWidget {

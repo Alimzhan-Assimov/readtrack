@@ -101,6 +101,9 @@ enum FetchMode {
   httpThenBrowser,
 }
 
+/// A story found on a list page (bookmarks, favorites, a reading list).
+typedef ListedStory = ({Uri url, String title});
+
 /// A website ReadTrack can import stories from.
 abstract class StorySource {
   const StorySource();
@@ -133,6 +136,46 @@ abstract class StorySource {
   Future<StoryInfo> fetchStory(Uri storyUrl, PageFetcher fetcher);
 
   Future<ChapterContent> fetchChapter(ChapterRef chapter, PageFetcher fetcher);
+
+  /// Selectors for the story links on this site's list pages, tried in
+  /// order; the first that finds any wins. Empty takes every story link,
+  /// which may include sidebars.
+  List<String> get listLinkSelectors => const [];
+
+  /// The stories on a list page such as bookmarks, favorites or a
+  /// collection, following "next" links for up to [maxPages] pages.
+  Future<List<ListedStory>> fetchList(
+    Uri url,
+    PageFetcher fetcher, {
+    int maxPages = 50,
+  }) async {
+    final found = <String, ListedStory>{};
+    Uri? page = url;
+    final seen = <String>{};
+    for (var n = 0; page != null && n < maxPages; n++) {
+      if (!seen.add('$page')) break;
+      final doc = parseHtml(await fetcher.getText(page));
+      var links = const <dom.Element>[];
+      for (final selector in [...listLinkSelectors, 'a[href]']) {
+        links = doc.querySelectorAll(selector);
+        if (links.isNotEmpty) break;
+      }
+      for (final a in links) {
+        final href = a.attributes['href'];
+        final target = href == null ? null : page.resolve(href);
+        if (target == null || !matches(target)) continue;
+        final story = storyUrl(target);
+        final title = squash(a.text);
+        if (story == null || title.isEmpty) continue;
+        found.putIfAbsent('$story', () => (url: story, title: title));
+      }
+      final next = doc
+          .querySelector('a[rel="next"], li.next a, a.next, .pagination a.next')
+          ?.attributes['href'];
+      page = next == null ? null : page.resolve(next);
+    }
+    return found.values.toList();
+  }
 
   static String _bareHost(Uri uri) {
     final host = uri.host.toLowerCase();

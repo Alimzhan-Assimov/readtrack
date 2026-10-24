@@ -315,6 +315,60 @@
     }
   },
   "deleteDownload": "Delete download",
+  "addFromList": "From a list on a site",
+  "addFromListHint": "Bookmarks, favorites, collections or reading lists",
+  "listImportTitle": "Add from a list",
+  "listImportIntro": "Paste the link to a list page: AO3 bookmarks, collections, series or a user's works; Royal Road favorites; FanFiction.net favorites; a Wattpad reading list; or a list page on another supported site. Private lists only load if the site shows them without signing in.",
+  "listImportUrl": "Link to the list",
+  "listImportLoad": "Load list",
+  "listImportUnsupported": "This isn't a link to a supported site.",
+  "listImportIsStory": "This link is a single story. Use “From a link” to add it.",
+  "listImportEmpty": "No stories found on this page.",
+  "listImportFound": "{count, plural, =1{1 story} other{{count} stories}}, {inLibrary} already in your library",
+  "@listImportFound": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "inLibrary": {
+        "type": "int"
+      }
+    }
+  },
+  "listImportToggleAll": "Select all / none",
+  "listImportStatus": "Add as",
+  "listImportInLibrary": "Already in your library",
+  "listImportAdd": "{count, plural, =1{Add 1 story} other{Add {count} stories}}",
+  "@listImportAdd": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "listImportProgress": "Adding {done} of {total}…",
+  "@listImportProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "listImportDone": "Added {added}, {failed} failed",
+  "@listImportDone": {
+    "placeholders": {
+      "added": {
+        "type": "int"
+      },
+      "failed": {
+        "type": "int"
+      }
+    }
+  },
+  "listImportClose": "Done",
   "importingFromFile": "From file: {name}",
   "@importingFromFile": {
     "placeholders": {

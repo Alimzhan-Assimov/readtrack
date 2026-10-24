@@ -26,6 +26,12 @@ class Ao3Source extends StorySource {
     return Uri.https(_host, '/works/${match.group(1)}');
   }
 
+  /// Bookmarks, collections, series and works listings use the same blurbs.
+  @override
+  List<String> get listLinkSelectors => const [
+    'li.blurb h4.heading a[href*="/works/"]',
+  ];
+
   @override
   Future<StoryInfo> fetchStory(Uri storyUrl, PageFetcher fetcher) async {
     final doc = parseHtml(

@@ -556,6 +556,80 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteDownload => 'Delete download';
 
   @override
+  String get addFromList => 'From a list on a site';
+
+  @override
+  String get addFromListHint =>
+      'Bookmarks, favorites, collections or reading lists';
+
+  @override
+  String get listImportTitle => 'Add from a list';
+
+  @override
+  String get listImportIntro =>
+      'Paste the link to a list page: AO3 bookmarks, collections, series or a user\'s works; Royal Road favorites; FanFiction.net favorites; a Wattpad reading list; or a list page on another supported site. Private lists only load if the site shows them without signing in.';
+
+  @override
+  String get listImportUrl => 'Link to the list';
+
+  @override
+  String get listImportLoad => 'Load list';
+
+  @override
+  String get listImportUnsupported => 'This isn\'t a link to a supported site.';
+
+  @override
+  String get listImportIsStory =>
+      'This link is a single story. Use “From a link” to add it.';
+
+  @override
+  String get listImportEmpty => 'No stories found on this page.';
+
+  @override
+  String listImportFound(int count, int inLibrary) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count stories',
+      one: '1 story',
+    );
+    return '$_temp0, $inLibrary already in your library';
+  }
+
+  @override
+  String get listImportToggleAll => 'Select all / none';
+
+  @override
+  String get listImportStatus => 'Add as';
+
+  @override
+  String get listImportInLibrary => 'Already in your library';
+
+  @override
+  String listImportAdd(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Add $count stories',
+      one: 'Add 1 story',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String listImportProgress(int done, int total) {
+    return 'Adding $done of $total…';
+  }
+
+  @override
+  String listImportDone(int added, int failed) {
+    return 'Added $added, $failed failed';
+  }
+
+  @override
+  String get listImportClose => 'Done';
+
+  @override
   String importingFromFile(String name) {
     return 'From file: $name';
   }

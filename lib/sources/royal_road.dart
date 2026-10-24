@@ -25,6 +25,12 @@ class RoyalRoadSource extends StorySource {
     return Uri.https('www.royalroad.com', '/fiction/${match.group(1)}');
   }
 
+  /// Favorites, follows and search results.
+  @override
+  List<String> get listLinkSelectors => const [
+    '.fiction-list-item .fiction-title a',
+  ];
+
   @override
   Future<StoryInfo> fetchStory(Uri storyUrl, PageFetcher fetcher) async {
     final html = await fetcher.getText(storyUrl);
