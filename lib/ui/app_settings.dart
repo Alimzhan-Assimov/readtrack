@@ -6,6 +6,18 @@ import '../data/database.dart';
 import '../library/shelves.dart';
 import '../opds/opds.dart';
 
+/// Reading modes for image chapters.
+enum MangaMode {
+  /// Page by page, left to right.
+  pages,
+
+  /// Page by page, right to left (Japanese manga).
+  pagesRtl,
+
+  /// One long strip (webtoons).
+  scroll,
+}
+
 enum ReaderFont {
   system(null),
   serif('serif'),
@@ -92,6 +104,18 @@ class AppSettings extends ChangeNotifier {
     await _db.setSetting(_checkOnStartKey, '$check');
   }
 
+  static const _autoDownloadKey = 'updates.autoDownload';
+  bool _autoDownload = false;
+
+  /// Whether new chapters found by a check extend existing downloads.
+  bool get autoDownload => _autoDownload;
+
+  Future<void> setAutoDownload(bool value) async {
+    _autoDownload = value;
+    notifyListeners();
+    await _db.setSetting(_autoDownloadKey, '$value');
+  }
+
   static const _shelvesKey = 'library.shelves';
 
   /// Whether the library shows covers in a grid instead of a list.
@@ -101,6 +125,28 @@ class AppSettings extends ChangeNotifier {
     _gridView = grid;
     notifyListeners();
     await _db.setSetting(_gridViewKey, '$grid');
+  }
+
+  static const _mangaModeKey = 'manga.mode', _doublePageKey = 'manga.double';
+  MangaMode _mangaMode = MangaMode.pages;
+  bool _doublePage = false;
+
+  /// How chapters made only of images (manga, comics) are shown.
+  MangaMode get mangaMode => _mangaMode;
+
+  /// Two pages side by side in wide windows.
+  bool get doublePage => _doublePage;
+
+  Future<void> setMangaMode(MangaMode mode) async {
+    _mangaMode = mode;
+    notifyListeners();
+    await _db.setSetting(_mangaModeKey, mode.name);
+  }
+
+  Future<void> setDoublePage(bool double) async {
+    _doublePage = double;
+    notifyListeners();
+    await _db.setSetting(_doublePageKey, '$double');
   }
 
   List<Shelf> get shelves => _shelves;
@@ -178,7 +224,12 @@ class AppSettings extends ChangeNotifier {
   Future<void> load() async {
     _hideAdultTags = await _db.setting(_hideAdultTagsKey) == 'true';
     _gridView = await _db.setting(_gridViewKey) == 'true';
+    _mangaMode =
+        MangaMode.values.asNameMap()[await _db.setting(_mangaModeKey)] ??
+        MangaMode.pages;
+    _doublePage = await _db.setting(_doublePageKey) == 'true';
     _checkOnStart = await _db.setting(_checkOnStartKey) != 'false';
+    _autoDownload = await _db.setting(_autoDownloadKey) == 'true';
     final shelves = await _db.setting(_shelvesKey);
     if (shelves != null) {
       try {

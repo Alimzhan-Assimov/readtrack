@@ -1,3 +1,5 @@
+import 'package:html/dom.dart' as dom;
+
 import '../data/enums.dart';
 import 'fetcher.dart';
 import 'html_clean.dart';
@@ -24,6 +26,19 @@ class Ao3Source extends StorySource {
     final match = RegExp(r'^/works/(\d+)').firstMatch(uri.path);
     if (match == null) return null;
     return Uri.https(_host, '/works/${match.group(1)}');
+  }
+
+  /// "Part 2 of the <a>Name</a> series" (the first series, if several).
+  static ({String name, double? index})? _series(dom.Document doc) {
+    // In two steps: package:html's "dd.series span.position" stops at the
+    // inner span.series and finds nothing.
+    final position = doc
+        .querySelector('dd.series')
+        ?.querySelector('span.position');
+    final name = textOf(position?.querySelector('a'));
+    if (position == null || name == null) return null;
+    final part = RegExp(r'Part (\d+)').firstMatch(position.text)?.group(1);
+    return (name: name, index: part == null ? null : double.parse(part));
   }
 
   /// Bookmarks, collections, series and works listings use the same blurbs.
@@ -70,8 +85,11 @@ class Ao3Source extends StorySource {
           ? null
           : htmlToPlainText(cleanHtml(summary, base: storyUrl)),
       fandom: tags('fandom').firstOrNull,
+      crossovers: tags('fandom').skip(1).toList(),
+      series: _series(doc),
       // "Uchiha Sasuke/Uzumaki Naruto" etc. are relationships, not tags.
       pairings: tags('relationship'),
+      characters: tags('character'),
       tags: tags('freeform'),
       wordCount: parseCount(textOf(doc.querySelector('dd.words'))),
       isComplete: chapterStats == null || chapterStats.length != 2
