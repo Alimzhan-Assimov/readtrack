@@ -982,6 +982,30 @@ abstract class AppLocalizations {
   /// **'Delete download'**
   String get deleteDownload;
 
+  /// No description provided for @pageCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {current}'**
+  String pageCurrent(int current);
+
+  /// No description provided for @pageProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {current} of {total}'**
+  String pageProgress(int current, int total);
+
+  /// No description provided for @setPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Set page'**
+  String get setPage;
+
+  /// No description provided for @currentPageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Which page are you on?'**
+  String get currentPageTitle;
+
   /// No description provided for @autoDownload.
   ///
   /// In en, this message translates to:

@@ -586,6 +586,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteDownload => 'Delete download';
 
   @override
+  String pageCurrent(int current) {
+    return 'Page $current';
+  }
+
+  @override
+  String pageProgress(int current, int total) {
+    return 'Page $current of $total';
+  }
+
+  @override
+  String get setPage => 'Set page';
+
+  @override
+  String get currentPageTitle => 'Which page are you on?';
+
+  @override
   String get autoDownload => 'Download new chapters';
 
   @override

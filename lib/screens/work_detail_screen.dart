@@ -13,6 +13,7 @@ import '../ui/app_settings.dart';
 import '../ui/format.dart';
 import '../ui/labels.dart';
 import '../ui/layout.dart';
+import '../widgets/text_prompt.dart';
 import '../widgets/work_cover.dart';
 import 'franchise_screen.dart';
 import 'read_section.dart';
@@ -278,7 +279,9 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
                   ),
               ],
             ),
-            if (w.chapterCount != null || w.currentChapter != null)
+            if (w.format == WorkFormat.physical)
+              _buildPageProgress(l10n, w)
+            else if (w.chapterCount != null || w.currentChapter != null)
               _buildProgress(l10n, w),
             // Shows itself for readable sources and imported books.
             ReadSection(work: w),
@@ -419,6 +422,75 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
             ),
           ),
       ],
+    );
+  }
+
+  /// Asks for the page the reader is on; pages read count in the
+  /// statistics (estimated words, like elsewhere).
+  Future<void> _setPage(Work w) async {
+    final l10n = context.l10n;
+    final input = await showTextPrompt(
+      context,
+      title: l10n.currentPageTitle,
+      initial: w.currentPage?.toString(),
+    );
+    final page = int.tryParse(input?.trim() ?? '');
+    if (page == null || page < 0) return;
+    final before = w.currentPage ?? 0;
+    await _db.updateWork(
+      w.id,
+      WorksCompanion(
+        currentPage: Value(page),
+        status: w.status == ReadingStatus.planned && page > 0
+            ? const Value(ReadingStatus.reading)
+            : w.pageCount != null && page >= w.pageCount!
+            ? const Value(ReadingStatus.finished)
+            : const Value.absent(),
+      ),
+    );
+    if (page > before) {
+      await _db.addReading(
+        w.id,
+        DateTime.now(),
+        words: (page - before) * AppDatabase.wordsPerPage,
+      );
+    }
+  }
+
+  Widget _buildPageProgress(AppLocalizations l10n, Work w) {
+    final page = w.currentPage ?? 0;
+    final total = w.pageCount;
+    return _Section(
+      title: l10n.sectionProgress,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  total != null
+                      ? l10n.pageProgress(page, total)
+                      : l10n.pageCurrent(page),
+                ),
+              ),
+              FilledButton.tonalIcon(
+                icon: const Icon(Icons.edit_outlined),
+                label: Text(l10n.setPage),
+                onPressed: () => _setPage(w),
+              ),
+            ],
+          ),
+          if (total != null && total > 0)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: LinearProgressIndicator(
+                value: (page / total).clamp(0, 1).toDouble(),
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+        ],
+      ),
     );
   }
 

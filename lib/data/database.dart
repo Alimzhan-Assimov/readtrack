@@ -218,6 +218,9 @@ class Works extends Table {
   /// When the status last became "finished" (kept by a trigger).
   DateTimeColumn get finishedAt => dateTime().nullable()();
 
+  /// Where the reader is in a paper book.
+  IntColumn get currentPage => integer().nullable()();
+
   /// The user also has the book on paper (for digital or online entries).
   BoolColumn get ownsPhysicalCopy =>
       boolean().withDefault(const Constant(false))();
@@ -388,7 +391,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 15;
+  int get schemaVersion => 16;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -454,6 +457,7 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 13) await m.createTable(workFandoms);
       if (from < 15) await m.createTable(tagSynonyms);
+      if (from < 16) await _addColumnIfMissing(m, works, works.currentPage);
       if (from < 14) {
         await m.createTable(characters);
         await m.createTable(characterAliases);

@@ -329,6 +329,27 @@
     }
   },
   "deleteDownload": "Delete download",
+  "pageCurrent": "Page {current}",
+  "@pageCurrent": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      }
+    }
+  },
+  "pageProgress": "Page {current} of {total}",
+  "@pageProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "setPage": "Set page",
+  "currentPageTitle": "Which page are you on?",
   "autoDownload": "Download new chapters",
   "autoDownloadHint": "When a check finds new chapters, stories you have downloaded get them too, in the same file.",
   "autoDownloaded": "{count, plural, =1{Downloaded 1 new chapter} other{Downloaded {count} new chapters}}",

@@ -1665,6 +1665,17 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _currentPageMeta = const VerificationMeta(
+    'currentPage',
+  );
+  @override
+  late final GeneratedColumn<int> currentPage = GeneratedColumn<int>(
+    'current_page',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _ownsPhysicalCopyMeta = const VerificationMeta(
     'ownsPhysicalCopy',
   );
@@ -1775,6 +1786,7 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
     newChapters,
     deletedAt,
     finishedAt,
+    currentPage,
     ownsPhysicalCopy,
     seriesId,
     seriesIndex,
@@ -1947,6 +1959,15 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
       context.handle(
         _finishedAtMeta,
         finishedAt.isAcceptableOrUnknown(data['finished_at']!, _finishedAtMeta),
+      );
+    }
+    if (data.containsKey('current_page')) {
+      context.handle(
+        _currentPageMeta,
+        currentPage.isAcceptableOrUnknown(
+          data['current_page']!,
+          _currentPageMeta,
+        ),
       );
     }
     if (data.containsKey('owns_physical_copy')) {
@@ -2123,6 +2144,10 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}finished_at'],
       ),
+      currentPage: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}current_page'],
+      ),
       ownsPhysicalCopy: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}owns_physical_copy'],
@@ -2211,6 +2236,9 @@ class Work extends DataClass implements Insertable<Work> {
   /// When the status last became "finished" (kept by a trigger).
   final DateTime? finishedAt;
 
+  /// Where the reader is in a paper book.
+  final int? currentPage;
+
   /// The user also has the book on paper (for digital or online entries).
   final bool ownsPhysicalCopy;
   final int? seriesId;
@@ -2253,6 +2281,7 @@ class Work extends DataClass implements Insertable<Work> {
     required this.newChapters,
     this.deletedAt,
     this.finishedAt,
+    this.currentPage,
     required this.ownsPhysicalCopy,
     this.seriesId,
     this.seriesIndex,
@@ -2336,6 +2365,9 @@ class Work extends DataClass implements Insertable<Work> {
     if (!nullToAbsent || finishedAt != null) {
       map['finished_at'] = Variable<DateTime>(finishedAt);
     }
+    if (!nullToAbsent || currentPage != null) {
+      map['current_page'] = Variable<int>(currentPage);
+    }
     map['owns_physical_copy'] = Variable<bool>(ownsPhysicalCopy);
     if (!nullToAbsent || seriesId != null) {
       map['series_id'] = Variable<int>(seriesId);
@@ -2414,6 +2446,9 @@ class Work extends DataClass implements Insertable<Work> {
       finishedAt: finishedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(finishedAt),
+      currentPage: currentPage == null && nullToAbsent
+          ? const Value.absent()
+          : Value(currentPage),
       ownsPhysicalCopy: Value(ownsPhysicalCopy),
       seriesId: seriesId == null && nullToAbsent
           ? const Value.absent()
@@ -2468,6 +2503,7 @@ class Work extends DataClass implements Insertable<Work> {
       newChapters: serializer.fromJson<int>(json['newChapters']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
       finishedAt: serializer.fromJson<DateTime?>(json['finishedAt']),
+      currentPage: serializer.fromJson<int?>(json['currentPage']),
       ownsPhysicalCopy: serializer.fromJson<bool>(json['ownsPhysicalCopy']),
       seriesId: serializer.fromJson<int?>(json['seriesId']),
       seriesIndex: serializer.fromJson<double?>(json['seriesIndex']),
@@ -2513,6 +2549,7 @@ class Work extends DataClass implements Insertable<Work> {
       'newChapters': serializer.toJson<int>(newChapters),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
       'finishedAt': serializer.toJson<DateTime?>(finishedAt),
+      'currentPage': serializer.toJson<int?>(currentPage),
       'ownsPhysicalCopy': serializer.toJson<bool>(ownsPhysicalCopy),
       'seriesId': serializer.toJson<int?>(seriesId),
       'seriesIndex': serializer.toJson<double?>(seriesIndex),
@@ -2550,6 +2587,7 @@ class Work extends DataClass implements Insertable<Work> {
     int? newChapters,
     Value<DateTime?> deletedAt = const Value.absent(),
     Value<DateTime?> finishedAt = const Value.absent(),
+    Value<int?> currentPage = const Value.absent(),
     bool? ownsPhysicalCopy,
     Value<int?> seriesId = const Value.absent(),
     Value<double?> seriesIndex = const Value.absent(),
@@ -2588,6 +2626,7 @@ class Work extends DataClass implements Insertable<Work> {
     newChapters: newChapters ?? this.newChapters,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
     finishedAt: finishedAt.present ? finishedAt.value : this.finishedAt,
+    currentPage: currentPage.present ? currentPage.value : this.currentPage,
     ownsPhysicalCopy: ownsPhysicalCopy ?? this.ownsPhysicalCopy,
     seriesId: seriesId.present ? seriesId.value : this.seriesId,
     seriesIndex: seriesIndex.present ? seriesIndex.value : this.seriesIndex,
@@ -2640,6 +2679,9 @@ class Work extends DataClass implements Insertable<Work> {
       finishedAt: data.finishedAt.present
           ? data.finishedAt.value
           : this.finishedAt,
+      currentPage: data.currentPage.present
+          ? data.currentPage.value
+          : this.currentPage,
       ownsPhysicalCopy: data.ownsPhysicalCopy.present
           ? data.ownsPhysicalCopy.value
           : this.ownsPhysicalCopy,
@@ -2689,6 +2731,7 @@ class Work extends DataClass implements Insertable<Work> {
           ..write('newChapters: $newChapters, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('finishedAt: $finishedAt, ')
+          ..write('currentPage: $currentPage, ')
           ..write('ownsPhysicalCopy: $ownsPhysicalCopy, ')
           ..write('seriesId: $seriesId, ')
           ..write('seriesIndex: $seriesIndex, ')
@@ -2728,6 +2771,7 @@ class Work extends DataClass implements Insertable<Work> {
     newChapters,
     deletedAt,
     finishedAt,
+    currentPage,
     ownsPhysicalCopy,
     seriesId,
     seriesIndex,
@@ -2766,6 +2810,7 @@ class Work extends DataClass implements Insertable<Work> {
           other.newChapters == this.newChapters &&
           other.deletedAt == this.deletedAt &&
           other.finishedAt == this.finishedAt &&
+          other.currentPage == this.currentPage &&
           other.ownsPhysicalCopy == this.ownsPhysicalCopy &&
           other.seriesId == this.seriesId &&
           other.seriesIndex == this.seriesIndex &&
@@ -2802,6 +2847,7 @@ class WorksCompanion extends UpdateCompanion<Work> {
   final Value<int> newChapters;
   final Value<DateTime?> deletedAt;
   final Value<DateTime?> finishedAt;
+  final Value<int?> currentPage;
   final Value<bool> ownsPhysicalCopy;
   final Value<int?> seriesId;
   final Value<double?> seriesIndex;
@@ -2836,6 +2882,7 @@ class WorksCompanion extends UpdateCompanion<Work> {
     this.newChapters = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.finishedAt = const Value.absent(),
+    this.currentPage = const Value.absent(),
     this.ownsPhysicalCopy = const Value.absent(),
     this.seriesId = const Value.absent(),
     this.seriesIndex = const Value.absent(),
@@ -2871,6 +2918,7 @@ class WorksCompanion extends UpdateCompanion<Work> {
     this.newChapters = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.finishedAt = const Value.absent(),
+    this.currentPage = const Value.absent(),
     this.ownsPhysicalCopy = const Value.absent(),
     this.seriesId = const Value.absent(),
     this.seriesIndex = const Value.absent(),
@@ -2908,6 +2956,7 @@ class WorksCompanion extends UpdateCompanion<Work> {
     Expression<int>? newChapters,
     Expression<DateTime>? deletedAt,
     Expression<DateTime>? finishedAt,
+    Expression<int>? currentPage,
     Expression<bool>? ownsPhysicalCopy,
     Expression<int>? seriesId,
     Expression<double>? seriesIndex,
@@ -2943,6 +2992,7 @@ class WorksCompanion extends UpdateCompanion<Work> {
       if (newChapters != null) 'new_chapters': newChapters,
       if (deletedAt != null) 'deleted_at': deletedAt,
       if (finishedAt != null) 'finished_at': finishedAt,
+      if (currentPage != null) 'current_page': currentPage,
       if (ownsPhysicalCopy != null) 'owns_physical_copy': ownsPhysicalCopy,
       if (seriesId != null) 'series_id': seriesId,
       if (seriesIndex != null) 'series_index': seriesIndex,
@@ -2980,6 +3030,7 @@ class WorksCompanion extends UpdateCompanion<Work> {
     Value<int>? newChapters,
     Value<DateTime?>? deletedAt,
     Value<DateTime?>? finishedAt,
+    Value<int?>? currentPage,
     Value<bool>? ownsPhysicalCopy,
     Value<int?>? seriesId,
     Value<double?>? seriesIndex,
@@ -3015,6 +3066,7 @@ class WorksCompanion extends UpdateCompanion<Work> {
       newChapters: newChapters ?? this.newChapters,
       deletedAt: deletedAt ?? this.deletedAt,
       finishedAt: finishedAt ?? this.finishedAt,
+      currentPage: currentPage ?? this.currentPage,
       ownsPhysicalCopy: ownsPhysicalCopy ?? this.ownsPhysicalCopy,
       seriesId: seriesId ?? this.seriesId,
       seriesIndex: seriesIndex ?? this.seriesIndex,
@@ -3114,6 +3166,9 @@ class WorksCompanion extends UpdateCompanion<Work> {
     if (finishedAt.present) {
       map['finished_at'] = Variable<DateTime>(finishedAt.value);
     }
+    if (currentPage.present) {
+      map['current_page'] = Variable<int>(currentPage.value);
+    }
     if (ownsPhysicalCopy.present) {
       map['owns_physical_copy'] = Variable<bool>(ownsPhysicalCopy.value);
     }
@@ -3165,6 +3220,7 @@ class WorksCompanion extends UpdateCompanion<Work> {
           ..write('newChapters: $newChapters, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('finishedAt: $finishedAt, ')
+          ..write('currentPage: $currentPage, ')
           ..write('ownsPhysicalCopy: $ownsPhysicalCopy, ')
           ..write('seriesId: $seriesId, ')
           ..write('seriesIndex: $seriesIndex, ')
@@ -8999,6 +9055,7 @@ typedef $$WorksTableCreateCompanionBuilder = WorksCompanion Function({
   Value<int> newChapters,
   Value<DateTime?> deletedAt,
   Value<DateTime?> finishedAt,
+  Value<int?> currentPage,
   Value<bool> ownsPhysicalCopy,
   Value<int?> seriesId,
   Value<double?> seriesIndex,
@@ -9034,6 +9091,7 @@ typedef $$WorksTableUpdateCompanionBuilder = WorksCompanion Function({
   Value<int> newChapters,
   Value<DateTime?> deletedAt,
   Value<DateTime?> finishedAt,
+  Value<int?> currentPage,
   Value<bool> ownsPhysicalCopy,
   Value<int?> seriesId,
   Value<double?> seriesIndex,
@@ -9365,6 +9423,11 @@ class $$WorksTableFilterComposer extends Composer<_$AppDatabase, $WorksTable> {
 
   ColumnFilters<DateTime> get finishedAt => $composableBuilder(
     column: $table.finishedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get currentPage => $composableBuilder(
+    column: $table.currentPage,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -9779,6 +9842,11 @@ class $$WorksTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get currentPage => $composableBuilder(
+    column: $table.currentPage,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get ownsPhysicalCopy => $composableBuilder(
     column: $table.ownsPhysicalCopy,
     builder: (column) => ColumnOrderings(column),
@@ -9949,6 +10017,11 @@ class $$WorksTableAnnotationComposer
 
   GeneratedColumn<DateTime> get finishedAt => $composableBuilder(
     column: $table.finishedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get currentPage => $composableBuilder(
+    column: $table.currentPage,
     builder: (column) => column,
   );
 
@@ -10290,6 +10363,7 @@ class $$WorksTableTableManager
                 Value<int> newChapters = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<DateTime?> finishedAt = const Value.absent(),
+                Value<int?> currentPage = const Value.absent(),
                 Value<bool> ownsPhysicalCopy = const Value.absent(),
                 Value<int?> seriesId = const Value.absent(),
                 Value<double?> seriesIndex = const Value.absent(),
@@ -10324,6 +10398,7 @@ class $$WorksTableTableManager
                 newChapters: newChapters,
                 deletedAt: deletedAt,
                 finishedAt: finishedAt,
+                currentPage: currentPage,
                 ownsPhysicalCopy: ownsPhysicalCopy,
                 seriesId: seriesId,
                 seriesIndex: seriesIndex,
@@ -10360,6 +10435,7 @@ class $$WorksTableTableManager
                 Value<int> newChapters = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<DateTime?> finishedAt = const Value.absent(),
+                Value<int?> currentPage = const Value.absent(),
                 Value<bool> ownsPhysicalCopy = const Value.absent(),
                 Value<int?> seriesId = const Value.absent(),
                 Value<double?> seriesIndex = const Value.absent(),
@@ -10394,6 +10470,7 @@ class $$WorksTableTableManager
                 newChapters: newChapters,
                 deletedAt: deletedAt,
                 finishedAt: finishedAt,
+                currentPage: currentPage,
                 ownsPhysicalCopy: ownsPhysicalCopy,
                 seriesId: seriesId,
                 seriesIndex: seriesIndex,
