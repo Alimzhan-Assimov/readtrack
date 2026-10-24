@@ -264,9 +264,14 @@ void main() {
 
     await tester.tap(find.byTooltip('Settings'));
     await tester.pumpAndSettle();
-    expect(find.text('1 entry'), findsOneWidget);
-    await tester.ensureVisible(find.text('Trash'));
+    // The trash is far down in the settings, below the window.
+    await tester.scrollUntilVisible(
+      find.text('Trash'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.pumpAndSettle();
+    expect(find.text('1 entry'), findsOneWidget);
     await tester.tap(find.text('Trash'));
     await tester.pumpAndSettle();
     expect(find.text('The New Dawn'), findsOneWidget);

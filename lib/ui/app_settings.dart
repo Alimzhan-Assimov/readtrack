@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
+import '../ai/ai_client.dart';
 import '../data/database.dart';
 import '../library/shelves.dart';
 import '../opds/opds.dart';
@@ -156,6 +157,25 @@ class AppSettings extends ChangeNotifier {
     await _db.setSetting(_checkOnStartKey, '$check');
   }
 
+  static const _aiKeys = (
+    provider: 'ai.provider',
+    url: 'ai.url',
+    model: 'ai.model',
+  );
+  AiConfig? _ai;
+
+  /// The AI service chosen for suggestions, or null for none. Its key is
+  /// kept in the system keyring, see [KeyStore].
+  AiConfig? get ai => _ai;
+
+  Future<void> setAi(AiConfig? config) async {
+    _ai = config;
+    notifyListeners();
+    await _db.setSetting(_aiKeys.provider, config?.provider.name ?? '');
+    await _db.setSetting(_aiKeys.url, config?.url ?? '');
+    await _db.setSetting(_aiKeys.model, config?.model ?? '');
+  }
+
   static const _autoDownloadKey = 'updates.autoDownload';
   bool _autoDownload = false;
 
@@ -293,6 +313,15 @@ class AppSettings extends ChangeNotifier {
     _doublePage = await _db.setting(_doublePageKey) == 'true';
     _checkOnStart = await _db.setting(_checkOnStartKey) != 'false';
     _autoDownload = await _db.setting(_autoDownloadKey) == 'true';
+    final provider = AiProvider.values
+        .asNameMap()[await _db.setting(_aiKeys.provider)];
+    _ai = provider == null
+        ? null
+        : AiConfig(
+            provider,
+            url: await _db.setting(_aiKeys.url),
+            model: await _db.setting(_aiKeys.model),
+          );
     final shelves = await _db.setting(_shelvesKey);
     if (shelves != null) {
       try {
