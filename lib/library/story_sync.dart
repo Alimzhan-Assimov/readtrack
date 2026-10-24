@@ -181,3 +181,43 @@ Future<int> addStory(
   await db.fillMissingCounts(id);
   return id;
 }
+
+/// Adds [fresh] chapters after the known ones (e.g. from a site's feed) and
+/// counts them as new; records the check either way.
+Future<void> appendChapters(
+  AppDatabase db,
+  Work work,
+  List<ChapterRef> fresh, {
+  DateTime? lastChapterAt,
+  DateTime? now,
+}) async {
+  final time = now ?? DateTime.now();
+  final last = (await db.chaptersOf(work.id)).lastOrNull?.number ?? 0;
+  await db.saveChapterList(work.id, [
+    for (final (i, c) in fresh.indexed)
+      (
+        number: last + i + 1,
+        title: c.title,
+        url: c.url.toString(),
+        locked: c.locked,
+      ),
+  ]);
+  final unseen = (await db.workById(work.id))?.newChapters ?? 0;
+  await db.updateWork(
+    work.id,
+    WorksCompanion(
+      checkedAt: Value(time),
+      chapterCount: fresh.isEmpty
+          ? const Value.absent()
+          : Value(last + fresh.length),
+      newChapters: fresh.isEmpty
+          ? const Value.absent()
+          : Value(unseen + fresh.length),
+      lastChapterAt: fresh.isEmpty
+          ? const Value.absent()
+          : Value(lastChapterAt ?? time),
+    ),
+    touch: false,
+  );
+  if (fresh.isNotEmpty) await db.fillMissingCounts(work.id);
+}

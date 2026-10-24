@@ -64,6 +64,62 @@ void main() {
     expect((await work()).newChapters, 0);
   });
 
+  test('Royal Road: the RSS feed finds new chapters without the story page', () async {
+    const rr = 'https://www.royalroad.com/fiction/21220';
+    final id = await db.saveWork(
+      WorksCompanion.insert(
+        type: WorkType.webnovel,
+        format: WorkFormat.online,
+        title: 'Mother of Learning',
+        sourceUrl: const Value(rr),
+        chapterCount: const Value(2),
+      ),
+    );
+    await db.saveChapterList(id, [
+      for (final (n, c) in [(1, 101), (2, 102)])
+        (
+          number: n,
+          title: 'Chapter $n',
+          url: '$rr/mother-of-learning/chapter/$c/chapter-$n',
+          locked: false,
+        ),
+    ]);
+    String feed(List<int> ids) =>
+        '<?xml version="1.0" encoding="utf-8"?><rss version="2.0"><channel>'
+        '<title>Mother of Learning</title>'
+        '${[for (final c in ids.reversed) '<item><title>Mother of Learning - Chapter ${c - 100}</title>'
+              '<link>https://www.royalroad.com/fiction/chapter/$c</link>'
+              '<pubDate>Fri, 23 Oct 2026 0${c - 100}:00:00 GMT</pubDate></item>'].join()}'
+        '</channel></rss>';
+    const rss = 'https://www.royalroad.com/fiction/syndication/21220';
+
+    // Nothing new: only the feed is read (the story page isn't served).
+    pages[rss] = feed([101, 102]);
+    var summary = await checker().check(all: true, now: now);
+    expect((summary.newChapters, summary.failed), (0, 0));
+    expect((await work()).checkedAt, now);
+
+    pages[rss] = feed([101, 102, 103, 104]);
+    summary = await checker().check(all: true, now: now);
+    expect(
+      (summary.updatedWorks, summary.newChapters, summary.failed),
+      (1, 2, 0),
+    );
+    final w = await work();
+    expect((w.newChapters, w.chapterCount), (2, 4));
+    expect(w.lastChapterAt!.toUtc(), DateTime.utc(2026, 10, 23, 4));
+    final chapters = await db.chaptersOf(id);
+    expect(
+      [for (final c in chapters) '${c.number} ${c.title}'],
+      ['1 Chapter 1', '2 Chapter 2', '3 Chapter 3', '4 Chapter 4'],
+    );
+
+    // No overlap with the known chapters: the story page is needed.
+    pages[rss] = feed([110, 111]);
+    summary = await checker().check(all: true, now: now);
+    expect(summary.failed, 1); // the story page isn't served here
+  });
+
   test('check intervals and abandoned stories', () {
     Work make({
       bool complete = false,
