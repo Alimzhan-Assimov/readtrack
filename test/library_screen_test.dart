@@ -265,6 +265,8 @@ void main() {
     await tester.tap(find.byTooltip('Settings'));
     await tester.pumpAndSettle();
     expect(find.text('1 entry'), findsOneWidget);
+    await tester.ensureVisible(find.text('Trash'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Trash'));
     await tester.pumpAndSettle();
     expect(find.text('The New Dawn'), findsOneWidget);

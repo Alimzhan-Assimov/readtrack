@@ -175,7 +175,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
   late final String _initialPages;
 
   void _prefill(StoryInfo info) {
-    _type = info.type;
+    _type = storyType(info);
     _format = WorkFormat.online;
     _isComplete = info.isComplete ?? false;
     _tags = TagInput.merge(const [], info.tags.join(','));
@@ -282,6 +282,13 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
   }
 
   Future<void> _loadSuggestions() async {
+    // A site without franchises: guess it from the tags and title.
+    if (widget.imported case final info? when _fandom.text.trim().isEmpty) {
+      final guess = await storyFandom(_db, info);
+      if (guess != null && mounted && _fandom.text.trim().isEmpty) {
+        _fandom.text = guess;
+      }
+    }
     final fandoms = await _db.fandomNames();
     final seriesNames = await _db.seriesNames();
     final characterNames = await _db.characterNames();

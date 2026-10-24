@@ -597,6 +597,37 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get updateDetails => 'Update details';
+
+  @override
+  String get detailsUpdated =>
+      'Took the site\'s current details: characters, series, franchise and tags were added where missing.';
+
+  @override
+  String get updateAllDetails => 'Update details of all online stories';
+
+  @override
+  String get updateAllDetailsHint =>
+      'Adds characters, series, franchises and tags the sites list now, e.g. for stories added before ReadTrack kept them. Your own changes stay.';
+
+  @override
+  String updatingDetails(int done, int total) {
+    return 'Updating $done of $total…';
+  }
+
+  @override
+  String detailsUpdatedAll(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Updated; $count stories could not be loaded',
+      one: 'Updated; 1 story could not be loaded',
+      zero: 'All stories updated',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get suggestTags => 'Suggest tags';
 
   @override
