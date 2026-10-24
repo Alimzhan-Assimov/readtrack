@@ -329,6 +329,20 @@
     }
   },
   "deleteDownload": "Delete download",
+  "aniListLookUp": "Look up on AniList",
+  "aniListTitle": "AniList",
+  "aniListHint": "Pick the matching one. Empty fields are filled in; tags, characters and links to sequels or prequels in your library are added.",
+  "aniListApplied": "Took AniList's details: {characters, plural, =0{no new characters} =1{1 new character} other{{characters} new characters}}, {relations, plural, =0{no links} =1{1 link} other{{relations} links}}",
+  "@aniListApplied": {
+    "placeholders": {
+      "characters": {
+        "type": "int"
+      },
+      "relations": {
+        "type": "int"
+      }
+    }
+  },
   "categoriesTitle": "Categories",
   "categoriesTileHint": "Rename or merge franchises",
   "categoriesHint": "Merging a category into another moves its entries, crossovers and characters, and remembers its name, so stories imported later with that name land in the right place.",

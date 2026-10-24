@@ -234,6 +234,9 @@ class Works extends Table {
   /// Where the reader is in a paper book.
   IntColumn get currentPage => integer().nullable()();
 
+  /// The work's id on AniList, once looked up there.
+  IntColumn get anilistId => integer().nullable()();
+
   /// The user also has the book on paper (for digital or online entries).
   BoolColumn get ownsPhysicalCopy =>
       boolean().withDefault(const Constant(false))();
@@ -405,7 +408,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 17;
+  int get schemaVersion => 18;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -473,6 +476,7 @@ class AppDatabase extends _$AppDatabase {
       if (from < 15) await m.createTable(tagSynonyms);
       if (from < 16) await _addColumnIfMissing(m, works, works.currentPage);
       if (from < 17) await m.createTable(fandomAliases);
+      if (from < 18) await _addColumnIfMissing(m, works, works.anilistId);
       if (from < 14) {
         await m.createTable(characters);
         await m.createTable(characterAliases);
@@ -1650,6 +1654,35 @@ class AppDatabase extends _$AppDatabase {
           .map((c) => c.name)
           .get()
           .then((names) => names.toSet().toList());
+
+  /// The character [name] of [fandomId] (created if new).
+  Future<int?> characterIdFor(String name, int? fandomId) =>
+      _characterIdFor(name, fandomId);
+
+  Future<void> setCharacterAniListId(int characterId, int anilistId) =>
+      (update(characters)..where((c) => c.id.equals(characterId))).write(
+        CharactersCompanion(anilistId: Value(anilistId)),
+      );
+
+  Future<Work?> workByAniListId(int anilistId) =>
+      (select(works)
+            ..where((w) => w.anilistId.equals(anilistId) & w.deletedAt.isNull())
+            ..limit(1))
+          .getSingleOrNull();
+
+  /// Remembers [name] as another name of category [fandomId], unless it
+  /// already names a category.
+  Future<void> addFandomAlias(int fandomId, String name) async {
+    final key = fandomKey(name);
+    if (key.isEmpty) return;
+    for (final f in await select(fandoms).get()) {
+      if (fandomKey(f.name) == key) return;
+    }
+    await into(fandomAliases).insert(
+      FandomAliasesCompanion.insert(aliasKey: key, fandomId: fandomId),
+      mode: InsertMode.insertOrIgnore,
+    );
+  }
 
   Future<void> addCharacterAlias(int characterId, String alias) =>
       into(characterAliases).insert(

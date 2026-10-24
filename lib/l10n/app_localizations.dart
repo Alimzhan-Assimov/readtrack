@@ -982,6 +982,30 @@ abstract class AppLocalizations {
   /// **'Delete download'**
   String get deleteDownload;
 
+  /// No description provided for @aniListLookUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Look up on AniList'**
+  String get aniListLookUp;
+
+  /// No description provided for @aniListTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AniList'**
+  String get aniListTitle;
+
+  /// No description provided for @aniListHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick the matching one. Empty fields are filled in; tags, characters and links to sequels or prequels in your library are added.'**
+  String get aniListHint;
+
+  /// No description provided for @aniListApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Took AniList\'s details: {characters, plural, =0{no new characters} =1{1 new character} other{{characters} new characters}}, {relations, plural, =0{no links} =1{1 link} other{{relations} links}}'**
+  String aniListApplied(int characters, int relations);
+
   /// No description provided for @categoriesTitle.
   ///
   /// In en, this message translates to:

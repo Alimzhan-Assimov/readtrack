@@ -586,6 +586,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteDownload => 'Delete download';
 
   @override
+  String get aniListLookUp => 'Look up on AniList';
+
+  @override
+  String get aniListTitle => 'AniList';
+
+  @override
+  String get aniListHint =>
+      'Pick the matching one. Empty fields are filled in; tags, characters and links to sequels or prequels in your library are added.';
+
+  @override
+  String aniListApplied(int characters, int relations) {
+    String _temp0 = intl.Intl.pluralLogic(
+      characters,
+      locale: localeName,
+      other: '$characters new characters',
+      one: '1 new character',
+      zero: 'no new characters',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      relations,
+      locale: localeName,
+      other: '$relations links',
+      one: '1 link',
+      zero: 'no links',
+    );
+    return 'Took AniList\'s details: $_temp0, $_temp1';
+  }
+
+  @override
   String get categoriesTitle => 'Categories';
 
   @override

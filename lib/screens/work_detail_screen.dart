@@ -15,6 +15,7 @@ import '../ui/labels.dart';
 import '../ui/layout.dart';
 import '../widgets/text_prompt.dart';
 import '../widgets/work_cover.dart';
+import 'anilist_dialog.dart';
 import 'franchise_screen.dart';
 import 'read_section.dart';
 import 'related_section.dart';
@@ -184,6 +185,27 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
       appBar: AppBar(
         automaticallyImplyLeading: !widget.embedded,
         actions: [
+          if (w.type != WorkType.fanfiction)
+            IconButton(
+              icon: const Icon(Icons.travel_explore),
+              tooltip: l10n.aniListLookUp,
+              onPressed: () async {
+                final messenger = ScaffoldMessenger.of(context);
+                final result = await lookUpOnAniList(context, item);
+                if (result != null) {
+                  messenger.showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        l10n.aniListApplied(
+                          result.characters,
+                          result.relations,
+                        ),
+                      ),
+                    ),
+                  );
+                }
+              },
+            ),
           IconButton(
             icon: const Icon(Icons.edit_outlined),
             tooltip: l10n.editTooltip,
