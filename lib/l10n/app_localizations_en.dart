@@ -586,6 +586,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteDownload => 'Delete download';
 
   @override
+  String get mangaMode => 'Page layout';
+
+  @override
+  String get mangaPages => 'Pages, left to right';
+
+  @override
+  String get mangaPagesRtl => 'Pages, right to left (manga)';
+
+  @override
+  String get mangaScroll => 'Long strip (webtoon)';
+
+  @override
+  String get mangaDoublePage => 'Two pages side by side (wide windows)';
+
+  @override
   String get ownsPaperCopy => 'I also own it on paper';
 
   @override

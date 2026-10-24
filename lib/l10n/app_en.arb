@@ -329,6 +329,11 @@
     }
   },
   "deleteDownload": "Delete download",
+  "mangaMode": "Page layout",
+  "mangaPages": "Pages, left to right",
+  "mangaPagesRtl": "Pages, right to left (manga)",
+  "mangaScroll": "Long strip (webtoon)",
+  "mangaDoublePage": "Two pages side by side (wide windows)",
   "ownsPaperCopy": "I also own it on paper",
   "paperCopy": "Paper copy",
   "mergeTagInto": "Merge into another tag…",

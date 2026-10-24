@@ -982,6 +982,36 @@ abstract class AppLocalizations {
   /// **'Delete download'**
   String get deleteDownload;
 
+  /// No description provided for @mangaMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Page layout'**
+  String get mangaMode;
+
+  /// No description provided for @mangaPages.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages, left to right'**
+  String get mangaPages;
+
+  /// No description provided for @mangaPagesRtl.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages, right to left (manga)'**
+  String get mangaPagesRtl;
+
+  /// No description provided for @mangaScroll.
+  ///
+  /// In en, this message translates to:
+  /// **'Long strip (webtoon)'**
+  String get mangaScroll;
+
+  /// No description provided for @mangaDoublePage.
+  ///
+  /// In en, this message translates to:
+  /// **'Two pages side by side (wide windows)'**
+  String get mangaDoublePage;
+
   /// No description provided for @ownsPaperCopy.
   ///
   /// In en, this message translates to:

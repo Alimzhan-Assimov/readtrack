@@ -424,7 +424,9 @@ class _ReadSectionState extends State<ReadSection> {
                           SubmenuButton(
                             leadingIcon: const Icon(Icons.ios_share),
                             menuChildren: [
-                              for (final f in ExportFormat.values)
+                              for (final f in ExportFormat.forType(
+                                widget.work.type,
+                              ))
                                 if (f.name != d.format)
                                   MenuItemButton(
                                     onPressed: () => _exportAs(d, f),
