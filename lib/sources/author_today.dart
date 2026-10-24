@@ -65,6 +65,13 @@ class AuthorTodaySource extends StorySource {
         for (final a in doc.querySelectorAll('.book-genres a')) squash(a.text),
         for (final a in doc.querySelectorAll('.tags a')) squash(a.text),
       ],
+      characterCount: parseCount(
+        doc
+            .querySelector('[data-hint^="Размер, кол-во знаков"]')
+            ?.nodes
+            .firstOrNull
+            ?.text,
+      ),
       isComplete: status == null
           ? null
           : status.contains('в процессе')

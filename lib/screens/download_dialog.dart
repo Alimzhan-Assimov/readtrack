@@ -252,7 +252,7 @@ class _DownloadDialogState extends State<DownloadDialog> {
                     padding: const EdgeInsets.only(bottom: 12),
                     child: SegmentedButton<ExportFormat>(
                       segments: [
-                        for (final f in ExportFormat.values)
+                        for (final f in ExportFormat.forType(widget.work.type))
                           ButtonSegment(value: f, label: Text(f.label)),
                       ],
                       selected: {_format},

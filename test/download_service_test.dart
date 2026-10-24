@@ -5,9 +5,11 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:readtrack/data/database.dart';
 import 'package:readtrack/diagnostics/app_log.dart';
+import 'package:readtrack/library/auto_download.dart';
 import 'package:readtrack/library/download_service.dart';
 import 'package:readtrack/library/exporters.dart';
 import 'package:readtrack/library/storage.dart';
+import 'package:readtrack/library/story_sync.dart';
 import 'package:readtrack/sources/sources.dart';
 import 'package:readtrack/sources/fetcher.dart' show SourceAccessException;
 
@@ -214,6 +216,63 @@ void main() {
         '<a href="big.png"><IMG SRC="small.png"></a><a href="/c">link</a>',
       ),
       '<p>ab</p><a href="/c">link</a>',
+    );
+  });
+
+  test(
+    'length is estimated from sample chapters spread over the story',
+    () async {
+      await db.updateWork(
+        work.id,
+        const WorksCompanion(chapterCount: Value(5)),
+      );
+      final source = _FlakySource({});
+      final words = await estimateLength(
+        db,
+        (await db.workById(work.id))!,
+        source,
+        open: (_) => FakeFetcher(const {}),
+      );
+      // Chapters 1–4 are readable (5 is locked): start, middle and end.
+      expect(source.requested, [1, 3, 4]);
+      // Each sample is "Text of chapter n." = 4 words, times 5 chapters.
+      expect(words, 20);
+      final w = (await db.workById(work.id))!;
+      expect((w.wordCount, w.wordsEstimated), (20, true));
+      expect((w.pageCount, w.pagesEstimated), (1, true));
+      expect(
+        (await db.chaptersOf(work.id)).every((c) => c.content == null),
+        isTrue,
+      );
+      // A later recount without anything better keeps the estimate.
+      await db.fillMissingCounts(work.id);
+      expect((await db.workById(work.id))!.wordCount, 20);
+    },
+  );
+
+  test('new chapters extend the newest download automatically', () async {
+    await service.download(
+      work: work,
+      source: const _FakeSource(),
+      from: 1,
+      to: 2,
+      format: ExportFormat.epub,
+    );
+    // A check found chapters 3 and 4 (5 is locked).
+    await db.updateWork(work.id, const WorksCompanion(newChapters: Value(3)));
+    final n = await downloadNewChapters(
+      db,
+      service,
+      find: (_) => const _FakeSource(),
+    );
+    expect(n, 2);
+    final d = (await db.downloadsOf(work.id)).single;
+    expect((d.fromChapter, d.toChapter, d.format), (1, 5, 'epub'));
+    // Stories without a download are left alone.
+    await db.deleteDownload(d.id);
+    expect(
+      await downloadNewChapters(db, service, find: (_) => const _FakeSource()),
+      0,
     );
   });
 
