@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../diagnostics/app_log.dart';
 import '../data/database_scope.dart';
 import '../l10n/l10n.dart';
 import '../library/story_sync.dart';
@@ -80,6 +81,12 @@ class _ImportScreenState extends State<ImportScreen> {
       );
       if (id != null) navigator.pop(id);
     } on SourceException catch (e) {
+      logWarning(
+        'import',
+        'Story failed to load',
+        context: {'source': source.name, 'url': '$url'},
+        error: e.message,
+      );
       if (mounted) {
         setState(() {
           _loading = false;

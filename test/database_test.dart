@@ -199,6 +199,94 @@ void main() {
     expect((w.wordCount, w.pageCount), (null, null));
   });
 
+  test('words come from the character count before chapters', () async {
+    final id = await db.saveWork(
+      WorksCompanion.insert(
+        type: WorkType.book,
+        format: WorkFormat.online,
+        title: 'Книга',
+        chapterCount: const Value(10),
+        characterCount: const Value(640000),
+      ),
+    );
+    await db.saveChapterList(id, [
+      for (var n = 1; n <= 10; n++)
+        (number: n, title: '$n', url: 'https://a.test/$n', locked: false),
+    ]);
+    await db.saveChapterText(id, 1, html: '<p>x</p>', wordCount: 5);
+    final w = (await db.workById(id))!;
+    expect((w.wordCount, w.wordsEstimated), (100000, true));
+    expect((w.pageCount, w.pagesEstimated), (400, true));
+  });
+
+  test('search ignores case in any script and looks at tags', () async {
+    await db.saveWork(
+      WorksCompanion.insert(
+        type: WorkType.book,
+        format: WorkFormat.digital,
+        title: 'Война и мир',
+        author: const Value('Лев Толстой'),
+      ),
+      tagNames: ['Исторический'],
+    );
+    Future<List<String>> find(String q) async => [
+      for (final w in await db.watchWorks(search: q).first) w.work.title,
+    ];
+    expect(await find('война'), ['Война и мир']);
+    expect(await find('ТОЛСТОЙ мир'), ['Война и мир']);
+    expect(await find('исторический'), ['Война и мир']);
+    expect(await find('война проза'), isEmpty);
+  });
+
+  test('known spellings of a tag land on one tag', () async {
+    final a = await db.saveWork(
+      WorksCompanion.insert(
+        type: WorkType.fanfiction,
+        format: WorkFormat.online,
+        title: 'A',
+      ),
+      tagNames: ['Slow Burn', 'slowburn', 'Harem Fic'],
+    );
+    expect(
+      [for (final t in (await db.watchWork(a).first)!.tags) t.name]..sort(),
+      ['Harem', 'Slow Burn'],
+    );
+  });
+
+  test('merging a tag moves its works and remembers the name', () async {
+    Future<int> add(String title, List<String> tags) => db.saveWork(
+      WorksCompanion.insert(
+        type: WorkType.fanfiction,
+        format: WorkFormat.online,
+        title: title,
+      ),
+      tagNames: tags,
+    );
+    final a = await add('A', ['Kingdom Management']);
+    final b = await add('B', ['Kingdom Building', 'Kingdom Management']);
+    final tags = {for (final t in await db.allTags()) t.name: t.id};
+    await db.mergeTag(tags['Kingdom Management']!, tags['Kingdom Building']!);
+    for (final id in [a, b]) {
+      expect(
+        [for (final t in (await db.watchWork(id).first)!.tags) t.name],
+        ['Kingdom Building'],
+      );
+    }
+    expect((await db.watchTagSynonyms().first)[tags['Kingdom Building']], [
+      'kingdom management',
+    ]);
+    // Later imports with the old name land on the merged tag.
+    final c = await add('C', ['kingdom management']);
+    expect((await db.watchWork(c).first)!.tags.single.name, 'Kingdom Building');
+
+    await db.removeTagSynonym('kingdom management');
+    final d = await add('D', ['Kingdom Management']);
+    expect(
+      (await db.watchWork(d).first)!.tags.single.name,
+      'Kingdom Management',
+    );
+  });
+
   test('sorting by title ignores case', () async {
     for (final title in ['beta', 'Gamma', 'Alpha']) {
       await db.saveWork(fic(title));

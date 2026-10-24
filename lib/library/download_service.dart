@@ -4,7 +4,9 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter/foundation.dart';
 
 import '../data/database.dart';
+import '../diagnostics/app_log.dart';
 import '../sources/html_clean.dart';
+import '../sources/fetcher.dart' show SourceAccessException;
 import '../sources/sources.dart';
 import 'storage.dart';
 import 'story_sync.dart';
@@ -33,6 +35,7 @@ class DownloadResult {
     required this.locked,
     required this.cancelled,
     this.file,
+    this.firstError,
   });
 
   final int downloaded;
@@ -42,6 +45,9 @@ class DownloadResult {
 
   /// The exported file, unless the download was cancelled.
   final File? file;
+
+  /// The first failed chapter's explanation, for the completion message.
+  final String? firstError;
 }
 
 /// Downloads chapters in the background and exports them, one job per work.
@@ -70,7 +76,10 @@ class DownloadService extends ChangeNotifier {
     required int to,
     Download? appendTo,
     ExportFormat format = ExportFormat.txt,
+    bool withImages = true,
   }) async {
+    // An extended download keeps its settings.
+    if (appendTo != null) withImages = appendTo.withImages;
     if (isRunning(work.id)) throw StateError('A download is already running.');
     final id = work.id;
     _cancelled.remove(id);
@@ -78,6 +87,19 @@ class DownloadService extends ChangeNotifier {
     notifyListeners();
     final fetcher = openFetcherFor(source);
     var downloaded = 0, failed = 0;
+    String? firstError;
+    final where = {'workId': id, 'source': source.name};
+    DownloadResult done(DownloadResult result) {
+      logInfo('download', result.cancelled ? 'Cancelled' : 'Finished', {
+        ...where,
+        'downloaded': result.downloaded,
+        'failed': result.failed,
+        'locked': result.locked,
+        'file': result.file == null ? null : 'written',
+      });
+      return result;
+    }
+
     try {
       await _saveCover(work, fetcher);
       final start = appendTo?.fromChapter ?? from;
@@ -90,6 +112,14 @@ class DownloadService extends ChangeNotifier {
       final todo = inRange
           .where((c) => c.content == null && !c.isLocked && c.url != null)
           .toList();
+      logInfo('download', 'Started', {
+        ...where,
+        'title': work.title,
+        'from': start,
+        'to': to,
+        'toFetch': todo.length,
+        'locked': locked,
+      });
 
       for (final chapter in todo) {
         if (_cancelled.contains(id)) break;
@@ -99,12 +129,21 @@ class DownloadService extends ChangeNotifier {
           chapterTitle: chapter.title,
         );
         notifyListeners();
+        await AppLog.instance?.setSessionState('download', {
+          ...where,
+          'title': work.title,
+          'chapter': chapter.number,
+          'done': downloaded + failed,
+          'total': todo.length,
+        });
         try {
           final content = await source.fetchChapter(
             chapterRefOf(chapter),
             fetcher,
           );
-          final html = await _saveImages(id, content.html, fetcher);
+          final html = withImages
+              ? await _saveImages(id, content.html, fetcher)
+              : content.html;
           await _db.saveChapterText(
             id,
             chapter.number,
@@ -112,17 +151,51 @@ class DownloadService extends ChangeNotifier {
             wordCount: countWords(htmlToPlainText(html)),
           );
           downloaded++;
-        } on SourceException {
+        } on SourceException catch (error) {
           failed++;
+          firstError ??= error.message;
+          final access = error is SourceAccessException;
+          logWarning(
+            'download',
+            access ? 'Stopped: no access to the site' : 'Chapter failed',
+            context: {...where, 'chapter': chapter.number, 'url': chapter.url},
+            error: error.message,
+          );
+          if (access) {
+            failed = todo.length - downloaded;
+            break;
+          }
         }
       }
 
       if (_cancelled.contains(id)) {
-        return DownloadResult(
-          downloaded: downloaded,
-          failed: failed,
-          locked: locked,
-          cancelled: true,
+        return done(
+          DownloadResult(
+            downloaded: downloaded,
+            failed: failed,
+            locked: locked,
+            cancelled: true,
+            firstError: firstError,
+          ),
+        );
+      }
+      final stored = await _db.chaptersOf(id);
+      final hasText = stored.any(
+        (chapter) =>
+            chapter.number >= start &&
+            chapter.number <= to &&
+            chapter.content != null,
+      );
+      if (!hasText) {
+        return done(
+          DownloadResult(
+            downloaded: downloaded,
+            failed: failed,
+            locked: locked,
+            cancelled: false,
+            firstError:
+                firstError ?? 'No chapter text is available to download.',
+          ),
         );
       }
       final file = await _export(
@@ -132,15 +205,29 @@ class DownloadService extends ChangeNotifier {
         appendTo,
         // An extended download keeps its format.
         appendTo == null ? format : ExportFormat.fromName(appendTo.format),
+        withImages,
       );
-      return DownloadResult(
-        downloaded: downloaded,
-        failed: failed,
-        locked: locked,
-        cancelled: false,
-        file: file,
+      return done(
+        DownloadResult(
+          downloaded: downloaded,
+          failed: failed,
+          locked: locked,
+          cancelled: false,
+          file: file,
+          firstError: firstError,
+        ),
       );
+    } catch (error, stack) {
+      logError(
+        'download',
+        'Download crashed',
+        context: {...where, 'downloaded': downloaded, 'failed': failed},
+        error: error,
+        stack: stack,
+      );
+      rethrow;
     } finally {
+      await AppLog.instance?.setSessionState('download', null);
       await fetcher.close();
       _progress.remove(id);
       _cancelled.remove(id);
@@ -155,8 +242,9 @@ class DownloadService extends ChangeNotifier {
     int to,
     Download? appendTo,
     ExportFormat format,
+    bool withImages,
   ) async {
-    final file = await _write(work.id, from, to, format);
+    final file = await _write(work.id, from, to, format, withImages);
     if (appendTo == null) {
       await _db.addDownload(
         DownloadsCompanion.insert(
@@ -164,6 +252,7 @@ class DownloadService extends ChangeNotifier {
           fromChapter: from,
           toChapter: to,
           format: Value(format.name),
+          withImages: Value(withImages),
           filePath: Value(file.path),
         ),
       );
@@ -178,7 +267,13 @@ class DownloadService extends ChangeNotifier {
     return file;
   }
 
-  Future<File> _write(int workId, int from, int to, ExportFormat format) async {
+  Future<File> _write(
+    int workId,
+    int from,
+    int to,
+    ExportFormat format,
+    bool withImages,
+  ) async {
     final details = (await _db.watchWork(workId).first)!;
     final file = storage.exportFile(
       details.work.title,
@@ -195,6 +290,7 @@ class DownloadService extends ChangeNotifier {
         to: to,
         storage: storage,
         tags: [for (final t in details.tags) t.name],
+        withImages: withImages,
       ),
       file,
     );
@@ -203,8 +299,13 @@ class DownloadService extends ChangeNotifier {
 
   /// Saves an existing download again in another [format], next to it.
   /// The download itself (and its file) stays as it is.
-  Future<File> exportAs(Download download, ExportFormat format) =>
-      _write(download.workId, download.fromChapter, download.toChapter, format);
+  Future<File> exportAs(Download download, ExportFormat format) => _write(
+    download.workId,
+    download.fromChapter,
+    download.toChapter,
+    format,
+    download.withImages,
+  );
 
   Future<void> _saveCover(Work work, PageFetcher fetcher) async {
     final url = work.coverUrl;

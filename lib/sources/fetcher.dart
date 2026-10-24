@@ -15,6 +15,11 @@ class SourceException implements Exception {
   String toString() => message;
 }
 
+/// The whole session needs user interaction; retrying every chapter cannot help.
+class SourceAccessException extends SourceException {
+  SourceAccessException(super.message);
+}
+
 /// Loads pages for a [StorySource]. Sites behind Cloudflare need a real
 /// browser ([BrowserFetcher]); all others use plain HTTP ([HttpFetcher]).
 abstract class PageFetcher {

@@ -31,7 +31,7 @@ place, whether they sit on your shelf or live online.
 | WebNovel | Browser window (Cloudflare); paid chapters are skipped |
 | Royal Road | HTTP, browser as fallback |
 | Scribble Hub | Browser window (Cloudflare) |
-| Author.Today | HTTP; only chapters that are free to read |
+| Author.Today | HTTP; an in-app browser session handles age confirmation/sign-in when required |
 | Ficbook | HTTP, browser as fallback |
 | SpaceBattles, Sufficient Velocity, Questionable Questing | HTTP, browser as fallback; chapters are threadmarks |
 | Wattpad | public JSON API |
@@ -59,6 +59,13 @@ Sites protected against bots are loaded through a small browser window
 are never bypassed. Downloads are meant for personal offline reading.
 
 Parsers live in `lib/sources/`, one file per site.
+
+For an Author.Today book marked 18+, open a chapter or start a download in
+ReadTrack. If the site requires confirmation, its reader opens in a ReadTrack
+browser window. Confirm your age there yourself, or sign in if the site asks.
+ReadTrack waits for access and continues automatically using that session.
+Leave this window open while reading or downloading. A closed or unconfirmed
+session stops the download with an explanation; no empty download is created.
 
 ## Running
 
