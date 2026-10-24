@@ -4,6 +4,7 @@ import 'package:drift/drift.dart' show Value;
 
 import '../data/database.dart';
 import '../sources/html_clean.dart';
+import 'keyword_tags.dart';
 import '../sources/sources.dart';
 
 /// Loads a story's details from its site, opening and closing the fetcher.
@@ -179,8 +180,17 @@ Future<int> addStory(
   );
   await db.saveChapterList(id, chapterListing(info));
   await db.fillMissingCounts(id);
+  await suggestKeywordTags(db, id, '${info.title}\n${info.summary ?? ''}');
   return id;
 }
+
+/// Proposes default tags whose keywords appear in [text] (a title and
+/// summary), with the English reason. Returns how many are new.
+Future<int> suggestKeywordTags(AppDatabase db, int workId, String text) =>
+    db.suggestTags(workId, {
+      for (final MapEntry(key: tag, value: word) in keywordTags(text).entries)
+        tag: 'The summary mentions “$word”',
+    });
 
 /// Adds [fresh] chapters after the known ones (e.g. from a site's feed) and
 /// counts them as new; records the check either way.
