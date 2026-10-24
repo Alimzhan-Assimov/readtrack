@@ -329,6 +329,48 @@
     }
   },
   "deleteDownload": "Delete download",
+  "addFromCatalog": "From a free catalog",
+  "addFromCatalogHint": "Project Gutenberg, Standard Ebooks or your own OPDS catalog (e.g. Calibre)",
+  "catalogsTitle": "Catalogs",
+  "catalogsIntro": "Free, legal books in OPDS catalogs. Add your own, such as a Calibre content server.",
+  "addCatalog": "Add catalog",
+  "removeCatalog": "Remove catalog",
+  "catalogUrl": "OPDS address",
+  "catalogName": "Name (optional)",
+  "catalogNoSearch": "This catalog can't be searched.",
+  "catalogSearch": "Search {name}",
+  "@catalogSearch": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "searchButton": "Search",
+  "catalogEmpty": "Nothing here.",
+  "catalogNoFile": "No EPUB, FB2 or text file offered",
+  "catalogAdd": "Add to library",
+  "catalogAttach": "Attach to this entry",
+  "catalogAttached": "Attached “{title}”. It can be read in the app now.",
+  "@catalogAttached": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "catalogMore": "Load more",
+  "freeEditionsTitle": "Free editions: {query}",
+  "@freeEditionsTitle": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "noTextHint": "No text for this entry yet.",
+  "attachFile": "Attach a book file",
+  "findFreeEditions": "Find free editions",
   "addFromList": "From a list on a site",
   "addFromListHint": "Bookmarks, favorites, collections or reading lists",
   "listImportTitle": "Add from a list",

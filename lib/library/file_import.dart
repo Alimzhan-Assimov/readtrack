@@ -38,6 +38,22 @@ class ImportedBook {
   /// The file says it is fan fiction (FB2 genre "fanfiction").
   final bool isFanfiction;
 
+  /// The same book with [url] as its source link, e.g. the catalog page it
+  /// was downloaded from.
+  ImportedBook withSource(String url) => ImportedBook(
+    title: title,
+    format: format,
+    chapters: chapters,
+    author: author,
+    summary: summary,
+    tags: tags,
+    cover: cover,
+    images: images,
+    sourceUrl: url,
+    isbn: isbn,
+    isFanfiction: isFanfiction,
+  );
+
   final String title;
   final String? author;
   final String? summary;

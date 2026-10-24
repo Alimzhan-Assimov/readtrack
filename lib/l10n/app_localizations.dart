@@ -982,6 +982,132 @@ abstract class AppLocalizations {
   /// **'Delete download'**
   String get deleteDownload;
 
+  /// No description provided for @addFromCatalog.
+  ///
+  /// In en, this message translates to:
+  /// **'From a free catalog'**
+  String get addFromCatalog;
+
+  /// No description provided for @addFromCatalogHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Project Gutenberg, Standard Ebooks or your own OPDS catalog (e.g. Calibre)'**
+  String get addFromCatalogHint;
+
+  /// No description provided for @catalogsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Catalogs'**
+  String get catalogsTitle;
+
+  /// No description provided for @catalogsIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Free, legal books in OPDS catalogs. Add your own, such as a Calibre content server.'**
+  String get catalogsIntro;
+
+  /// No description provided for @addCatalog.
+  ///
+  /// In en, this message translates to:
+  /// **'Add catalog'**
+  String get addCatalog;
+
+  /// No description provided for @removeCatalog.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove catalog'**
+  String get removeCatalog;
+
+  /// No description provided for @catalogUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'OPDS address'**
+  String get catalogUrl;
+
+  /// No description provided for @catalogName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name (optional)'**
+  String get catalogName;
+
+  /// No description provided for @catalogNoSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'This catalog can\'t be searched.'**
+  String get catalogNoSearch;
+
+  /// No description provided for @catalogSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search {name}'**
+  String catalogSearch(String name);
+
+  /// No description provided for @searchButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get searchButton;
+
+  /// No description provided for @catalogEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing here.'**
+  String get catalogEmpty;
+
+  /// No description provided for @catalogNoFile.
+  ///
+  /// In en, this message translates to:
+  /// **'No EPUB, FB2 or text file offered'**
+  String get catalogNoFile;
+
+  /// No description provided for @catalogAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to library'**
+  String get catalogAdd;
+
+  /// No description provided for @catalogAttach.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach to this entry'**
+  String get catalogAttach;
+
+  /// No description provided for @catalogAttached.
+  ///
+  /// In en, this message translates to:
+  /// **'Attached “{title}”. It can be read in the app now.'**
+  String catalogAttached(String title);
+
+  /// No description provided for @catalogMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load more'**
+  String get catalogMore;
+
+  /// No description provided for @freeEditionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Free editions: {query}'**
+  String freeEditionsTitle(String query);
+
+  /// No description provided for @noTextHint.
+  ///
+  /// In en, this message translates to:
+  /// **'No text for this entry yet.'**
+  String get noTextHint;
+
+  /// No description provided for @attachFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach a book file'**
+  String get attachFile;
+
+  /// No description provided for @findFreeEditions.
+  ///
+  /// In en, this message translates to:
+  /// **'Find free editions'**
+  String get findFreeEditions;
+
   /// No description provided for @addFromList.
   ///
   /// In en, this message translates to:

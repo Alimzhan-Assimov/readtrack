@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../data/database.dart';
 import '../library/shelves.dart';
+import '../opds/opds.dart';
 
 enum ReaderFont {
   system(null),
@@ -75,6 +76,7 @@ class AppSettings extends ChangeNotifier {
   ReaderPrefs _reader = const ReaderPrefs();
   bool _gridView = false;
   List<Shelf> _shelves = const [];
+  List<OpdsCatalog> _catalogs = const [];
 
   bool _checkOnStart = true;
 
@@ -124,6 +126,32 @@ class AppSettings extends ChangeNotifier {
     );
   }
 
+  static const _catalogsKey = 'opds.catalogs';
+
+  /// The user's own OPDS catalogs (the free ones in [kDefaultCatalogs]
+  /// are always offered too).
+  List<OpdsCatalog> get catalogs => _catalogs;
+
+  Future<void> addCatalog(OpdsCatalog catalog) => _storeCatalogs([
+    for (final c in _catalogs)
+      if (c.url != catalog.url) c,
+    catalog,
+  ]);
+
+  Future<void> removeCatalog(Uri url) => _storeCatalogs([
+    for (final c in _catalogs)
+      if (c.url != url) c,
+  ]);
+
+  Future<void> _storeCatalogs(List<OpdsCatalog> catalogs) async {
+    _catalogs = catalogs;
+    notifyListeners();
+    await _db.setSetting(
+      _catalogsKey,
+      jsonEncode([for (final c in catalogs) c.toJson()]),
+    );
+  }
+
   static const _readerKeys = (
     fontSize: 'reader.fontSize',
     font: 'reader.font',
@@ -160,6 +188,17 @@ class AppSettings extends ChangeNotifier {
         ];
       } on FormatException {
         _shelves = const [];
+      }
+    }
+    final catalogs = await _db.setting(_catalogsKey);
+    if (catalogs != null) {
+      try {
+        _catalogs = [
+          for (final c in jsonDecode(catalogs) as List)
+            OpdsCatalog.fromJson((c as Map).cast<String, Object?>()),
+        ];
+      } on FormatException {
+        _catalogs = const [];
       }
     }
     const defaults = ReaderPrefs();

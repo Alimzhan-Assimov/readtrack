@@ -15,6 +15,7 @@ import '../ui/layout.dart';
 import '../widgets/text_prompt.dart';
 import '../widgets/work_grid_tile.dart';
 import '../widgets/work_tile.dart';
+import 'catalog_screen.dart';
 import 'import_screen.dart';
 import 'library_filters.dart';
 import 'list_import_screen.dart';
@@ -206,9 +207,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final kind = await showModalBottomSheet<_AddKind>(
       context: context,
       showDragHandle: true,
+      isScrollControlled: true,
       builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        child: ListView(
+          shrinkWrap: true,
           children: [
             ListTile(
               leading: const Icon(Icons.link),
@@ -221,6 +223,12 @@ class _LibraryScreenState extends State<LibraryScreen> {
               title: Text(l10n.addFromList),
               subtitle: Text(l10n.addFromListHint),
               onTap: () => Navigator.pop(context, _AddKind.list),
+            ),
+            ListTile(
+              leading: const Icon(Icons.local_library_outlined),
+              title: Text(l10n.addFromCatalog),
+              subtitle: Text(l10n.addFromCatalogHint),
+              onTap: () => Navigator.pop(context, _AddKind.catalog),
             ),
             ListTile(
               leading: const Icon(Icons.file_open_outlined),
@@ -240,10 +248,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
       ),
     );
     if (kind == null || !mounted) return;
-    if (kind == _AddKind.list) {
-      await Navigator.of(
-        context,
-      ).push<int>(MaterialPageRoute(builder: (_) => const ListImportScreen()));
+    if (kind == _AddKind.list || kind == _AddKind.catalog) {
+      await Navigator.of(context).push<int>(
+        MaterialPageRoute(
+          builder: (_) => kind == _AddKind.list
+              ? const ListImportScreen()
+              : const CatalogsScreen(),
+        ),
+      );
       return;
     }
     final int? id;
@@ -546,7 +558,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
   }
 }
 
-enum _AddKind { link, list, file, manual }
+enum _AddKind { link, list, catalog, file, manual }
 
 class _EmptyState extends StatelessWidget {
   const _EmptyState({required this.filtered});

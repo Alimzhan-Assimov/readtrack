@@ -586,6 +586,77 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteDownload => 'Delete download';
 
   @override
+  String get addFromCatalog => 'From a free catalog';
+
+  @override
+  String get addFromCatalogHint =>
+      'Project Gutenberg, Standard Ebooks or your own OPDS catalog (e.g. Calibre)';
+
+  @override
+  String get catalogsTitle => 'Catalogs';
+
+  @override
+  String get catalogsIntro =>
+      'Free, legal books in OPDS catalogs. Add your own, such as a Calibre content server.';
+
+  @override
+  String get addCatalog => 'Add catalog';
+
+  @override
+  String get removeCatalog => 'Remove catalog';
+
+  @override
+  String get catalogUrl => 'OPDS address';
+
+  @override
+  String get catalogName => 'Name (optional)';
+
+  @override
+  String get catalogNoSearch => 'This catalog can\'t be searched.';
+
+  @override
+  String catalogSearch(String name) {
+    return 'Search $name';
+  }
+
+  @override
+  String get searchButton => 'Search';
+
+  @override
+  String get catalogEmpty => 'Nothing here.';
+
+  @override
+  String get catalogNoFile => 'No EPUB, FB2 or text file offered';
+
+  @override
+  String get catalogAdd => 'Add to library';
+
+  @override
+  String get catalogAttach => 'Attach to this entry';
+
+  @override
+  String catalogAttached(String title) {
+    return 'Attached “$title”. It can be read in the app now.';
+  }
+
+  @override
+  String get catalogMore => 'Load more';
+
+  @override
+  String freeEditionsTitle(String query) {
+    return 'Free editions: $query';
+  }
+
+  @override
+  String get noTextHint => 'No text for this entry yet.';
+
+  @override
+  String get attachFile => 'Attach a book file';
+
+  @override
+  String get findFreeEditions => 'Find free editions';
+
+  @override
   String get addFromList => 'From a list on a site';
 
   @override

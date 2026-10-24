@@ -1,14 +1,20 @@
+import 'dart:io';
+
+import 'package:file_selector/file_selector.dart' as fs;
 import 'package:flutter/material.dart';
 
 import '../data/database.dart';
 import '../data/database_scope.dart';
 import '../l10n/l10n.dart';
+import '../library/book_importer.dart';
 import '../library/exporters.dart';
+import '../library/file_import.dart';
 import '../library/library_scope.dart';
 import '../library/story_sync.dart';
 import '../reader/reader_screen.dart';
 import '../reader/reader_sheets.dart';
 import '../sources/sources.dart';
+import 'catalog_screen.dart';
 import 'download_dialog.dart';
 
 /// "Read" part of the detail screen: read online, read a download, start a
@@ -186,6 +192,71 @@ class _ReadSectionState extends State<ReadSection> {
     );
   }
 
+  /// For entries without text, e.g. a paper book: attach a file the user
+  /// has, or look for a free legal edition.
+  Widget _buildNoText(AppLocalizations l10n, ThemeData theme) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
+        padding: const EdgeInsets.only(top: 24, bottom: 8),
+        child: Text(
+          l10n.sectionRead,
+          style: theme.textTheme.titleSmall?.copyWith(
+            color: theme.colorScheme.primary,
+          ),
+        ),
+      ),
+      Text(l10n.noTextHint, style: theme.textTheme.bodyMedium),
+      const SizedBox(height: 8),
+      Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          OutlinedButton.icon(
+            icon: const Icon(Icons.attach_file),
+            label: Text(l10n.attachFile),
+            onPressed: _attachFile,
+          ),
+          if (widget.work.type == WorkType.book)
+            OutlinedButton.icon(
+              icon: const Icon(Icons.travel_explore),
+              label: Text(l10n.findFreeEditions),
+              onPressed: () => Navigator.of(context).push(
+                catalogRoute(
+                  widget.work.id,
+                  (_) => FreeEditionsScreen(
+                    query: [widget.work.title, ?widget.work.author].join(' '),
+                    attachTo: widget.work.id,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    ],
+  );
+
+  Future<void> _attachFile() async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    final importer = BookImporter(_db, LibraryScope.of(context).storage);
+    final file = await fs.openFile(
+      acceptedTypeGroups: [
+        fs.XTypeGroup(label: l10n.bookFiles, extensions: kImportExtensions),
+      ],
+    );
+    if (file == null) return;
+    try {
+      final book = await readBookFile(file.path);
+      await importer.attach(widget.work.id, book, original: File(file.path));
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.catalogAttached(file.name))),
+      );
+    } on Exception catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.importFailed('$e'))));
+    }
+  }
+
   Future<void> _exportAs(Download download, ExportFormat format) async {
     final l10n = context.l10n;
     final messenger = ScaffoldMessenger.of(context);
@@ -232,7 +303,7 @@ class _ReadSectionState extends State<ReadSection> {
                   .where((n) => n >= d.fromChapter && n <= d.toChapter)
                   .length;
               if (source == null && downloads.isEmpty) {
-                return const SizedBox.shrink();
+                return _buildNoText(l10n, theme);
               }
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
