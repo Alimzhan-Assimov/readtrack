@@ -8,6 +8,7 @@ import '../data/database.dart';
 import '../data/database_scope.dart';
 import '../l10n/l10n.dart';
 import '../library/character_detection.dart';
+import '../library/keyword_tags.dart';
 import '../library/story_sync.dart';
 import '../sources/sources.dart';
 import '../ui/app_settings.dart';
@@ -44,6 +45,7 @@ class WorkDetailScreen extends StatefulWidget {
 
 class _WorkDetailScreenState extends State<WorkDetailScreen> {
   late Stream<WorkWithDetails?> _work;
+  late Stream<List<({Tag tag, TagSuggestion suggestion})>> _tagSuggestions;
   bool _estimating = false;
 
   AppDatabase get _db => DatabaseScope.of(context);
@@ -52,6 +54,7 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _work = _db.watchWork(widget.workId);
+    _tagSuggestions = _db.watchTagSuggestions(widget.workId);
     // Opening the story counts as having seen its new chapters.
     _db.markChaptersSeen(widget.workId);
   }
@@ -61,6 +64,7 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.workId != widget.workId) {
       _work = _db.watchWork(widget.workId);
+      _tagSuggestions = _db.watchTagSuggestions(widget.workId);
       _db.markChaptersSeen(widget.workId);
     }
   }
@@ -101,6 +105,18 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
   }
 
   bool _detecting = false;
+
+  /// Proposes default tags whose keywords appear in the title or summary.
+  Future<void> _suggestTags(Work w) async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    final found = keywordTags('${w.title}\n${w.summary ?? ''}');
+    final added = await _db.suggestTags(w.id, {
+      for (final MapEntry(key: tag, value: word) in found.entries)
+        tag: l10n.tagReasonKeyword(word),
+    });
+    messenger.showSnackBar(SnackBar(content: Text(l10n.tagsSuggested(added))));
+  }
 
   /// Looks for the category's known characters in the downloaded text and
   /// adds them as suggestions.
@@ -418,16 +434,47 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
                   ],
                 ),
               ),
-            if (SettingsScope.visibleTags(context, item.tags) case final tags
-                when tags.isNotEmpty)
-              _Section(
-                title: l10n.sectionTags,
-                child: Wrap(
-                  spacing: 8,
-                  runSpacing: 4,
-                  children: [for (final t in tags) Chip(label: Text(t.name))],
-                ),
-              ),
+            StreamBuilder<List<({Tag tag, TagSuggestion suggestion})>>(
+              stream: _tagSuggestions,
+              builder: (context, snapshot) {
+                final tags = SettingsScope.visibleTags(context, item.tags);
+                final suggested = snapshot.data ?? const [];
+                return _Section(
+                  title: l10n.sectionTags,
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      for (final t in tags) Chip(label: Text(t.name)),
+                      for (final s in suggested)
+                        InputChip(
+                          avatar: Icon(
+                            s.suggestion.source == 'keywords'
+                                ? Icons.lightbulb_outline
+                                : Icons.auto_awesome,
+                            size: 18,
+                          ),
+                          label: Text(s.tag.name),
+                          tooltip: l10n.tagSuggestionWhy(
+                            s.suggestion.reason ?? '',
+                          ),
+                          onPressed: () =>
+                              _db.acceptTagSuggestion(w.id, s.tag.id),
+                          onDeleted: () =>
+                              _db.dismissTagSuggestion(w.id, s.tag.id),
+                          deleteButtonTooltipMessage: l10n.dismissSuggestion,
+                        ),
+                      TextButton.icon(
+                        icon: const Icon(Icons.lightbulb_outline, size: 18),
+                        label: Text(l10n.suggestTags),
+                        onPressed: () => _suggestTags(w),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
             if (w.isbn case final isbn?)
               _Section(title: l10n.sectionIsbn, child: SelectableText(isbn)),
             if (w.summary case final summary?)

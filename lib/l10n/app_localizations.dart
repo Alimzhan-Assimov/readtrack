@@ -982,6 +982,30 @@ abstract class AppLocalizations {
   /// **'Delete download'**
   String get deleteDownload;
 
+  /// No description provided for @suggestTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest tags'**
+  String get suggestTags;
+
+  /// No description provided for @tagSuggestionWhy.
+  ///
+  /// In en, this message translates to:
+  /// **'{reason}. Tap to add the tag.'**
+  String tagSuggestionWhy(String reason);
+
+  /// No description provided for @tagReasonKeyword.
+  ///
+  /// In en, this message translates to:
+  /// **'The summary mentions “{word}”'**
+  String tagReasonKeyword(String word);
+
+  /// No description provided for @tagsSuggested.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No new tag suggestions} =1{1 tag suggested} other{{count} tags suggested}}'**
+  String tagsSuggested(int count);
+
   /// No description provided for @findCharacters.
   ///
   /// In en, this message translates to:
