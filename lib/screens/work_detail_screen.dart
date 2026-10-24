@@ -15,6 +15,7 @@ import '../ui/labels.dart';
 import '../ui/layout.dart';
 import '../widgets/work_cover.dart';
 import 'read_section.dart';
+import 'related_section.dart';
 import 'work_edit_screen.dart';
 
 class WorkDetailScreen extends StatefulWidget {
@@ -275,6 +276,7 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
               _buildProgress(l10n, w),
             // Shows itself for readable sources and imported books.
             ReadSection(work: w),
+            RelatedSection(item: item),
             if (url != null)
               _Section(
                 title: l10n.sectionLink,

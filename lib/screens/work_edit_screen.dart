@@ -56,6 +56,8 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
   final _title = TextEditingController();
   final _author = TextEditingController();
   final _fandom = TextEditingController();
+  final _series = TextEditingController();
+  final _seriesIndex = TextEditingController();
   final _url = TextEditingController();
   final _chapters = TextEditingController();
   final _currentChapter = TextEditingController();
@@ -79,6 +81,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
   /// Lower-case names of tags marked as 18+, known or from the site.
   Set<String> _adultTags = const {};
   List<String> _fandomSuggestions = const [];
+  List<String> _seriesSuggestions = const [];
   List<String> _authorSuggestions = const [];
   List<String> _tagSuggestions = kDefaultTags;
   List<String> _frequentTags = const [];
@@ -94,6 +97,8 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _title,
     _author,
     _fandom,
+    _series,
+    _seriesIndex,
     _url,
     _chapters,
     _currentChapter,
@@ -127,6 +132,8 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _title.text = w?.title ?? '';
     _author.text = w?.author ?? '';
     _fandom.text = existing?.fandom?.name ?? '';
+    _series.text = existing?.series?.name ?? '';
+    _seriesIndex.text = _formatIndex(w?.seriesIndex);
     _url.text = w?.sourceUrl ?? '';
     _chapters.text = w?.chapterCount?.toString() ?? '';
     _currentChapter.text = w?.currentChapter?.toString() ?? '';
@@ -164,6 +171,8 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _title.text = info.title;
     _author.text = info.author ?? '';
     _fandom.text = info.fandom ?? '';
+    _series.text = info.series?.name ?? '';
+    _seriesIndex.text = _formatIndex(info.series?.index);
     _url.text = info.url.toString();
     _chapters.text = '${info.chapterCount}';
     _words.text = info.wordCount?.toString() ?? '';
@@ -256,6 +265,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
 
   Future<void> _loadSuggestions() async {
     final fandoms = await _db.fandomNames();
+    final seriesNames = await _db.seriesNames();
     final authors = await _db.authorNames();
     final tags = await _db.tagNames();
     final frequent = await _db.frequentTags();
@@ -270,6 +280,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
           if (t.isAdult) t.name.toLowerCase(),
       };
       _fandomSuggestions = fandoms;
+      _seriesSuggestions = seriesNames;
       _authorSuggestions = authors;
       _frequentTags = frequent;
       _tagSuggestions = TagInput.merge(tags, kDefaultTags.join(','))
@@ -317,6 +328,16 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     return t.isEmpty ? null : t;
   }
 
+  static String _formatIndex(double? i) => i == null
+      ? ''
+      : i == i.roundToDouble()
+      ? '${i.round()}'
+      : '$i';
+
+  /// "3", "2.5" or "2,5".
+  static double? _parseIndex(String raw) =>
+      double.tryParse(raw.trim().replaceAll(',', '.'));
+
   /// Accepts input like "45,300", "45.300" or "45 300".
   static int? _parseInt(String raw) =>
       int.tryParse(raw.replaceAll(RegExp(r'[.,\s]'), ''));
@@ -361,6 +382,9 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
           : Value(widget.imported!.characterCount),
       rating: Value(_rating),
       notes: Value(_text(_notes)),
+      seriesIndex: Value(
+        _series.text.trim().isEmpty ? null : _parseIndex(_seriesIndex.text),
+      ),
       coverUrl: switch (widget.imported?.coverUrl ?? _coverUrl) {
         final cover? => Value(cover.toString()),
         null => const Value.absent(),
@@ -382,12 +406,14 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
               original: File(file.path),
               work: data,
               fandomName: _fandom.text,
+              seriesName: _series.text,
               tagNames: tags,
               pairingNames: pairings,
             )
           : await _db.saveWork(
               data,
               fandomName: _fandom.text,
+              seriesName: _series.text,
               tagNames: tags,
               pairingNames: pairings,
               adultTags: widget.imported?.adultTags ?? const {},
@@ -608,6 +634,46 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
                 () => _pickInto(_fandom, l10n.pickCategory, _fandomSuggestions),
               ),
             ),
+      ),
+      gap,
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 3,
+            child: SuggestField(
+              controller: _series,
+              suggestions: _seriesSuggestions,
+              decoration:
+                  _decoration(
+                    l10n.fieldSeries,
+                    hint: l10n.fieldSeriesHint,
+                  ).copyWith(
+                    suffixIcon: _pickButton(
+                      () => _pickInto(
+                        _series,
+                        l10n.pickSeries,
+                        _seriesSuggestions,
+                      ),
+                    ),
+                  ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: TextFormField(
+              controller: _seriesIndex,
+              decoration: _decoration(l10n.fieldSeriesIndex),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              validator: (v) =>
+                  v == null || v.trim().isEmpty || _parseIndex(v) != null
+                  ? null
+                  : l10n.numbersOnly,
+            ),
+          ),
+        ],
       ),
       gap,
       TextFormField(

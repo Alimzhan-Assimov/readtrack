@@ -982,6 +982,102 @@ abstract class AppLocalizations {
   /// **'Delete download'**
   String get deleteDownload;
 
+  /// No description provided for @fieldSeries.
+  ///
+  /// In en, this message translates to:
+  /// **'Series'**
+  String get fieldSeries;
+
+  /// No description provided for @fieldSeriesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Harry Potter'**
+  String get fieldSeriesHint;
+
+  /// No description provided for @fieldSeriesIndex.
+  ///
+  /// In en, this message translates to:
+  /// **'No.'**
+  String get fieldSeriesIndex;
+
+  /// No description provided for @pickSeries.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a series'**
+  String get pickSeries;
+
+  /// No description provided for @filterSeries.
+  ///
+  /// In en, this message translates to:
+  /// **'Series'**
+  String get filterSeries;
+
+  /// No description provided for @sectionSeries.
+  ///
+  /// In en, this message translates to:
+  /// **'Series: {name}'**
+  String sectionSeries(String name);
+
+  /// No description provided for @sectionRelated.
+  ///
+  /// In en, this message translates to:
+  /// **'Related'**
+  String get sectionRelated;
+
+  /// No description provided for @addRelation.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get addRelation;
+
+  /// No description provided for @addRelationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Related to “{title}”'**
+  String addRelationTitle(String title);
+
+  /// No description provided for @removeRelation.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove relation'**
+  String get removeRelation;
+
+  /// No description provided for @relationSequel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sequel'**
+  String get relationSequel;
+
+  /// No description provided for @relationPrequel.
+  ///
+  /// In en, this message translates to:
+  /// **'Prequel'**
+  String get relationPrequel;
+
+  /// No description provided for @relationSpinOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Spin-off'**
+  String get relationSpinOff;
+
+  /// No description provided for @relationSpinOffOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Spin-off of'**
+  String get relationSpinOffOf;
+
+  /// No description provided for @relationSideStory.
+  ///
+  /// In en, this message translates to:
+  /// **'Side story'**
+  String get relationSideStory;
+
+  /// No description provided for @relationSideStoryOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Side story of'**
+  String get relationSideStoryOf;
+
   /// No description provided for @statsTitle.
   ///
   /// In en, this message translates to:

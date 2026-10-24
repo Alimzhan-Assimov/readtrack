@@ -586,6 +586,58 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteDownload => 'Delete download';
 
   @override
+  String get fieldSeries => 'Series';
+
+  @override
+  String get fieldSeriesHint => 'e.g. Harry Potter';
+
+  @override
+  String get fieldSeriesIndex => 'No.';
+
+  @override
+  String get pickSeries => 'Choose a series';
+
+  @override
+  String get filterSeries => 'Series';
+
+  @override
+  String sectionSeries(String name) {
+    return 'Series: $name';
+  }
+
+  @override
+  String get sectionRelated => 'Related';
+
+  @override
+  String get addRelation => 'Add';
+
+  @override
+  String addRelationTitle(String title) {
+    return 'Related to “$title”';
+  }
+
+  @override
+  String get removeRelation => 'Remove relation';
+
+  @override
+  String get relationSequel => 'Sequel';
+
+  @override
+  String get relationPrequel => 'Prequel';
+
+  @override
+  String get relationSpinOff => 'Spin-off';
+
+  @override
+  String get relationSpinOffOf => 'Spin-off of';
+
+  @override
+  String get relationSideStory => 'Side story';
+
+  @override
+  String get relationSideStoryOf => 'Side story of';
+
+  @override
   String get statsTitle => 'Statistics';
 
   @override

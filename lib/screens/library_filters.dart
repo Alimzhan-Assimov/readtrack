@@ -13,6 +13,7 @@ class LibraryFilters {
     this.fandom,
     this.tag,
     this.pairing,
+    this.series,
     this.status,
     this.minWords,
     this.complete,
@@ -23,6 +24,7 @@ class LibraryFilters {
   Fandom? fandom;
   Tag? tag;
   Pairing? pairing;
+  SeriesItem? series;
   ReadingStatus? status;
   int? minWords;
   bool? complete;
@@ -36,6 +38,7 @@ class LibraryFilters {
     fandom: fandom,
     tag: tag,
     pairing: pairing,
+    series: series,
     status: status,
     minWords: minWords,
     complete: complete,
@@ -43,14 +46,23 @@ class LibraryFilters {
   );
 
   /// How many filters narrow the list (sorting doesn't count).
-  int get activeCount =>
-      [type, fandom, tag, pairing, status, minWords, complete].nonNulls.length;
+  int get activeCount => [
+    type,
+    fandom,
+    tag,
+    pairing,
+    series,
+    status,
+    minWords,
+    complete,
+  ].nonNulls.length;
 
   void clear() {
     type = null;
     fandom = null;
     tag = null;
     pairing = null;
+    series = null;
     status = null;
     minWords = null;
     complete = null;
@@ -63,6 +75,7 @@ class LibraryFilters {
         fandomId: fandom?.id,
         tagId: tag?.id,
         pairingId: pairing?.id,
+        seriesId: series?.id,
         status: status,
         minWords: minWords,
         complete: complete,
@@ -146,6 +159,12 @@ class ActiveFilters extends StatelessWidget {
             active(Icons.sell_outlined, x.name, (f) => f.tag = null),
           if (f.pairing case final x?)
             active(Icons.favorite_border, x.name, (f) => f.pairing = null),
+          if (f.series case final x?)
+            active(
+              Icons.collections_bookmark_outlined,
+              x.name,
+              (f) => f.series = null,
+            ),
           if (f.minWords case final n?)
             active(
               Icons.straighten,
@@ -343,6 +362,16 @@ class _FilterPanelState extends State<FilterPanel> {
                   load: widget.db.usedPairings,
                   counts: () => widget.db.usageCounts(UsageKind.pairing),
                   onSelected: (x) => _set((f) => f.pairing = x),
+                ),
+                _PickerTile<SeriesItem>(
+                  icon: Icons.collections_bookmark_outlined,
+                  label: l10n.filterSeries,
+                  selected: _f.series,
+                  nameOf: (x) => x.name,
+                  idOf: (x) => x.id,
+                  load: widget.db.usedSeries,
+                  counts: () => widget.db.usageCounts(UsageKind.series),
+                  onSelected: (x) => _set((f) => f.series = x),
                 ),
                 heading(l10n.sortTooltip),
                 choices(

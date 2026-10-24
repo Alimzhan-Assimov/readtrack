@@ -3,6 +3,191 @@
 part of 'database.dart';
 
 // ignore_for_file: type=lint
+class $SeriesTable extends Series with TableInfo<$SeriesTable, SeriesItem> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SeriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, name];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'series';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SeriesItem> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SeriesItem map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SeriesItem(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+    );
+  }
+
+  @override
+  $SeriesTable createAlias(String alias) {
+    return $SeriesTable(attachedDatabase, alias);
+  }
+}
+
+class SeriesItem extends DataClass implements Insertable<SeriesItem> {
+  final int id;
+  final String name;
+  const SeriesItem({required this.id, required this.name});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    return map;
+  }
+
+  SeriesCompanion toCompanion(bool nullToAbsent) {
+    return SeriesCompanion(id: Value(id), name: Value(name));
+  }
+
+  factory SeriesItem.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SeriesItem(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+    };
+  }
+
+  SeriesItem copyWith({int? id, String? name}) =>
+      SeriesItem(id: id ?? this.id, name: name ?? this.name);
+  SeriesItem copyWithCompanion(SeriesCompanion data) {
+    return SeriesItem(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SeriesItem(')
+          ..write('id: $id, ')
+          ..write('name: $name')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SeriesItem && other.id == this.id && other.name == this.name);
+}
+
+class SeriesCompanion extends UpdateCompanion<SeriesItem> {
+  final Value<int> id;
+  final Value<String> name;
+  const SeriesCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+  });
+  SeriesCompanion.insert({this.id = const Value.absent(), required String name})
+    : name = Value(name);
+  static Insertable<SeriesItem> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+    });
+  }
+
+  SeriesCompanion copyWith({Value<int>? id, Value<String>? name}) {
+    return SeriesCompanion(id: id ?? this.id, name: name ?? this.name);
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SeriesCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $FandomsTable extends Fandoms with TableInfo<$FandomsTable, Fandom> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -490,6 +675,31 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _seriesIdMeta = const VerificationMeta(
+    'seriesId',
+  );
+  @override
+  late final GeneratedColumn<int> seriesId = GeneratedColumn<int>(
+    'series_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES series (id) ON DELETE SET NULL',
+    ),
+  );
+  static const VerificationMeta _seriesIndexMeta = const VerificationMeta(
+    'seriesIndex',
+  );
+  @override
+  late final GeneratedColumn<double> seriesIndex = GeneratedColumn<double>(
+    'series_index',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _wordsEstimatedMeta = const VerificationMeta(
     'wordsEstimated',
   );
@@ -560,6 +770,8 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
     newChapters,
     deletedAt,
     finishedAt,
+    seriesId,
+    seriesIndex,
     wordsEstimated,
     pagesEstimated,
     characterCount,
@@ -731,6 +943,21 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
         finishedAt.isAcceptableOrUnknown(data['finished_at']!, _finishedAtMeta),
       );
     }
+    if (data.containsKey('series_id')) {
+      context.handle(
+        _seriesIdMeta,
+        seriesId.isAcceptableOrUnknown(data['series_id']!, _seriesIdMeta),
+      );
+    }
+    if (data.containsKey('series_index')) {
+      context.handle(
+        _seriesIndexMeta,
+        seriesIndex.isAcceptableOrUnknown(
+          data['series_index']!,
+          _seriesIndexMeta,
+        ),
+      );
+    }
     if (data.containsKey('words_estimated')) {
       context.handle(
         _wordsEstimatedMeta,
@@ -881,6 +1108,14 @@ class $WorksTable extends Works with TableInfo<$WorksTable, Work> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}finished_at'],
       ),
+      seriesId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}series_id'],
+      ),
+      seriesIndex: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}series_index'],
+      ),
       wordsEstimated: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}words_estimated'],
@@ -956,6 +1191,10 @@ class Work extends DataClass implements Insertable<Work> {
 
   /// When the status last became "finished" (kept by a trigger).
   final DateTime? finishedAt;
+  final int? seriesId;
+
+  /// Position in the series; may be fractional (2.5 for a side story).
+  final double? seriesIndex;
 
   /// Whether [wordCount] / [pageCount] were worked out by the app because
   /// the site didn't give them; such values are updated as more is known.
@@ -992,6 +1231,8 @@ class Work extends DataClass implements Insertable<Work> {
     required this.newChapters,
     this.deletedAt,
     this.finishedAt,
+    this.seriesId,
+    this.seriesIndex,
     required this.wordsEstimated,
     required this.pagesEstimated,
     this.characterCount,
@@ -1072,6 +1313,12 @@ class Work extends DataClass implements Insertable<Work> {
     if (!nullToAbsent || finishedAt != null) {
       map['finished_at'] = Variable<DateTime>(finishedAt);
     }
+    if (!nullToAbsent || seriesId != null) {
+      map['series_id'] = Variable<int>(seriesId);
+    }
+    if (!nullToAbsent || seriesIndex != null) {
+      map['series_index'] = Variable<double>(seriesIndex);
+    }
     map['words_estimated'] = Variable<bool>(wordsEstimated);
     map['pages_estimated'] = Variable<bool>(pagesEstimated);
     if (!nullToAbsent || characterCount != null) {
@@ -1143,6 +1390,12 @@ class Work extends DataClass implements Insertable<Work> {
       finishedAt: finishedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(finishedAt),
+      seriesId: seriesId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(seriesId),
+      seriesIndex: seriesIndex == null && nullToAbsent
+          ? const Value.absent()
+          : Value(seriesIndex),
       wordsEstimated: Value(wordsEstimated),
       pagesEstimated: Value(pagesEstimated),
       characterCount: characterCount == null && nullToAbsent
@@ -1190,6 +1443,8 @@ class Work extends DataClass implements Insertable<Work> {
       newChapters: serializer.fromJson<int>(json['newChapters']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
       finishedAt: serializer.fromJson<DateTime?>(json['finishedAt']),
+      seriesId: serializer.fromJson<int?>(json['seriesId']),
+      seriesIndex: serializer.fromJson<double?>(json['seriesIndex']),
       wordsEstimated: serializer.fromJson<bool>(json['wordsEstimated']),
       pagesEstimated: serializer.fromJson<bool>(json['pagesEstimated']),
       characterCount: serializer.fromJson<int?>(json['characterCount']),
@@ -1232,6 +1487,8 @@ class Work extends DataClass implements Insertable<Work> {
       'newChapters': serializer.toJson<int>(newChapters),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
       'finishedAt': serializer.toJson<DateTime?>(finishedAt),
+      'seriesId': serializer.toJson<int?>(seriesId),
+      'seriesIndex': serializer.toJson<double?>(seriesIndex),
       'wordsEstimated': serializer.toJson<bool>(wordsEstimated),
       'pagesEstimated': serializer.toJson<bool>(pagesEstimated),
       'characterCount': serializer.toJson<int?>(characterCount),
@@ -1266,6 +1523,8 @@ class Work extends DataClass implements Insertable<Work> {
     int? newChapters,
     Value<DateTime?> deletedAt = const Value.absent(),
     Value<DateTime?> finishedAt = const Value.absent(),
+    Value<int?> seriesId = const Value.absent(),
+    Value<double?> seriesIndex = const Value.absent(),
     bool? wordsEstimated,
     bool? pagesEstimated,
     Value<int?> characterCount = const Value.absent(),
@@ -1301,6 +1560,8 @@ class Work extends DataClass implements Insertable<Work> {
     newChapters: newChapters ?? this.newChapters,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
     finishedAt: finishedAt.present ? finishedAt.value : this.finishedAt,
+    seriesId: seriesId.present ? seriesId.value : this.seriesId,
+    seriesIndex: seriesIndex.present ? seriesIndex.value : this.seriesIndex,
     wordsEstimated: wordsEstimated ?? this.wordsEstimated,
     pagesEstimated: pagesEstimated ?? this.pagesEstimated,
     characterCount: characterCount.present
@@ -1350,6 +1611,10 @@ class Work extends DataClass implements Insertable<Work> {
       finishedAt: data.finishedAt.present
           ? data.finishedAt.value
           : this.finishedAt,
+      seriesId: data.seriesId.present ? data.seriesId.value : this.seriesId,
+      seriesIndex: data.seriesIndex.present
+          ? data.seriesIndex.value
+          : this.seriesIndex,
       wordsEstimated: data.wordsEstimated.present
           ? data.wordsEstimated.value
           : this.wordsEstimated,
@@ -1392,6 +1657,8 @@ class Work extends DataClass implements Insertable<Work> {
           ..write('newChapters: $newChapters, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('finishedAt: $finishedAt, ')
+          ..write('seriesId: $seriesId, ')
+          ..write('seriesIndex: $seriesIndex, ')
           ..write('wordsEstimated: $wordsEstimated, ')
           ..write('pagesEstimated: $pagesEstimated, ')
           ..write('characterCount: $characterCount')
@@ -1428,6 +1695,8 @@ class Work extends DataClass implements Insertable<Work> {
     newChapters,
     deletedAt,
     finishedAt,
+    seriesId,
+    seriesIndex,
     wordsEstimated,
     pagesEstimated,
     characterCount,
@@ -1463,6 +1732,8 @@ class Work extends DataClass implements Insertable<Work> {
           other.newChapters == this.newChapters &&
           other.deletedAt == this.deletedAt &&
           other.finishedAt == this.finishedAt &&
+          other.seriesId == this.seriesId &&
+          other.seriesIndex == this.seriesIndex &&
           other.wordsEstimated == this.wordsEstimated &&
           other.pagesEstimated == this.pagesEstimated &&
           other.characterCount == this.characterCount);
@@ -1496,6 +1767,8 @@ class WorksCompanion extends UpdateCompanion<Work> {
   final Value<int> newChapters;
   final Value<DateTime?> deletedAt;
   final Value<DateTime?> finishedAt;
+  final Value<int?> seriesId;
+  final Value<double?> seriesIndex;
   final Value<bool> wordsEstimated;
   final Value<bool> pagesEstimated;
   final Value<int?> characterCount;
@@ -1527,6 +1800,8 @@ class WorksCompanion extends UpdateCompanion<Work> {
     this.newChapters = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.finishedAt = const Value.absent(),
+    this.seriesId = const Value.absent(),
+    this.seriesIndex = const Value.absent(),
     this.wordsEstimated = const Value.absent(),
     this.pagesEstimated = const Value.absent(),
     this.characterCount = const Value.absent(),
@@ -1559,6 +1834,8 @@ class WorksCompanion extends UpdateCompanion<Work> {
     this.newChapters = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.finishedAt = const Value.absent(),
+    this.seriesId = const Value.absent(),
+    this.seriesIndex = const Value.absent(),
     this.wordsEstimated = const Value.absent(),
     this.pagesEstimated = const Value.absent(),
     this.characterCount = const Value.absent(),
@@ -1593,6 +1870,8 @@ class WorksCompanion extends UpdateCompanion<Work> {
     Expression<int>? newChapters,
     Expression<DateTime>? deletedAt,
     Expression<DateTime>? finishedAt,
+    Expression<int>? seriesId,
+    Expression<double>? seriesIndex,
     Expression<bool>? wordsEstimated,
     Expression<bool>? pagesEstimated,
     Expression<int>? characterCount,
@@ -1625,6 +1904,8 @@ class WorksCompanion extends UpdateCompanion<Work> {
       if (newChapters != null) 'new_chapters': newChapters,
       if (deletedAt != null) 'deleted_at': deletedAt,
       if (finishedAt != null) 'finished_at': finishedAt,
+      if (seriesId != null) 'series_id': seriesId,
+      if (seriesIndex != null) 'series_index': seriesIndex,
       if (wordsEstimated != null) 'words_estimated': wordsEstimated,
       if (pagesEstimated != null) 'pages_estimated': pagesEstimated,
       if (characterCount != null) 'character_count': characterCount,
@@ -1659,6 +1940,8 @@ class WorksCompanion extends UpdateCompanion<Work> {
     Value<int>? newChapters,
     Value<DateTime?>? deletedAt,
     Value<DateTime?>? finishedAt,
+    Value<int?>? seriesId,
+    Value<double?>? seriesIndex,
     Value<bool>? wordsEstimated,
     Value<bool>? pagesEstimated,
     Value<int?>? characterCount,
@@ -1691,6 +1974,8 @@ class WorksCompanion extends UpdateCompanion<Work> {
       newChapters: newChapters ?? this.newChapters,
       deletedAt: deletedAt ?? this.deletedAt,
       finishedAt: finishedAt ?? this.finishedAt,
+      seriesId: seriesId ?? this.seriesId,
+      seriesIndex: seriesIndex ?? this.seriesIndex,
       wordsEstimated: wordsEstimated ?? this.wordsEstimated,
       pagesEstimated: pagesEstimated ?? this.pagesEstimated,
       characterCount: characterCount ?? this.characterCount,
@@ -1787,6 +2072,12 @@ class WorksCompanion extends UpdateCompanion<Work> {
     if (finishedAt.present) {
       map['finished_at'] = Variable<DateTime>(finishedAt.value);
     }
+    if (seriesId.present) {
+      map['series_id'] = Variable<int>(seriesId.value);
+    }
+    if (seriesIndex.present) {
+      map['series_index'] = Variable<double>(seriesIndex.value);
+    }
     if (wordsEstimated.present) {
       map['words_estimated'] = Variable<bool>(wordsEstimated.value);
     }
@@ -1829,9 +2120,293 @@ class WorksCompanion extends UpdateCompanion<Work> {
           ..write('newChapters: $newChapters, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('finishedAt: $finishedAt, ')
+          ..write('seriesId: $seriesId, ')
+          ..write('seriesIndex: $seriesIndex, ')
           ..write('wordsEstimated: $wordsEstimated, ')
           ..write('pagesEstimated: $pagesEstimated, ')
           ..write('characterCount: $characterCount')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $WorkRelationsTable extends WorkRelations
+    with TableInfo<$WorkRelationsTable, WorkRelation> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $WorkRelationsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _fromWorkIdMeta = const VerificationMeta(
+    'fromWorkId',
+  );
+  @override
+  late final GeneratedColumn<int> fromWorkId = GeneratedColumn<int>(
+    'from_work_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES works (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _toWorkIdMeta = const VerificationMeta(
+    'toWorkId',
+  );
+  @override
+  late final GeneratedColumn<int> toWorkId = GeneratedColumn<int>(
+    'to_work_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES works (id) ON DELETE CASCADE',
+    ),
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<RelationType, String> type =
+      GeneratedColumn<String>(
+        'type',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<RelationType>($WorkRelationsTable.$convertertype);
+  @override
+  List<GeneratedColumn> get $columns => [fromWorkId, toWorkId, type];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'work_relations';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<WorkRelation> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('from_work_id')) {
+      context.handle(
+        _fromWorkIdMeta,
+        fromWorkId.isAcceptableOrUnknown(
+          data['from_work_id']!,
+          _fromWorkIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_fromWorkIdMeta);
+    }
+    if (data.containsKey('to_work_id')) {
+      context.handle(
+        _toWorkIdMeta,
+        toWorkId.isAcceptableOrUnknown(data['to_work_id']!, _toWorkIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_toWorkIdMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {fromWorkId, toWorkId, type};
+  @override
+  WorkRelation map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return WorkRelation(
+      fromWorkId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}from_work_id'],
+      )!,
+      toWorkId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}to_work_id'],
+      )!,
+      type: $WorkRelationsTable.$convertertype.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}type'],
+        )!,
+      ),
+    );
+  }
+
+  @override
+  $WorkRelationsTable createAlias(String alias) {
+    return $WorkRelationsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<RelationType, String, String> $convertertype =
+      const EnumNameConverter<RelationType>(RelationType.values);
+}
+
+class WorkRelation extends DataClass implements Insertable<WorkRelation> {
+  final int fromWorkId;
+  final int toWorkId;
+  final RelationType type;
+  const WorkRelation({
+    required this.fromWorkId,
+    required this.toWorkId,
+    required this.type,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['from_work_id'] = Variable<int>(fromWorkId);
+    map['to_work_id'] = Variable<int>(toWorkId);
+    {
+      map['type'] = Variable<String>(
+        $WorkRelationsTable.$convertertype.toSql(type),
+      );
+    }
+    return map;
+  }
+
+  WorkRelationsCompanion toCompanion(bool nullToAbsent) {
+    return WorkRelationsCompanion(
+      fromWorkId: Value(fromWorkId),
+      toWorkId: Value(toWorkId),
+      type: Value(type),
+    );
+  }
+
+  factory WorkRelation.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return WorkRelation(
+      fromWorkId: serializer.fromJson<int>(json['fromWorkId']),
+      toWorkId: serializer.fromJson<int>(json['toWorkId']),
+      type: $WorkRelationsTable.$convertertype.fromJson(
+        serializer.fromJson<String>(json['type']),
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'fromWorkId': serializer.toJson<int>(fromWorkId),
+      'toWorkId': serializer.toJson<int>(toWorkId),
+      'type': serializer.toJson<String>(
+        $WorkRelationsTable.$convertertype.toJson(type),
+      ),
+    };
+  }
+
+  WorkRelation copyWith({int? fromWorkId, int? toWorkId, RelationType? type}) =>
+      WorkRelation(
+        fromWorkId: fromWorkId ?? this.fromWorkId,
+        toWorkId: toWorkId ?? this.toWorkId,
+        type: type ?? this.type,
+      );
+  WorkRelation copyWithCompanion(WorkRelationsCompanion data) {
+    return WorkRelation(
+      fromWorkId: data.fromWorkId.present
+          ? data.fromWorkId.value
+          : this.fromWorkId,
+      toWorkId: data.toWorkId.present ? data.toWorkId.value : this.toWorkId,
+      type: data.type.present ? data.type.value : this.type,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WorkRelation(')
+          ..write('fromWorkId: $fromWorkId, ')
+          ..write('toWorkId: $toWorkId, ')
+          ..write('type: $type')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(fromWorkId, toWorkId, type);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is WorkRelation &&
+          other.fromWorkId == this.fromWorkId &&
+          other.toWorkId == this.toWorkId &&
+          other.type == this.type);
+}
+
+class WorkRelationsCompanion extends UpdateCompanion<WorkRelation> {
+  final Value<int> fromWorkId;
+  final Value<int> toWorkId;
+  final Value<RelationType> type;
+  final Value<int> rowid;
+  const WorkRelationsCompanion({
+    this.fromWorkId = const Value.absent(),
+    this.toWorkId = const Value.absent(),
+    this.type = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  WorkRelationsCompanion.insert({
+    required int fromWorkId,
+    required int toWorkId,
+    required RelationType type,
+    this.rowid = const Value.absent(),
+  }) : fromWorkId = Value(fromWorkId),
+       toWorkId = Value(toWorkId),
+       type = Value(type);
+  static Insertable<WorkRelation> custom({
+    Expression<int>? fromWorkId,
+    Expression<int>? toWorkId,
+    Expression<String>? type,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (fromWorkId != null) 'from_work_id': fromWorkId,
+      if (toWorkId != null) 'to_work_id': toWorkId,
+      if (type != null) 'type': type,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  WorkRelationsCompanion copyWith({
+    Value<int>? fromWorkId,
+    Value<int>? toWorkId,
+    Value<RelationType>? type,
+    Value<int>? rowid,
+  }) {
+    return WorkRelationsCompanion(
+      fromWorkId: fromWorkId ?? this.fromWorkId,
+      toWorkId: toWorkId ?? this.toWorkId,
+      type: type ?? this.type,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (fromWorkId.present) {
+      map['from_work_id'] = Variable<int>(fromWorkId.value);
+    }
+    if (toWorkId.present) {
+      map['to_work_id'] = Variable<int>(toWorkId.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(
+        $WorkRelationsTable.$convertertype.toSql(type.value),
+      );
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WorkRelationsCompanion(')
+          ..write('fromWorkId: $fromWorkId, ')
+          ..write('toWorkId: $toWorkId, ')
+          ..write('type: $type, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
@@ -4889,8 +5464,10 @@ class AnnotationsCompanion extends UpdateCompanion<Annotation> {
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
+  late final $SeriesTable series = $SeriesTable(this);
   late final $FandomsTable fandoms = $FandomsTable(this);
   late final $WorksTable works = $WorksTable(this);
+  late final $WorkRelationsTable workRelations = $WorkRelationsTable(this);
   late final $ReadingDaysTable readingDays = $ReadingDaysTable(this);
   late final $TagsTable tags = $TagsTable(this);
   late final $WorkTagsTable workTags = $WorkTagsTable(this);
@@ -4905,8 +5482,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
+    series,
     fandoms,
     works,
+    workRelations,
     readingDays,
     tags,
     workTags,
@@ -4925,6 +5504,27 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('works', kind: UpdateKind.update)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'series',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('works', kind: UpdateKind.update)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'works',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('work_relations', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'works',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('work_relations', kind: UpdateKind.delete)],
     ),
     WritePropagation(
       on: TableUpdateQuery.onTableName(
@@ -4985,6 +5585,228 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   ]);
 }
 
+typedef $$SeriesTableCreateCompanionBuilder = SeriesCompanion Function({
+  Value<int> id,
+  required String name,
+});
+typedef $$SeriesTableUpdateCompanionBuilder = SeriesCompanion Function({
+  Value<int> id,
+  Value<String> name,
+});
+
+final class $$SeriesTableReferences
+    extends BaseReferences<_$AppDatabase, $SeriesTable, SeriesItem> {
+  $$SeriesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$WorksTable, List<Work>> _worksRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.works,
+    aliasName: 'series__id__works__series_id',
+  );
+
+  $$WorksTableProcessedTableManager get worksRefs {
+    final manager = $$WorksTableTableManager(
+      $_db,
+      $_db.works,
+    ).filter((f) => f.seriesId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_worksRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$SeriesTableFilterComposer
+    extends Composer<_$AppDatabase, $SeriesTable> {
+  $$SeriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> worksRefs(
+    Expression<bool> Function($$WorksTableFilterComposer f) f,
+  ) {
+    final $$WorksTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.seriesId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableFilterComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$SeriesTableOrderingComposer
+    extends Composer<_$AppDatabase, $SeriesTable> {
+  $$SeriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SeriesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SeriesTable> {
+  $$SeriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  Expression<T> worksRefs<T extends Object>(
+    Expression<T> Function($$WorksTableAnnotationComposer a) f,
+  ) {
+    final $$WorksTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.seriesId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableAnnotationComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$SeriesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SeriesTable,
+          SeriesItem,
+          $$SeriesTableFilterComposer,
+          $$SeriesTableOrderingComposer,
+          $$SeriesTableAnnotationComposer,
+          $$SeriesTableCreateCompanionBuilder,
+          $$SeriesTableUpdateCompanionBuilder,
+          (SeriesItem, $$SeriesTableReferences),
+          SeriesItem,
+          PrefetchHooks Function({bool worksRefs})
+        > {
+  $$SeriesTableTableManager(_$AppDatabase db, $SeriesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SeriesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SeriesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SeriesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> name = const Value.absent(),
+          }) => SeriesCompanion(id: id, name: name),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String name,
+          }) => SeriesCompanion.insert(id: id, name: name),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$SeriesTable, SeriesItem>(table),
+                  $$SeriesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({worksRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [if (worksRefs) db.works],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (worksRefs)
+                    await $_getPrefetchedData<SeriesItem, $SeriesTable, Work>(
+                      currentTable: table,
+                      referencedTable: $$SeriesTableReferences._worksRefsTable(
+                        db,
+                      ),
+                      managerFromTypedResult: (p0) =>
+                          $$SeriesTableReferences(db, table, p0).worksRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.seriesId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$SeriesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SeriesTable,
+      SeriesItem,
+      $$SeriesTableFilterComposer,
+      $$SeriesTableOrderingComposer,
+      $$SeriesTableAnnotationComposer,
+      $$SeriesTableCreateCompanionBuilder,
+      $$SeriesTableUpdateCompanionBuilder,
+      (SeriesItem, $$SeriesTableReferences),
+      SeriesItem,
+      PrefetchHooks Function({bool worksRefs})
+    >;
 typedef $$FandomsTableCreateCompanionBuilder = FandomsCompanion Function({
   Value<int> id,
   required String name,
@@ -5235,6 +6057,8 @@ typedef $$WorksTableCreateCompanionBuilder = WorksCompanion Function({
   Value<int> newChapters,
   Value<DateTime?> deletedAt,
   Value<DateTime?> finishedAt,
+  Value<int?> seriesId,
+  Value<double?> seriesIndex,
   Value<bool> wordsEstimated,
   Value<bool> pagesEstimated,
   Value<int?> characterCount,
@@ -5267,6 +6091,8 @@ typedef $$WorksTableUpdateCompanionBuilder = WorksCompanion Function({
   Value<int> newChapters,
   Value<DateTime?> deletedAt,
   Value<DateTime?> finishedAt,
+  Value<int?> seriesId,
+  Value<double?> seriesIndex,
   Value<bool> wordsEstimated,
   Value<bool> pagesEstimated,
   Value<int?> characterCount,
@@ -5287,6 +6113,23 @@ final class $$WorksTableReferences
       $_db.fandoms,
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_fandomIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $SeriesTable _seriesIdTable(_$AppDatabase db) =>
+      db.series.createAlias('works__series_id__series__id');
+
+  $$SeriesTableProcessedTableManager? get seriesId {
+    final $_column = $_itemColumn<int>('series_id');
+    if ($_column == null) return null;
+    final manager = $$SeriesTableTableManager(
+      $_db,
+      $_db.series,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_seriesIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
@@ -5545,6 +6388,11 @@ class $$WorksTableFilterComposer extends Composer<_$AppDatabase, $WorksTable> {
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<double> get seriesIndex => $composableBuilder(
+    column: $table.seriesIndex,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<bool> get wordsEstimated => $composableBuilder(
     column: $table.wordsEstimated,
     builder: (column) => ColumnFilters(column),
@@ -5574,6 +6422,29 @@ class $$WorksTableFilterComposer extends Composer<_$AppDatabase, $WorksTable> {
           }) => $$FandomsTableFilterComposer(
             $db: $db,
             $table: $db.fandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SeriesTableFilterComposer get seriesId {
+    final $$SeriesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.seriesId,
+      referencedTable: $db.series,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SeriesTableFilterComposer(
+            $db: $db,
+            $table: $db.series,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -5873,6 +6744,11 @@ class $$WorksTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<double> get seriesIndex => $composableBuilder(
+    column: $table.seriesIndex,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get wordsEstimated => $composableBuilder(
     column: $table.wordsEstimated,
     builder: (column) => ColumnOrderings(column),
@@ -5902,6 +6778,29 @@ class $$WorksTableOrderingComposer
           }) => $$FandomsTableOrderingComposer(
             $db: $db,
             $table: $db.fandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SeriesTableOrderingComposer get seriesId {
+    final $$SeriesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.seriesId,
+      referencedTable: $db.series,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SeriesTableOrderingComposer(
+            $db: $db,
+            $table: $db.series,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -6013,6 +6912,11 @@ class $$WorksTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<double> get seriesIndex => $composableBuilder(
+    column: $table.seriesIndex,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<bool> get wordsEstimated => $composableBuilder(
     column: $table.wordsEstimated,
     builder: (column) => column,
@@ -6042,6 +6946,29 @@ class $$WorksTableAnnotationComposer
           }) => $$FandomsTableAnnotationComposer(
             $db: $db,
             $table: $db.fandoms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SeriesTableAnnotationComposer get seriesId {
+    final $$SeriesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.seriesId,
+      referencedTable: $db.series,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SeriesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.series,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -6217,6 +7144,7 @@ class $$WorksTableTableManager
           Work,
           PrefetchHooks Function({
             bool fandomId,
+            bool seriesId,
             bool readingDaysRefs,
             bool workTagsRefs,
             bool chaptersRefs,
@@ -6265,6 +7193,8 @@ class $$WorksTableTableManager
                 Value<int> newChapters = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<DateTime?> finishedAt = const Value.absent(),
+                Value<int?> seriesId = const Value.absent(),
+                Value<double?> seriesIndex = const Value.absent(),
                 Value<bool> wordsEstimated = const Value.absent(),
                 Value<bool> pagesEstimated = const Value.absent(),
                 Value<int?> characterCount = const Value.absent(),
@@ -6296,6 +7226,8 @@ class $$WorksTableTableManager
                 newChapters: newChapters,
                 deletedAt: deletedAt,
                 finishedAt: finishedAt,
+                seriesId: seriesId,
+                seriesIndex: seriesIndex,
                 wordsEstimated: wordsEstimated,
                 pagesEstimated: pagesEstimated,
                 characterCount: characterCount,
@@ -6329,6 +7261,8 @@ class $$WorksTableTableManager
                 Value<int> newChapters = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<DateTime?> finishedAt = const Value.absent(),
+                Value<int?> seriesId = const Value.absent(),
+                Value<double?> seriesIndex = const Value.absent(),
                 Value<bool> wordsEstimated = const Value.absent(),
                 Value<bool> pagesEstimated = const Value.absent(),
                 Value<int?> characterCount = const Value.absent(),
@@ -6360,6 +7294,8 @@ class $$WorksTableTableManager
                 newChapters: newChapters,
                 deletedAt: deletedAt,
                 finishedAt: finishedAt,
+                seriesId: seriesId,
+                seriesIndex: seriesIndex,
                 wordsEstimated: wordsEstimated,
                 pagesEstimated: pagesEstimated,
                 characterCount: characterCount,
@@ -6375,6 +7311,7 @@ class $$WorksTableTableManager
           prefetchHooksCallback:
               ({
                 fandomId = false,
+                seriesId = false,
                 readingDaysRefs = false,
                 workTagsRefs = false,
                 chaptersRefs = false,
@@ -6416,6 +7353,17 @@ class $$WorksTableTableManager
                                 ._fandomIdTable(db),
                             referencedColumn: $$WorksTableReferences
                                 ._fandomIdTable(db)
+                                .id,
+                          ) as T;
+                        }
+                        if (seriesId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.seriesId,
+                            referencedTable: $$WorksTableReferences
+                                ._seriesIdTable(db),
+                            referencedColumn: $$WorksTableReferences
+                                ._seriesIdTable(db)
                                 .id,
                           ) as T;
                         }
@@ -6560,6 +7508,7 @@ typedef $$WorksTableProcessedTableManager =
       Work,
       PrefetchHooks Function({
         bool fandomId,
+        bool seriesId,
         bool readingDaysRefs,
         bool workTagsRefs,
         bool chaptersRefs,
@@ -6567,6 +7516,372 @@ typedef $$WorksTableProcessedTableManager =
         bool workPairingsRefs,
         bool annotationsRefs,
       })
+    >;
+typedef $$WorkRelationsTableCreateCompanionBuilder =
+    WorkRelationsCompanion Function({
+      required int fromWorkId,
+      required int toWorkId,
+      required RelationType type,
+      Value<int> rowid,
+    });
+typedef $$WorkRelationsTableUpdateCompanionBuilder =
+    WorkRelationsCompanion Function({
+      Value<int> fromWorkId,
+      Value<int> toWorkId,
+      Value<RelationType> type,
+      Value<int> rowid,
+    });
+
+final class $$WorkRelationsTableReferences
+    extends BaseReferences<_$AppDatabase, $WorkRelationsTable, WorkRelation> {
+  $$WorkRelationsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $WorksTable _fromWorkIdTable(_$AppDatabase db) =>
+      db.works.createAlias('work_relations__from_work_id__works__id');
+
+  $$WorksTableProcessedTableManager get fromWorkId {
+    final $_column = $_itemColumn<int>('from_work_id')!;
+
+    final manager = $$WorksTableTableManager(
+      $_db,
+      $_db.works,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_fromWorkIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $WorksTable _toWorkIdTable(_$AppDatabase db) =>
+      db.works.createAlias('work_relations__to_work_id__works__id');
+
+  $$WorksTableProcessedTableManager get toWorkId {
+    final $_column = $_itemColumn<int>('to_work_id')!;
+
+    final manager = $$WorksTableTableManager(
+      $_db,
+      $_db.works,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_toWorkIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$WorkRelationsTableFilterComposer
+    extends Composer<_$AppDatabase, $WorkRelationsTable> {
+  $$WorkRelationsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnWithTypeConverterFilters<RelationType, RelationType, String> get type =>
+      $composableBuilder(
+        column: $table.type,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  $$WorksTableFilterComposer get fromWorkId {
+    final $$WorksTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.fromWorkId,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableFilterComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$WorksTableFilterComposer get toWorkId {
+    final $$WorksTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.toWorkId,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableFilterComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WorkRelationsTableOrderingComposer
+    extends Composer<_$AppDatabase, $WorkRelationsTable> {
+  $$WorkRelationsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$WorksTableOrderingComposer get fromWorkId {
+    final $$WorksTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.fromWorkId,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableOrderingComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$WorksTableOrderingComposer get toWorkId {
+    final $$WorksTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.toWorkId,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableOrderingComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WorkRelationsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $WorkRelationsTable> {
+  $$WorkRelationsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumnWithTypeConverter<RelationType, String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  $$WorksTableAnnotationComposer get fromWorkId {
+    final $$WorksTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.fromWorkId,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableAnnotationComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$WorksTableAnnotationComposer get toWorkId {
+    final $$WorksTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.toWorkId,
+      referencedTable: $db.works,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorksTableAnnotationComposer(
+            $db: $db,
+            $table: $db.works,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WorkRelationsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $WorkRelationsTable,
+          WorkRelation,
+          $$WorkRelationsTableFilterComposer,
+          $$WorkRelationsTableOrderingComposer,
+          $$WorkRelationsTableAnnotationComposer,
+          $$WorkRelationsTableCreateCompanionBuilder,
+          $$WorkRelationsTableUpdateCompanionBuilder,
+          (WorkRelation, $$WorkRelationsTableReferences),
+          WorkRelation,
+          PrefetchHooks Function({bool fromWorkId, bool toWorkId})
+        > {
+  $$WorkRelationsTableTableManager(_$AppDatabase db, $WorkRelationsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$WorkRelationsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WorkRelationsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$WorkRelationsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> fromWorkId = const Value.absent(),
+                Value<int> toWorkId = const Value.absent(),
+                Value<RelationType> type = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => WorkRelationsCompanion(
+                fromWorkId: fromWorkId,
+                toWorkId: toWorkId,
+                type: type,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required int fromWorkId,
+                required int toWorkId,
+                required RelationType type,
+                Value<int> rowid = const Value.absent(),
+              }) => WorkRelationsCompanion.insert(
+                fromWorkId: fromWorkId,
+                toWorkId: toWorkId,
+                type: type,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$WorkRelationsTable, WorkRelation>(table),
+                  $$WorkRelationsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({fromWorkId = false, toWorkId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (fromWorkId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.fromWorkId,
+                        referencedTable: $$WorkRelationsTableReferences
+                            ._fromWorkIdTable(db),
+                        referencedColumn: $$WorkRelationsTableReferences
+                            ._fromWorkIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+                    if (toWorkId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.toWorkId,
+                        referencedTable: $$WorkRelationsTableReferences
+                            ._toWorkIdTable(db),
+                        referencedColumn: $$WorkRelationsTableReferences
+                            ._toWorkIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$WorkRelationsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $WorkRelationsTable,
+      WorkRelation,
+      $$WorkRelationsTableFilterComposer,
+      $$WorkRelationsTableOrderingComposer,
+      $$WorkRelationsTableAnnotationComposer,
+      $$WorkRelationsTableCreateCompanionBuilder,
+      $$WorkRelationsTableUpdateCompanionBuilder,
+      (WorkRelation, $$WorkRelationsTableReferences),
+      WorkRelation,
+      PrefetchHooks Function({bool fromWorkId, bool toWorkId})
     >;
 typedef $$ReadingDaysTableCreateCompanionBuilder =
     ReadingDaysCompanion Function({
@@ -9306,10 +10621,14 @@ typedef $$AnnotationsTableProcessedTableManager =
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
+  $$SeriesTableTableManager get series =>
+      $$SeriesTableTableManager(_db, _db.series);
   $$FandomsTableTableManager get fandoms =>
       $$FandomsTableTableManager(_db, _db.fandoms);
   $$WorksTableTableManager get works =>
       $$WorksTableTableManager(_db, _db.works);
+  $$WorkRelationsTableTableManager get workRelations =>
+      $$WorkRelationsTableTableManager(_db, _db.workRelations);
   $$ReadingDaysTableTableManager get readingDays =>
       $$ReadingDaysTableTableManager(_db, _db.readingDays);
   $$TagsTableTableManager get tags => $$TagsTableTableManager(_db, _db.tags);

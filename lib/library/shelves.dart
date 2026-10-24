@@ -10,6 +10,7 @@ class LibraryFilter {
     this.fandomId,
     this.tagId,
     this.pairingId,
+    this.seriesId,
     this.status,
     this.minWords,
     this.complete,
@@ -20,6 +21,7 @@ class LibraryFilter {
   final int? fandomId;
   final int? tagId;
   final int? pairingId;
+  final int? seriesId;
   final ReadingStatus? status;
   final int? minWords;
   final bool? complete;
@@ -33,6 +35,7 @@ class LibraryFilter {
     fandomId: json['fandomId'] as int?,
     tagId: json['tagId'] as int?,
     pairingId: json['pairingId'] as int?,
+    seriesId: json['seriesId'] as int?,
     status: _byName(ReadingStatus.values, json['status']),
     minWords: json['minWords'] as int?,
     complete: json['complete'] as bool?,
@@ -44,6 +47,7 @@ class LibraryFilter {
     if (fandomId != null) 'fandomId': fandomId,
     if (tagId != null) 'tagId': tagId,
     if (pairingId != null) 'pairingId': pairingId,
+    if (seriesId != null) 'seriesId': seriesId,
     if (status != null) 'status': status!.name,
     if (minWords != null) 'minWords': minWords,
     if (complete != null) 'complete': complete,

@@ -329,6 +329,36 @@
     }
   },
   "deleteDownload": "Delete download",
+  "fieldSeries": "Series",
+  "fieldSeriesHint": "e.g. Harry Potter",
+  "fieldSeriesIndex": "No.",
+  "pickSeries": "Choose a series",
+  "filterSeries": "Series",
+  "sectionSeries": "Series: {name}",
+  "@sectionSeries": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sectionRelated": "Related",
+  "addRelation": "Add",
+  "addRelationTitle": "Related to “{title}”",
+  "@addRelationTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "removeRelation": "Remove relation",
+  "relationSequel": "Sequel",
+  "relationPrequel": "Prequel",
+  "relationSpinOff": "Spin-off",
+  "relationSpinOffOf": "Spin-off of",
+  "relationSideStory": "Side story",
+  "relationSideStoryOf": "Side story of",
   "statsTitle": "Statistics",
   "statsIntro": "Counts reading in ReadTrack's reader: time while you scroll or turn pages, and the words of each chapter read to the end.",
   "statsLast30Days": "Words per day, last 30 days",

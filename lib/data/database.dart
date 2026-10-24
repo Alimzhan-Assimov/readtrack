@@ -21,6 +21,28 @@ class Fandoms extends Table {
   TextColumn get name => text().unique()();
 }
 
+/// A series of works read in order, e.g. "Harry Potter".
+@DataClassName('SeriesItem')
+class Series extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text().unique()();
+}
+
+/// How one work relates to another outside a series.
+enum RelationType { sequel, prequel, spinOff, sideStory }
+
+/// "[fromWorkId] has [toWorkId] as its [type]", e.g. A has B as its sequel.
+class WorkRelations extends Table {
+  IntColumn get fromWorkId =>
+      integer().references(Works, #id, onDelete: KeyAction.cascade)();
+  IntColumn get toWorkId =>
+      integer().references(Works, #id, onDelete: KeyAction.cascade)();
+  TextColumn get type => textEnum<RelationType>()();
+
+  @override
+  Set<Column> get primaryKey => {fromWorkId, toWorkId, type};
+}
+
 class Tags extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text().unique()();
@@ -130,6 +152,15 @@ class Works extends Table {
   /// When the status last became "finished" (kept by a trigger).
   DateTimeColumn get finishedAt => dateTime().nullable()();
 
+  IntColumn get seriesId => integer().nullable().references(
+    Series,
+    #id,
+    onDelete: KeyAction.setNull,
+  )();
+
+  /// Position in the series; may be fractional (2.5 for a side story).
+  RealColumn get seriesIndex => real().nullable()();
+
   /// Whether [wordCount] / [pageCount] were worked out by the app because
   /// the site didn't give them; such values are updated as more is known.
   BoolColumn get wordsEstimated =>
@@ -193,7 +224,7 @@ class Downloads extends Table {
 /// [url] is null for chapters of imported files.
 typedef ChapterListing = ({int number, String title, String? url, bool locked});
 
-enum UsageKind { fandom, tag, pairing }
+enum UsageKind { fandom, tag, pairing, series }
 
 class WorkWithDetails {
   WorkWithDetails(
@@ -201,7 +232,10 @@ class WorkWithDetails {
     this.fandom,
     this.tags, {
     this.pairings = const [],
+    this.series,
   });
+
+  final SeriesItem? series;
 
   final Work work;
   final Fandom? fandom;
@@ -217,9 +251,13 @@ class DeletedWork {
     this.downloads, {
     this.pairingIds = const [],
     this.annotations = const [],
+    this.relations = const [],
+    this.readingDays = const [],
   });
 
   final Work work;
+  final List<WorkRelation> relations;
+  final List<ReadingDay> readingDays;
   final List<int> tagIds;
   final List<int> pairingIds;
   final List<Annotation> annotations;
@@ -245,6 +283,8 @@ class ReadingDays extends Table {
 
 @DriftDatabase(
   tables: [
+    Series,
+    WorkRelations,
     ReadingDays,
     Fandoms,
     Tags,
@@ -262,7 +302,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -320,6 +360,12 @@ class AppDatabase extends _$AppDatabase {
         await customStatement(
           "UPDATE works SET finished_at = updated_at WHERE status = 'finished'",
         );
+      }
+      if (from < 12) {
+        await m.createTable(series);
+        await m.createTable(workRelations);
+        await _addColumnIfMissing(m, works, works.seriesId);
+        await _addColumnIfMissing(m, works, works.seriesIndex);
       }
     },
     beforeOpen: (details) async {
@@ -437,6 +483,7 @@ class AppDatabase extends _$AppDatabase {
     int? fandomId,
     int? tagId,
     int? pairingId,
+    int? seriesId,
     ReadingStatus? status,
 
     /// At least this many words.
@@ -449,6 +496,7 @@ class AppDatabase extends _$AppDatabase {
     final query = _worksWithFandom()..where(works.deletedAt.isNull());
     if (type != null) query.where(works.type.equalsValue(type));
     if (fandomId != null) query.where(works.fandomId.equals(fandomId));
+    if (seriesId != null) query.where(works.seriesId.equals(seriesId));
     if (status != null) query.where(works.status.equalsValue(status));
     if (minWords != null) {
       query.where(works.wordCount.isBiggerOrEqualValue(minWords));
@@ -516,12 +564,13 @@ class AppDatabase extends _$AppDatabase {
     w.work.title,
     w.work.author ?? '',
     w.fandom?.name ?? '',
+    w.series?.name ?? '',
     for (final t in w.tags) t.name,
     for (final p in w.pairings) p.name,
   ].join('\n').toLowerCase();
 
-  /// How many entries (not in the trash) use each category, tag or pairing,
-  /// by id.
+  /// How many entries (not in the trash) use each category, tag, pairing or
+  /// series, by id.
   Future<Map<int, int>> usageCounts(UsageKind kind) async {
     final (sql, column) = switch (kind) {
       UsageKind.fandom => (
@@ -533,6 +582,11 @@ class AppDatabase extends _$AppDatabase {
         'SELECT t.tag_id AS id, COUNT(*) AS n FROM work_tags t '
             'JOIN works w ON w.id = t.work_id WHERE w.deleted_at IS NULL '
             'GROUP BY t.tag_id',
+        'id',
+      ),
+      UsageKind.series => (
+        'SELECT series_id AS id, COUNT(*) AS n FROM works '
+            'WHERE deleted_at IS NULL AND series_id IS NOT NULL GROUP BY series_id',
         'id',
       ),
       UsageKind.pairing => (
@@ -569,8 +623,10 @@ class AppDatabase extends _$AppDatabase {
   }
 
   JoinedSelectStatement<HasResultSet, dynamic> _worksWithFandom() =>
-      select(works)
-          .join([leftOuterJoin(fandoms, fandoms.id.equalsExp(works.fandomId))]);
+      select(works).join([
+        leftOuterJoin(fandoms, fandoms.id.equalsExp(works.fandomId)),
+        leftOuterJoin(series, series.id.equalsExp(works.seriesId)),
+      ]);
 
   Future<List<WorkWithDetails>> _withTags(List<TypedResult> rows) async {
     final ids = [for (final r in rows) r.readTable(works).id];
@@ -611,6 +667,7 @@ class AppDatabase extends _$AppDatabase {
           r.readTableOrNull(fandoms),
           tagsByWork[r.readTable(works).id] ?? const [],
           pairings: pairingsByWork[r.readTable(works).id] ?? const [],
+          series: r.readTableOrNull(series),
         ),
     ];
   }
@@ -678,6 +735,9 @@ class AppDatabase extends _$AppDatabase {
   Future<int> saveWork(
     WorksCompanion data, {
     String? fandomName,
+
+    /// Null leaves the series as it is; empty removes it.
+    String? seriesName,
     List<String> tagNames = const [],
     List<String> pairingNames = const [],
 
@@ -697,10 +757,13 @@ class AppDatabase extends _$AppDatabase {
       pairingNames = [...pairingNames, ...pairingLike];
     }
     return transaction(() async {
-      final row = data.copyWith(
+      var row = data.copyWith(
         fandomId: Value(await _fandomIdFor(fandomName)),
         updatedAt: Value(DateTime.now()),
       );
+      if (seriesName != null) {
+        row = row.copyWith(seriesId: Value(await _seriesIdFor(seriesName)));
+      }
       final int id;
       if (data.id.present) {
         id = data.id.value;
@@ -811,6 +874,12 @@ class AppDatabase extends _$AppDatabase {
       final savedAnnotations = await (select(
         annotations,
       )..where((a) => a.workId.equals(id))).get();
+      final savedRelations = await (select(
+        workRelations,
+      )..where((r) => r.fromWorkId.equals(id) | r.toWorkId.equals(id))).get();
+      final savedReading = await (select(
+        readingDays,
+      )..where((r) => r.workId.equals(id))).get();
       await (delete(works)..where((w) => w.id.equals(id))).go();
       return DeletedWork(
         work,
@@ -819,6 +888,8 @@ class AppDatabase extends _$AppDatabase {
         savedDownloads,
         pairingIds: pairingIds,
         annotations: savedAnnotations,
+        relations: savedRelations,
+        readingDays: savedReading,
       );
     });
   }
@@ -826,6 +897,10 @@ class AppDatabase extends _$AppDatabase {
   Future<void> restoreWork(DeletedWork deleted) {
     return transaction(() async {
       await into(works).insert(deleted.work);
+      final ids = {
+        for (final w in await (selectOnly(works)..addColumns([works.id])).get())
+          w.read(works.id),
+      };
       await batch((b) {
         b.insertAll(workTags, [
           for (final tagId in deleted.tagIds)
@@ -841,6 +916,12 @@ class AppDatabase extends _$AppDatabase {
         b.insertAll(chapters, deleted.chapters);
         b.insertAll(downloads, deleted.downloads);
         b.insertAll(annotations, deleted.annotations);
+        b.insertAll(readingDays, deleted.readingDays);
+        // The other work may be gone by now.
+        b.insertAll(workRelations, [
+          for (final r in deleted.relations)
+            if (ids.contains(r.fromWorkId) && ids.contains(r.toWorkId)) r,
+        ]);
       });
     });
   }
@@ -1059,6 +1140,84 @@ class AppDatabase extends _$AppDatabase {
 
   /// Finds the category for [name], treating variants of a franchise as the
   /// same category (see [fandomKey]); a new one is stored under its base name.
+  Future<int?> _seriesIdFor(String name) async {
+    final n = name.trim();
+    if (n.isEmpty) return null;
+    for (final s in await select(series).get()) {
+      if (s.name.toLowerCase() == n.toLowerCase()) return s.id;
+    }
+    return into(series).insert(SeriesCompanion.insert(name: n));
+  }
+
+  Future<List<String>> seriesNames() => (select(
+    series,
+  )..orderBy([(s) => OrderingTerm.asc(s.name)])).map((s) => s.name).get();
+
+  /// Series that at least one work (not in the trash) belongs to.
+  Future<List<SeriesItem>> usedSeries() =>
+      (select(series)
+            ..where(
+              (s) => s.id.isInQuery(
+                selectOnly(works)
+                  ..addColumns([works.seriesId])
+                  ..where(works.deletedAt.isNull()),
+              ),
+            )
+            ..orderBy([(s) => OrderingTerm.asc(s.name)]))
+          .get();
+
+  /// The works of a series in reading order (unnumbered ones last).
+  Stream<List<Work>> watchSeries(int seriesId) =>
+      (select(works)
+            ..where((w) => w.seriesId.equals(seriesId) & w.deletedAt.isNull())
+            ..orderBy([
+              (w) => OrderingTerm(
+                expression: w.seriesIndex,
+                nulls: NullsOrder.last,
+              ),
+              (w) => OrderingTerm.asc(w.title),
+            ]))
+          .watch();
+
+  /// [workId]'s relations in both directions, with the other work.
+  Stream<List<({WorkRelation relation, Work work})>> watchRelations(
+    int workId,
+  ) {
+    final other = alias(works, 'other');
+    final query = select(workRelations).join([
+      innerJoin(
+        other,
+        (workRelations.fromWorkId.equals(workId) &
+                other.id.equalsExp(workRelations.toWorkId)) |
+            (workRelations.toWorkId.equals(workId) &
+                other.id.equalsExp(workRelations.fromWorkId)),
+      ),
+    ])..where(other.deletedAt.isNull());
+    return query.watch().map(
+      (rows) => [
+        for (final r in rows)
+          (relation: r.readTable(workRelations), work: r.readTable(other)),
+      ],
+    );
+  }
+
+  Future<void> addRelation(int from, RelationType type, int to) async {
+    if (from == to) return;
+    await into(workRelations).insert(
+      WorkRelationsCompanion.insert(fromWorkId: from, toWorkId: to, type: type),
+      mode: InsertMode.insertOrIgnore,
+    );
+  }
+
+  Future<void> removeRelation(WorkRelation r) =>
+      (delete(workRelations)..where(
+            (x) =>
+                x.fromWorkId.equals(r.fromWorkId) &
+                x.toWorkId.equals(r.toWorkId) &
+                x.type.equalsValue(r.type),
+          ))
+          .go();
+
   Future<int?> _fandomIdFor(String? name) async {
     final n = name?.trim() ?? '';
     if (n.isEmpty) return null;

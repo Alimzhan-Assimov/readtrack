@@ -43,6 +43,7 @@ class StoryInfo {
     this.wordCount,
     this.pageCount,
     this.characterCount,
+    this.series,
     this.isComplete,
     this.updatedOn,
     this._chapterCount,
@@ -69,6 +70,9 @@ class StoryInfo {
 
   /// Size in characters, for sites that give neither words nor pages.
   final int? characterCount;
+
+  /// The series the story is part of, and its position there.
+  final ({String name, double? index})? series;
   final bool? isComplete;
 
   /// When the story was last updated, if the site says.
