@@ -31,6 +31,9 @@ class BookImporter {
     File? original,
     WorksCompanion? work,
     String? fandomName,
+    String? seriesName,
+    List<String>? crossoverNames,
+    List<String>? characterNames,
     List<String>? tagNames,
     List<String> pairingNames = const [],
     Set<String> adultTags = const {},
@@ -52,16 +55,63 @@ class BookImporter {
             : given.wordCount,
       ),
       fandomName: fandomName,
+      seriesName: seriesName,
+      crossoverNames: crossoverNames,
+      characterNames: characterNames,
       tagNames: tagNames ?? book.tags,
       pairingNames: pairingNames,
       adultTags: adultTags,
     );
+    await _storeContent(id, book, original: original, words: words);
+    return id;
+  }
 
-    if (book.cover case final cover?) {
+  /// Adds [book]'s text to the existing entry [workId] (e.g. a paper book
+  /// the user also has as an EPUB), keeping the entry's details. Fills in
+  /// only what the entry lacks.
+  Future<void> attach(int workId, ImportedBook book, {File? original}) async {
+    final words = [
+      for (final c in book.chapters) countWords(htmlToPlainText(c.html)),
+    ];
+    final w = await _db.workById(workId);
+    if (w == null) return;
+    final countsMissing = w.wordCount == null || w.wordsEstimated;
+    await _db.updateWork(
+      workId,
+      WorksCompanion(
+        chapterCount: Value(w.chapterCount ?? book.chapters.length),
+        wordCount: countsMissing
+            ? Value(words.fold<int>(0, (a, b) => a + b))
+            : const Value.absent(),
+        wordsEstimated: countsMissing
+            ? const Value(false)
+            : const Value.absent(),
+        summary: w.summary == null ? Value(book.summary) : const Value.absent(),
+        isbn: w.isbn == null ? Value(book.isbn) : const Value.absent(),
+      ),
+    );
+    await _storeContent(
+      workId,
+      book,
+      original: original,
+      words: words,
+      cover: w.coverPath == null,
+    );
+  }
+
+  Future<void> _storeContent(
+    int id,
+    ImportedBook book, {
+    required File? original,
+    required List<int> words,
+    bool cover = true,
+  }) async {
+    final chapters = book.chapters;
+    if (book.cover case final bytes? when cover) {
       final path = await _storage.saveCover(
         id,
         Uri.https(kBookHost, '/cover'),
-        cover,
+        bytes,
       );
       await _db.updateWork(id, WorksCompanion(coverPath: Value(path)));
     }
@@ -99,12 +149,12 @@ class BookImporter {
         filePath: Value(copy?.path),
       ),
     );
-    return id;
   }
 
   /// The entry fields the file itself provides.
   static WorksCompanion metadataOf(ImportedBook book) => WorksCompanion.insert(
-    type: book.isFanfiction ? WorkType.fanfiction : WorkType.book,
+    type:
+        book.type ?? (book.isFanfiction ? WorkType.fanfiction : WorkType.book),
     format: WorkFormat.digital,
     title: book.title,
     author: Value(book.author),

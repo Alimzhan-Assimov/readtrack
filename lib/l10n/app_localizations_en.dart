@@ -112,7 +112,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get libraryTitle => 'My Library';
 
   @override
-  String get searchHint => 'Search title, author or category';
+  String get searchHint => 'Search title, author, category, tags';
 
   @override
   String get clearSearch => 'Clear search';
@@ -131,6 +131,36 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get clearFilters => 'Clear filters';
+
+  @override
+  String get filtersButton => 'Filters';
+
+  @override
+  String get removeFilter => 'Remove filter';
+
+  @override
+  String showEntries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Show $count entries',
+      one: 'Show 1 entry',
+      zero: 'No matching entries',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get showEntriesLoading => 'Show entries';
+
+  @override
+  String get searchFilterValues => 'Search';
+
+  @override
+  String get sortByName => 'Sort by name';
+
+  @override
+  String get sortByCount => 'Sort by number of entries';
 
   @override
   String get filterAll => 'All';
@@ -554,6 +584,547 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deleteDownload => 'Delete download';
+
+  @override
+  String get suggestTags => 'Suggest tags';
+
+  @override
+  String tagSuggestionWhy(String reason) {
+    return '$reason. Tap to add the tag.';
+  }
+
+  @override
+  String tagReasonKeyword(String word) {
+    return 'The summary mentions “$word”';
+  }
+
+  @override
+  String tagsSuggested(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tags suggested',
+      one: '1 tag suggested',
+      zero: 'No new tag suggestions',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get findCharacters => 'Find in the text';
+
+  @override
+  String get suggestedCharacter => 'Found in the text. Tap to confirm.';
+
+  @override
+  String get dismissSuggestion => 'Not in this story';
+
+  @override
+  String get noKnownCharacters =>
+      'No characters are known for this category yet. Add some, or look the franchise up on AniList.';
+
+  @override
+  String get noTextToSearch => 'There is no downloaded text to search yet.';
+
+  @override
+  String charactersFound(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Found $count characters; confirm them with a tap',
+      one: 'Found 1 character; confirm it with a tap',
+      zero: 'No more known characters found',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aniListLookUp => 'Look up on AniList';
+
+  @override
+  String get aniListTitle => 'AniList';
+
+  @override
+  String get aniListHint =>
+      'Pick the matching one. Empty fields are filled in; tags, characters and links to sequels or prequels in your library are added.';
+
+  @override
+  String aniListApplied(int characters, int relations) {
+    String _temp0 = intl.Intl.pluralLogic(
+      characters,
+      locale: localeName,
+      other: '$characters new characters',
+      one: '1 new character',
+      zero: 'no new characters',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      relations,
+      locale: localeName,
+      other: '$relations links',
+      one: '1 link',
+      zero: 'no links',
+    );
+    return 'Took AniList\'s details: $_temp0, $_temp1';
+  }
+
+  @override
+  String get categoriesTitle => 'Categories';
+
+  @override
+  String get categoriesTileHint => 'Rename or merge franchises';
+
+  @override
+  String get categoriesHint =>
+      'Merging a category into another moves its entries, crossovers and characters, and remembers its name, so stories imported later with that name land in the right place.';
+
+  @override
+  String get renameCategory => 'Rename';
+
+  @override
+  String get mergeCategoryInto => 'Merge into another category…';
+
+  @override
+  String mergeCategoryTitle(String name) {
+    return 'Merge “$name” into';
+  }
+
+  @override
+  String categoryAliases(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count other names',
+      one: '1 other name',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String pageCurrent(int current) {
+    return 'Page $current';
+  }
+
+  @override
+  String pageProgress(int current, int total) {
+    return 'Page $current of $total';
+  }
+
+  @override
+  String get setPage => 'Set page';
+
+  @override
+  String get currentPageTitle => 'Which page are you on?';
+
+  @override
+  String get autoDownload => 'Download new chapters';
+
+  @override
+  String get autoDownloadHint =>
+      'When a check finds new chapters, stories you have downloaded get them too, in the same file.';
+
+  @override
+  String autoDownloaded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Downloaded $count new chapters',
+      one: 'Downloaded 1 new chapter',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get mangaMode => 'Page layout';
+
+  @override
+  String get mangaPages => 'Pages, left to right';
+
+  @override
+  String get mangaPagesRtl => 'Pages, right to left (manga)';
+
+  @override
+  String get mangaScroll => 'Long strip (webtoon)';
+
+  @override
+  String get mangaDoublePage => 'Two pages side by side (wide windows)';
+
+  @override
+  String get ownsPaperCopy => 'I also own it on paper';
+
+  @override
+  String get paperCopy => 'Paper copy';
+
+  @override
+  String get mergeTagInto => 'Merge into another tag…';
+
+  @override
+  String mergeTagTitle(String name) {
+    return 'Merge “$name” into';
+  }
+
+  @override
+  String tagAlsoCalled(String names) {
+    return 'Also: $names';
+  }
+
+  @override
+  String removeSynonym(String name) {
+    return 'Forget “$name”';
+  }
+
+  @override
+  String get sectionCharacters => 'Characters';
+
+  @override
+  String get addCharacter => 'Add a character';
+
+  @override
+  String get addCharacterHint => 'e.g. Fujiwara Chika';
+
+  @override
+  String get pickCharacters => 'Choose characters';
+
+  @override
+  String get filterCharacter => 'Character';
+
+  @override
+  String get sectionCrossovers => 'Crossover with';
+
+  @override
+  String get addCrossover => 'Add a category';
+
+  @override
+  String get addCrossoverHint => 'The other franchises of a crossover';
+
+  @override
+  String openFranchise(String name) {
+    return 'Everything for $name';
+  }
+
+  @override
+  String franchiseSummary(int own, int crossovers) {
+    String _temp0 = intl.Intl.pluralLogic(
+      own,
+      locale: localeName,
+      other: '$own entries',
+      one: '1 entry',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      crossovers,
+      locale: localeName,
+      other: '$crossovers crossovers',
+      one: '1 crossover',
+      zero: 'no crossovers',
+    );
+    return '$_temp0, $_temp1';
+  }
+
+  @override
+  String get franchiseCrossovers => 'Crossovers from other categories';
+
+  @override
+  String get fieldSeries => 'Series';
+
+  @override
+  String get fieldSeriesHint => 'e.g. Harry Potter';
+
+  @override
+  String get fieldSeriesIndex => 'No.';
+
+  @override
+  String get pickSeries => 'Choose a series';
+
+  @override
+  String get filterSeries => 'Series';
+
+  @override
+  String sectionSeries(String name) {
+    return 'Series: $name';
+  }
+
+  @override
+  String get sectionRelated => 'Related';
+
+  @override
+  String get addRelation => 'Add';
+
+  @override
+  String addRelationTitle(String title) {
+    return 'Related to “$title”';
+  }
+
+  @override
+  String get removeRelation => 'Remove relation';
+
+  @override
+  String get relationSequel => 'Sequel';
+
+  @override
+  String get relationPrequel => 'Prequel';
+
+  @override
+  String get relationSpinOff => 'Spin-off';
+
+  @override
+  String get relationSpinOffOf => 'Spin-off of';
+
+  @override
+  String get relationSideStory => 'Side story';
+
+  @override
+  String get relationSideStoryOf => 'Side story of';
+
+  @override
+  String get statsTitle => 'Statistics';
+
+  @override
+  String get statsIntro =>
+      'Counts reading in ReadTrack\'s reader: time while you scroll or turn pages, and the words of each chapter read to the end.';
+
+  @override
+  String get statsLast30Days => 'Words per day, last 30 days';
+
+  @override
+  String get statsNothingYet => 'Nothing read in the app yet.';
+
+  @override
+  String statsMostInADay(String words) {
+    return 'Most in a day: $words words';
+  }
+
+  @override
+  String get statsTotals => 'Totals';
+
+  @override
+  String get statsThisWeek => 'this week';
+
+  @override
+  String get statsThisMonth => 'this month';
+
+  @override
+  String get statsThisYear => 'this year';
+
+  @override
+  String statsWordsIn(String span) {
+    return 'words $span';
+  }
+
+  @override
+  String get statsStreaks => 'Streaks';
+
+  @override
+  String get statsCurrentStreak => 'Current streak';
+
+  @override
+  String get statsLongestStreak => 'Longest streak';
+
+  @override
+  String statsDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days',
+      one: '1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsYearInReview(String year) {
+    return '$year in review';
+  }
+
+  @override
+  String get statsRead => 'read';
+
+  @override
+  String get statsDaysRead => 'Days with reading';
+
+  @override
+  String get statsFinished => 'Finished';
+
+  @override
+  String get statsMostRead => 'Most read';
+
+  @override
+  String get statsFinishedList => 'Finished';
+
+  @override
+  String statsMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String statsHours(int hours, int minutes) {
+    return '$hours h $minutes min';
+  }
+
+  @override
+  String get addByIsbn => 'By ISBN';
+
+  @override
+  String get addByIsbnHint =>
+      'A paper book: details and cover from Open Library';
+
+  @override
+  String get isbnLookUp => 'Look up this ISBN';
+
+  @override
+  String get isbnInvalid => 'That isn\'t a valid ISBN-10 or ISBN-13.';
+
+  @override
+  String get isbnNotFound =>
+      'No details found for this ISBN. Please fill them in.';
+
+  @override
+  String isbnLookupFailed(String error) {
+    return 'The lookup failed: $error';
+  }
+
+  @override
+  String get addFromCatalog => 'From a free catalog';
+
+  @override
+  String get addFromCatalogHint =>
+      'Project Gutenberg, Standard Ebooks or your own OPDS catalog (e.g. Calibre)';
+
+  @override
+  String get catalogsTitle => 'Catalogs';
+
+  @override
+  String get catalogsIntro =>
+      'Free, legal books in OPDS catalogs. Add your own, such as a Calibre content server.';
+
+  @override
+  String get addCatalog => 'Add catalog';
+
+  @override
+  String get removeCatalog => 'Remove catalog';
+
+  @override
+  String get catalogUrl => 'OPDS address';
+
+  @override
+  String get catalogName => 'Name (optional)';
+
+  @override
+  String get catalogNoSearch => 'This catalog can\'t be searched.';
+
+  @override
+  String catalogSearch(String name) {
+    return 'Search $name';
+  }
+
+  @override
+  String get searchButton => 'Search';
+
+  @override
+  String get catalogEmpty => 'Nothing here.';
+
+  @override
+  String get catalogNoFile => 'No EPUB, FB2 or text file offered';
+
+  @override
+  String get catalogAdd => 'Add to library';
+
+  @override
+  String get catalogAttach => 'Attach to this entry';
+
+  @override
+  String catalogAttached(String title) {
+    return 'Attached “$title”. It can be read in the app now.';
+  }
+
+  @override
+  String get catalogMore => 'Load more';
+
+  @override
+  String freeEditionsTitle(String query) {
+    return 'Free editions: $query';
+  }
+
+  @override
+  String get noTextHint => 'No text for this entry yet.';
+
+  @override
+  String get attachFile => 'Attach a book file';
+
+  @override
+  String get findFreeEditions => 'Find free editions';
+
+  @override
+  String get addFromList => 'From a list on a site';
+
+  @override
+  String get addFromListHint =>
+      'Bookmarks, favorites, collections or reading lists';
+
+  @override
+  String get listImportTitle => 'Add from a list';
+
+  @override
+  String get listImportIntro =>
+      'Paste the link to a list page: AO3 bookmarks, collections, series or a user\'s works; Royal Road favorites; FanFiction.net favorites; a Wattpad reading list; or a list page on another supported site. Private lists only load if the site shows them without signing in.';
+
+  @override
+  String get listImportUrl => 'Link to the list';
+
+  @override
+  String get listImportLoad => 'Load list';
+
+  @override
+  String get listImportUnsupported => 'This isn\'t a link to a supported site.';
+
+  @override
+  String get listImportIsStory =>
+      'This link is a single story. Use “From a link” to add it.';
+
+  @override
+  String get listImportEmpty => 'No stories found on this page.';
+
+  @override
+  String listImportFound(int count, int inLibrary) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count stories',
+      one: '1 story',
+    );
+    return '$_temp0, $inLibrary already in your library';
+  }
+
+  @override
+  String get listImportToggleAll => 'Select all / none';
+
+  @override
+  String get listImportStatus => 'Add as';
+
+  @override
+  String get listImportInLibrary => 'Already in your library';
+
+  @override
+  String listImportAdd(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Add $count stories',
+      one: 'Add 1 story',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String listImportProgress(int done, int total) {
+    return 'Adding $done of $total…';
+  }
+
+  @override
+  String listImportDone(int added, int failed) {
+    return 'Added $added, $failed failed';
+  }
+
+  @override
+  String get listImportClose => 'Done';
 
   @override
   String importingFromFile(String name) {

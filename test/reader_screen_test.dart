@@ -10,6 +10,8 @@ import 'package:readtrack/l10n/l10n.dart';
 import 'package:readtrack/library/download_service.dart';
 import 'package:readtrack/library/library_scope.dart';
 import 'package:readtrack/library/storage.dart';
+import 'package:flutter/services.dart';
+import 'package:readtrack/reader/manga_pages.dart';
 import 'package:readtrack/reader/reader_screen.dart';
 import 'package:readtrack/screens/import_screen.dart';
 
@@ -110,6 +112,55 @@ void main() {
       await unmount(tester);
     },
   );
+
+  testWidgets('an image chapter opens page by page; arrows turn pages', (
+    tester,
+  ) async {
+    late Work work;
+    late Download download;
+    await tester.runAsync(() async {
+      final id = await db.saveWork(
+        WorksCompanion.insert(
+          type: WorkType.manga,
+          format: WorkFormat.digital,
+          title: 'Pages',
+        ),
+      );
+      await db.saveChapterList(id, [
+        for (var n = 1; n <= 2; n++)
+          (number: n, title: 'Ch $n', url: null, locked: false),
+      ]);
+      for (var n = 1; n <= 2; n++) {
+        await db.saveChapterText(
+          id,
+          n,
+          html:
+              '<p><img src="images/a.png" alt=""></p>'
+              '<p><img src="images/b.png" alt=""></p>',
+          wordCount: 0,
+        );
+      }
+      await db.addDownload(
+        DownloadsCompanion.insert(workId: id, fromChapter: 1, toChapter: 2),
+      );
+      work = (await db.watchWork(id).first)!.work;
+      download = (await db.downloadsOf(id)).single;
+    });
+    await pump(
+      tester,
+      ReaderScreen(work: work, mode: DownloadReading(download)),
+    );
+    expect(find.byType(MangaPages), findsOneWidget);
+    expect(find.text('1 / 2'), findsOneWidget);
+    // Page 2, then past the end into chapter 2.
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pumpAndSettle();
+    expect(find.text('1 / 2'), findsOneWidget);
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pumpAndSettle();
+    expect(find.text('2 / 2'), findsOneWidget);
+    await unmount(tester);
+  });
 
   testWidgets('import explains unsupported sites', (tester) async {
     await pump(tester, const ImportScreen());
