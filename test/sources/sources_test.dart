@@ -227,10 +227,12 @@ void main() {
       '$story': '''
         <h1 class="book-title">Книга</h1><div class="book-authors"><a>Автор</a></div>
         <span class="hint-top" data-hint="Размер, кол-во знаков с пробелами">2 110 486 <noindex>зн.</noindex></span>, 52,76 <abbr>а.л.</abbr>
+        <div><span class="text-muted">Цикл: </span> <a href="/work/series/39295">&#127845; Непростые Пути. ??? (Наруто)</a><span>&nbsp;#1</span></div>
         <ul class="table-of-content"><li><a href="/reader/564935/1">Глава 1</a></li></ul>''',
     });
     final info = await const AuthorTodaySource().fetchStory(story, fetcher);
     expect(info.characterCount, 2110486);
+    expect(info.series, (name: 'Непростые Пути. ??? (Наруто)', index: 1.0));
     expect((info.wordCount, info.pageCount), (null, null));
   });
 

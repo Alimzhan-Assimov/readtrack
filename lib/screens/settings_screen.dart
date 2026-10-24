@@ -8,6 +8,7 @@ import '../data/database.dart';
 import '../data/database_scope.dart';
 import '../l10n/l10n.dart';
 import '../library/backup.dart';
+import '../library/story_sync.dart';
 import '../library/library_scope.dart';
 import 'categories_screen.dart';
 import 'log_screen.dart';
@@ -59,6 +60,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
     if (into != null) await _db.mergeTag(tag.id, into.id);
+  }
+
+  (int, int)? _refreshing;
+
+  Future<void> _refreshAll() async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _refreshing = (0, 0));
+    try {
+      final failed = await refreshAllFromSites(
+        _db,
+        onProgress: (done, total) {
+          if (mounted) setState(() => _refreshing = (done, total));
+        },
+      );
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.detailsUpdatedAll(failed.length))),
+      );
+    } finally {
+      if (mounted) setState(() => _refreshing = null);
+    }
   }
 
   Future<void> _createBackup() async {
@@ -197,6 +219,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     value: settings.autoDownload,
                     onChanged: settings.setAutoDownload,
                   ),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.manage_history),
+                  title: Text(l10n.updateAllDetails),
+                  subtitle: Text(switch (_refreshing) {
+                    (final done, final total) when total > 0 =>
+                      l10n.updatingDetails(done, total),
+                    _ => l10n.updateAllDetailsHint,
+                  }),
+                  enabled: _refreshing == null,
+                  onTap: _refreshAll,
+                ),
                 const SizedBox(height: 16),
                 Text(
                   l10n.backupHeading,

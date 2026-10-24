@@ -24,6 +24,14 @@ class FandomList {
   /// The listed franchise [name] belongs to, or null.
   static String? canonical(String name) => _byKey[fandomKey(name)];
 
+  /// Listed names with at least [minLength] letters, by comparison key, for
+  /// finding a franchise in a title. Short ones ("HP", "GoT") would match
+  /// too much.
+  static Map<String, String> namesByKey({int minLength = 4}) => {
+    for (final MapEntry(:key, :value) in _byKey.entries)
+      if (key.length >= minLength) key: value,
+  };
+
   /// What decides whether two category names are the same franchise.
   static String groupKey(String name) => fandomKey(canonical(name) ?? name);
 }

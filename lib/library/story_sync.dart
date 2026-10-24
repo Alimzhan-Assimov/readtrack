@@ -153,7 +153,7 @@ Future<int> addStory(
 }) async {
   final id = await db.saveWork(
     WorksCompanion.insert(
-      type: info.type,
+      type: storyType(info),
       format: WorkFormat.online,
       title: info.title,
       author: Value(info.author),
@@ -170,7 +170,7 @@ Future<int> addStory(
       checkedAt: Value(now ?? DateTime.now()),
       lastChapterAt: Value(info.updatedOn),
     ),
-    fandomName: info.fandom,
+    fandomName: await storyFandom(db, info),
     seriesName: info.series?.name,
     crossoverNames: info.crossovers,
     characterNames: info.characters,
@@ -230,4 +230,105 @@ Future<void> appendChapters(
     touch: false,
   );
   if (fresh.isNotEmpty) await db.fillMissingCounts(work.id);
+}
+
+/// Tags that mark a story as fan fiction, whatever kind of site it's on.
+const _fanfictionTags = {
+  'фанфик',
+  'фанфики',
+  'fanfic',
+  'fanfiction',
+  'fan fiction',
+};
+
+/// The kind of work [info] is: what the site says, unless its tags call it
+/// fan fiction (Author.Today's "Фанфик" genre, for example).
+WorkType storyType(StoryInfo info) =>
+    info.tags.any((t) => _fanfictionTags.contains(t.trim().toLowerCase()))
+    ? WorkType.fanfiction
+    : info.type;
+
+/// The franchise of [info]: the site's, or a guess from its tags (and, for
+/// fan fiction, its title).
+Future<String?> storyFandom(AppDatabase db, StoryInfo info) async =>
+    info.fandom ??
+    await db.guessFandom(
+      title: info.title,
+      tags: info.tags,
+      useTitle: storyType(info) == WorkType.fanfiction,
+    );
+
+/// Takes the site's details into an existing entry, e.g. one imported
+/// before ReadTrack kept characters or series: the chapter list and counts
+/// as [applyStoryInfo] does, the kind of work from the site, and whatever
+/// the entry lacks (franchise, summary, cover, series); tags, pairings,
+/// characters and crossovers are added to the entry's own.
+Future<void> refreshFromSite(
+  AppDatabase db,
+  WorkWithDetails item,
+  StoryInfo info, {
+  DateTime? now,
+}) async {
+  final w = item.work;
+  await applyStoryInfo(db, w, info, countAsNew: true, now: now);
+  final series = item.series?.name ?? info.series?.name;
+  await db.saveWork(
+    WorksCompanion(
+      id: Value(w.id),
+      title: Value(w.title),
+      type: Value(storyType(info)),
+      author: w.author == null ? Value(info.author) : const Value.absent(),
+      summary: w.summary == null ? Value(info.summary) : const Value.absent(),
+      coverUrl: w.coverUrl == null && w.coverPath == null
+          ? Value(info.coverUrl?.toString())
+          : const Value.absent(),
+      seriesIndex: item.series == null && info.series != null
+          ? Value(info.series!.index)
+          : const Value.absent(),
+    ),
+    fandomName: item.fandom?.name ?? await storyFandom(db, info),
+    seriesName: series ?? '',
+    crossoverNames: {
+      for (final f in item.crossovers) f.name,
+      ...info.crossovers,
+    }.toList(),
+    characterNames: {
+      for (final c in item.confirmedCharacters) c.name,
+      ...info.characters,
+    }.toList(),
+    tagNames: {for (final t in item.tags) t.name, ...info.tags}.toList(),
+    pairingNames: {
+      for (final p in item.pairings) p.name,
+      ...info.pairings,
+    }.toList(),
+    adultTags: info.adultTags,
+  );
+}
+
+/// [refreshFromSite] for every online entry whose site can be read, one
+/// at a time. Calls [onProgress] after each; returns the failures by title.
+Future<Map<String, String>> refreshAllFromSites(
+  AppDatabase db, {
+  void Function(int done, int total)? onProgress,
+  Future<StoryInfo> Function(StorySource source, Uri url) load = loadStoryInfo,
+  Duration pause = const Duration(seconds: 1),
+}) async {
+  final works = [
+    for (final w in await db.worksWithSource())
+      if (sourceFor(Uri.parse(w.sourceUrl!)) case final s? when s.canRead)
+        (work: w, source: s),
+  ];
+  final failed = <String, String>{};
+  for (final (i, entry) in works.indexed) {
+    try {
+      final item = (await db.watchWork(entry.work.id).first)!;
+      final info = await load(entry.source, Uri.parse(entry.work.sourceUrl!));
+      await refreshFromSite(db, item, info);
+    } on SourceException catch (e) {
+      failed[entry.work.title] = e.message;
+    }
+    onProgress?.call(i + 1, works.length);
+    if (i < works.length - 1) await Future<void>.delayed(pause);
+  }
+  return failed;
 }

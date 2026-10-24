@@ -116,6 +116,30 @@ class _ReadSectionState extends State<ReadSection> {
     }
   }
 
+  /// Takes the site's current details (franchise, characters, series, type
+  /// …) into the entry, keeping what the user entered.
+  Future<void> _refreshDetails() async {
+    final source = _source;
+    if (source == null) return;
+    final l10n = context.l10n;
+    final db = _db;
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _checking = true);
+    try {
+      final info = await loadStoryInfo(
+        source,
+        Uri.parse(widget.work.sourceUrl!),
+      );
+      final item = await db.watchWork(widget.work.id).first;
+      if (item != null) await refreshFromSite(db, item, info);
+      messenger.showSnackBar(SnackBar(content: Text(l10n.detailsUpdated)));
+    } on SourceException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+    } finally {
+      if (mounted) setState(() => _checking = false);
+    }
+  }
+
   Future<void> _download() async {
     final source = _source;
     if (source == null) return;
@@ -390,6 +414,12 @@ class _ReadSectionState extends State<ReadSection> {
                           icon: const Icon(Icons.refresh),
                           label: Text(l10n.checkForNewChapters),
                           onPressed: _checking ? null : _checkForNew,
+                        ),
+                      if (source != null && known > 0)
+                        OutlinedButton.icon(
+                          icon: const Icon(Icons.manage_history),
+                          label: Text(l10n.updateDetails),
+                          onPressed: _checking ? null : _refreshDetails,
                         ),
                     ],
                   ),

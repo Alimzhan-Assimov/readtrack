@@ -988,6 +988,42 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 tag marked 18+ is hidden} other{{count} tags marked 18+ are hidden}} because “Hide 18+ tags” is on.'**
   String adultTagsHidden(int count);
 
+  /// No description provided for @updateDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Update details'**
+  String get updateDetails;
+
+  /// No description provided for @detailsUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Took the site\'s current details: characters, series, franchise and tags were added where missing.'**
+  String get detailsUpdated;
+
+  /// No description provided for @updateAllDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Update details of all online stories'**
+  String get updateAllDetails;
+
+  /// No description provided for @updateAllDetailsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Adds characters, series, franchises and tags the sites list now, e.g. for stories added before ReadTrack kept them. Your own changes stay.'**
+  String get updateAllDetailsHint;
+
+  /// No description provided for @updatingDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating {done} of {total}…'**
+  String updatingDetails(int done, int total);
+
+  /// No description provided for @detailsUpdatedAll.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{All stories updated} =1{Updated; 1 story could not be loaded} other{Updated; {count} stories could not be loaded}}'**
+  String detailsUpdatedAll(int count);
+
   /// No description provided for @suggestTags.
   ///
   /// In en, this message translates to:
