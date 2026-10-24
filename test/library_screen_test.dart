@@ -12,6 +12,7 @@ import 'package:readtrack/library/exporters.dart';
 import 'package:readtrack/library/file_import.dart';
 import 'package:readtrack/library/library_scope.dart';
 import 'package:readtrack/screens/work_edit_screen.dart';
+import 'package:readtrack/sources/isbn_lookup.dart';
 import 'package:readtrack/library/storage.dart';
 import 'package:readtrack/main.dart';
 import 'package:readtrack/ui/app_settings.dart';
@@ -135,6 +136,72 @@ void main() {
     expect(
       (w.title, w.format, w.isbn, w.chapterCount),
       ('War and Peace', WorkFormat.digital, '9783161484100', 2),
+    );
+    await unmount(tester);
+  });
+
+  testWidgets('a paper book found by ISBN is saved with its cover', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    int? saved;
+    await tester.pumpWidget(
+      DatabaseScope(
+        db: db,
+        child: LibraryScope(
+          storage: storage,
+          downloads: DownloadService(db, storage),
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Builder(
+              builder: (context) => TextButton(
+                onPressed: () async =>
+                    saved = await Navigator.of(context).push<int>(
+                      MaterialPageRoute(
+                        builder: (_) => WorkEditScreen(
+                          details: BookDetails(
+                            isbn: '9783423214124',
+                            title: 'Der kleine Hobbit',
+                            author: 'J.R.R. Tolkien',
+                            pageCount: 354,
+                            coverUrl: Uri.parse(
+                              'https://covers.openlibrary.org/b/id/1-L.jpg',
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                child: const Text('open'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    expect(
+      find.widgetWithText(TextFormField, 'Der kleine Hobbit'),
+      findsOneWidget,
+    );
+    expect(find.widgetWithText(TextFormField, '354'), findsOneWidget);
+    await tester.tap(find.text('Save'));
+    for (var i = 0; i < 20 && saved == null; i++) {
+      await tester.runAsync(() => Future<void>.delayed(Durations.short1));
+      await tester.pump();
+    }
+    final w = (await tester.runAsync(() => db.workById(saved!)))!;
+    expect(
+      (w.format, w.isbn, w.pageCount, w.coverUrl),
+      (
+        WorkFormat.physical,
+        '9783423214124',
+        354,
+        'https://covers.openlibrary.org/b/id/1-L.jpg',
+      ),
     );
     await unmount(tester);
   });

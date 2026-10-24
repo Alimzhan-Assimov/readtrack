@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet href="https://standardebooks.org/feeds/atom/style" type="text/xsl"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/">
+	<script xmlns="http://www.w3.org/1999/xhtml" src="https://standardebooks.org/scripts/xslt-polyfill.min.js"/>
+	<id>https://standardebooks.org/feeds/atom/new-releases</id>
+	<link href="https://standardebooks.org/feeds/atom/new-releases" rel="self" type="application/atom+xml"/>
+	<title>Standard Ebooks - Newest Ebooks</title>
+	<subtitle>The 15 latest Standard Ebooks, most-recently-released first.</subtitle>
+	<icon>https://standardebooks.org/images/logo.png</icon>
+	<updated>2026-10-20T18:05:47Z</updated>
+	<author>
+		<name>Standard Ebooks</name>
+		<uri>https://standardebooks.org</uri>
+	</author>
+	<link href="https://standardebooks.org/opensearch" rel="search" title="Standard Ebooks" type="application/opensearchdescription+xml"/>
+	<entry>
+		<id>https://standardebooks.org/ebooks/henry-seton-merriman/suspense</id>
+		<title>Suspense</title>
+		<author>
+			<name>Henry Seton Merriman</name>
+			<uri>https://standardebooks.org/ebooks/henry-seton-merriman</uri>
+		</author>
+		<published>2026-10-20T18:02:42Z</published>
+		<updated>2026-10-20T18:02:43Z</updated>
+		<rights>Public domain in the United States. Users located outside of the United States must check their local laws before using this ebook. Original content released to the public domain via the Creative Commons CC0 1.0 Universal Public Domain Dedication.</rights>
+		<summary type="text">Two childhood friends—a young man who has become a renowned war correspondent and a young woman who is just emerging from the shadow of her more-celebrated sister—discover that as events conspire against them, their characters might enable them to overcome all— yet separate them forever.</summary>
+		<content type="html">&lt;p&gt;Theo Trist and Brenda Gilholme have known one another since childhood. Trist has become a renowned war correspondent for influential newspapers in London and Paris, dispatched to dangerous areas of the globe to report on the most terrible events imaginable. Brenda, until now in the shadow of her sister, a celebrated society beauty, has lived the life of the mind, immersing herself in studies of languages, mathematics, theology, and political economy—a life which Victorian society doesn’t value for its daughters, but which Trist admires in the observant and analytical Brenda. Mrs. Wylie, a mutual friend who has supported each of them throughout their formative years, knows that their respective intelligence, and their senses of honor, duty, and self-sacrifice, set them apart from their peers and drive them to make the most of themselves. Those same strengths also divide and distance them from one another—and, as Mrs. Wylie knows, time is on no one’s side.&lt;/p&gt; &lt;p&gt;&lt;i&gt;Suspense&lt;/i&gt; is one of &lt;a href="https://standardebooks.org/ebooks/henry-seton-merriman"&gt;Henry Seton Merriman’s&lt;/a&gt; more philosophical novels. In meta-commentary, the author makes plain his acceptance of Victorian views on social roles, expectations, and responsibilities, while also celebrating those who are courageous enough to stand apart from that society to live their own lives. Though an earlier of Merriman’s works, it still displays the intricate plotting, character development, and attention to place and history which are characteristic of his later works. Though its narrative and dialogue fit squarely within the framework of contemporary Victorian fiction, &lt;i&gt;Suspense&lt;/i&gt; nevertheless demonstrates the best of that structure, even as Merriman shows with his subsequent works his desire and capability to rise above it.&lt;/p&gt;</content>
+		<category scheme="http://purl.org/dc/terms/LCSH" term="Man-woman relationships--Fiction"/>
+		<category scheme="http://purl.org/dc/terms/LCSH" term="War correspondents--Fiction"/>
+		<category scheme="http://purl.org/dc/terms/LCSH" term="Russo-Turkish War, 1877-1878--Fiction"/>
+		<category scheme="https://standardebooks.org/vocab/subjects" term="Fiction"/>
+		<media:thumbnail height="525" url="https://standardebooks.org/ebooks/henry-seton-merriman/suspense/downloads/cover-thumbnail.jpg" width="350"/>
+		<link href="https://standardebooks.org/ebooks/henry-seton-merriman/suspense" rel="alternate" title="This ebook’s page at Standard Ebooks" type="application/xhtml+xml"/>
+		<link href="https://standardebooks.org/ebooks/henry-seton-merriman/suspense/downloads/henry-seton-merriman_suspense.epub?source=feed" length="781966" rel="enclosure" title="Recommended compatible epub" type="application/epub+zip"/>
+		<link href="https://standardebooks.org/ebooks/henry-seton-merriman/suspense/downloads/henry-seton-merriman_suspense_advanced.epub?source=feed" length="1114554" rel="enclosure" title="Advanced epub" type="application/epub+zip"/>
+		<link href="https://standardebooks.org/ebooks/henry-seton-merriman/suspense/downloads/henry-seton-merriman_suspense.kepub.epub?source=feed" length="742920" rel="enclosure" title="Kobo Kepub epub" type="application/kepub+zip"/>
+		<link href="https://standardebooks.org/ebooks/henry-seton-merriman/suspense/downloads/henry-seton-merriman_suspense.azw3?source=feed" length="911685" rel="enclosure" title="Amazon Kindle azw3" type="application/x-mobipocket-ebook"/>
+		<link href="https://standardebooks.org/ebooks/henry-seton-merriman/suspense/text/single-page" length="801806" rel="enclosure" title="XHTML" type="application/xhtml+xml"/>
+	</entry>
+	<entry>
+		<id>https://standardebooks.org/ebooks/selma-lagerlof/the-emperor-of-portugallia/velma-swanston-howard</id>
+		<title>The Emperor of Portugallia</title>
+		<author>
+			<name>Selma Lagerlöf</name>
+			<uri>https://standardebooks.org/ebooks/selma-lagerlof</uri>
+		</author>
+		<published>2026-10-20T17:35:20Z</published>
+		<updated>2026-10-20T17:35:22Z</updated>
+		<rights>Public domain in the United States. Users located outside of the United States must check their local laws before using this ebook. Original content released to the public domain via the Creative Commons CC0 1.0 Universal Public Domain Dedication.</rights>
+		<summary type="text">A proud but poor father is forced to cope with his daughter moving to the city.</summary>
+		<content type="html">&lt;p&gt;Jan Andersson is a poor crofter. The only thing that brings him joy is his daughter Glory, but when the family finds itself in need of money, she moves to Stockholm to look for a job. At first Jan is despondent, especially as Glory very quickly stops sending letters. But as time goes on, Jan begins to piece together what happened to Glory in Stockholm—though his conclusions differ wildly from everyone else’s.&lt;/p&gt; &lt;p&gt;Blending family drama with social critique, &lt;a href="https://standardebooks.org/ebooks/selma-lagerlof"&gt;Selma Lagerlöf&lt;/a&gt; explores the ways in which community and generational relations can be affected by forces both beyond and within our control, and how redemption is possible, if we so choose.&lt;/p&gt; &lt;p&gt;Lagerlöf considered titling the novel &lt;i&gt;A Swedish King Lear&lt;/i&gt;, alluding to the generational conflicts central to both the novel and the play. Today &lt;i&gt;The Emperor of Portugallia&lt;/i&gt; is considered a classic of Swedish literature, with multiple adaptations, including the now lost 1925 Hollywood film &lt;i&gt;The Tower of Lies&lt;/i&gt; and a 1992 series for Swedish public television.&lt;/p&gt;</content>
+		<category scheme="http://purl.org/dc/terms/LCSH" term="Fathers and daughters--Fiction"/>
+		<category scheme="http://purl.org/dc/terms/LCSH" term="Sweden--Fiction"/>
+		<category scheme="http://purl.org/dc/terms/LCSH" term="Swedish fiction--Translations into English"/>
+		<category scheme="https://standardebooks.org/vocab/subjects" term="Fiction"/>
+		<media:thumbnail height="525" url="https://standardebooks.org/ebooks/selma-lagerlof/the-emperor-of-portugallia/velma-swanston-howard/downloads/cover-thumbnail.jpg" width="350"/>
+		<link href="https://standardebooks.org/ebooks/selma-lagerlof/the-emperor-of-portugallia/velma-swanston-howard" rel="alternate" title="This ebook’s page at Standard Ebooks" type="application/xhtml+xml"/>
+		<link href="https://standardebooks.org/ebooks/selma-lagerlof/the-emperor-of-portugallia/velma-swanston-howard/downloads/selma-lagerlof_the-emperor-of-portugallia_velma-swanston-howard.epub?source=feed" length="576036" rel="enclosure" title="Recommended compatible epub" type="application/epub+zip"/>
+		<link href="https://standardebooks.org/ebooks/selma-lagerlof/the-emperor-of-portugallia/velma-swanston-howard/downloads/selma-lagerlof_the-emperor-of-portugallia_velma-swanston-howard_advanced.epub?source=feed" length="408218" rel="enclosure" title="Advanced epub" type="application/epub+zip"/>
+		<link href="https://standardebooks.org/ebooks/selma-lagerlof/the-emperor-of-portugallia/velma-swanston-howard/downloads/selma-lagerlof_the-emperor-of-portugallia_velma-swanston-howard.kepub.epub?source=feed" length="433167" rel="enclosure" title="Kobo Kepub epub" type="application/kepub+zip"/>
+		<link href="https://standardebooks.org/ebooks/selma-lagerlof/the-emperor-of-portugallia/velma-swanston-howard/downloads/selma-lagerlof_the-emperor-of-portugallia_velma-swanston-howard.azw3?source=feed" length="547724" rel="enclosure" title="Amazon Kindle azw3" type="application/x-mobipocket-ebook"/>
+		<link href="https://standardebooks.org/ebooks/selma-lagerlof/the-emperor-of-portugallia/velma-swanston-howard/text/single-page" length="455456" rel="enclosure" title="XHTML" type="application/xhtml+xml"/>
+	</entry>
+</feed>

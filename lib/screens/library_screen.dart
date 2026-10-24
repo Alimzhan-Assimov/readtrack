@@ -7,7 +7,10 @@ import 'package:flutter/services.dart';
 import '../data/database.dart';
 import '../data/database_scope.dart';
 import '../l10n/l10n.dart';
+import '../library/auto_download.dart';
 import '../library/file_import.dart';
+import '../sources/fetcher.dart';
+import '../sources/isbn_lookup.dart';
 import '../library/library_scope.dart';
 import '../library/shelves.dart';
 import '../ui/app_settings.dart';
@@ -15,10 +18,12 @@ import '../ui/layout.dart';
 import '../widgets/text_prompt.dart';
 import '../widgets/work_grid_tile.dart';
 import '../widgets/work_tile.dart';
+import 'catalog_screen.dart';
 import 'import_screen.dart';
 import 'library_filters.dart';
 import 'list_import_screen.dart';
 import 'settings_screen.dart';
+import 'stats_screen.dart';
 import 'work_detail_screen.dart';
 import 'work_edit_screen.dart';
 
@@ -73,6 +78,21 @@ class _LibraryScreenState extends State<LibraryScreen> {
     setState(() => _checking = true);
     try {
       final summary = await checker.check(all: !quiet);
+      if (summary.newChapters > 0 &&
+          mounted &&
+          (SettingsScope.maybeOf(context)?.autoDownload ?? false)) {
+        final downloads = LibraryScope.of(context).downloads;
+        // In the background; the download list shows the progress.
+        unawaited(
+          downloadNewChapters(_db, downloads).then((n) {
+            if (n > 0) {
+              messenger.showSnackBar(
+                SnackBar(content: Text(l10n.autoDownloaded(n))),
+              );
+            }
+          }),
+        );
+      }
       if (summary.newChapters > 0) {
         messenger.showSnackBar(
           SnackBar(
@@ -114,6 +134,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
     fandomId: _filters.fandom?.id,
     tagId: _filters.tag?.id,
     pairingId: _filters.pairing?.id,
+    seriesId: _filters.series?.id,
+    characterId: _filters.character?.id,
     status: _filters.status,
     minWords: _filters.minWords,
     complete: _filters.complete,
@@ -126,6 +148,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final fandoms = await _db.usedFandoms();
     final tags = await _db.usedTags();
     final pairings = await _db.usedPairings();
+    final series = await _db.usedSeries();
+    final characters = await _db.usedCharacters();
     if (!mounted) return;
     _setFilters(
       LibraryFilters(
@@ -133,6 +157,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
         fandom: fandoms.where((x) => x.id == f.fandomId).firstOrNull,
         tag: tags.where((x) => x.id == f.tagId).firstOrNull,
         pairing: pairings.where((x) => x.id == f.pairingId).firstOrNull,
+        series: series.where((x) => x.id == f.seriesId).firstOrNull,
+        character: characters.where((x) => x.id == f.characterId).firstOrNull,
         status: f.status,
         minWords: f.minWords,
         complete: f.complete,
@@ -206,9 +232,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final kind = await showModalBottomSheet<_AddKind>(
       context: context,
       showDragHandle: true,
+      isScrollControlled: true,
       builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        child: ListView(
+          shrinkWrap: true,
           children: [
             ListTile(
               leading: const Icon(Icons.link),
@@ -223,10 +250,22 @@ class _LibraryScreenState extends State<LibraryScreen> {
               onTap: () => Navigator.pop(context, _AddKind.list),
             ),
             ListTile(
+              leading: const Icon(Icons.local_library_outlined),
+              title: Text(l10n.addFromCatalog),
+              subtitle: Text(l10n.addFromCatalogHint),
+              onTap: () => Navigator.pop(context, _AddKind.catalog),
+            ),
+            ListTile(
               leading: const Icon(Icons.file_open_outlined),
               title: Text(l10n.addFromFile),
               subtitle: Text(l10n.addFromFileHint),
               onTap: () => Navigator.pop(context, _AddKind.file),
+            ),
+            ListTile(
+              leading: const Icon(Icons.qr_code),
+              title: Text(l10n.addByIsbn),
+              subtitle: Text(l10n.addByIsbnHint),
+              onTap: () => Navigator.pop(context, _AddKind.isbn),
             ),
             ListTile(
               leading: const Icon(Icons.edit_note),
@@ -240,14 +279,20 @@ class _LibraryScreenState extends State<LibraryScreen> {
       ),
     );
     if (kind == null || !mounted) return;
-    if (kind == _AddKind.list) {
-      await Navigator.of(
-        context,
-      ).push<int>(MaterialPageRoute(builder: (_) => const ListImportScreen()));
+    if (kind == _AddKind.list || kind == _AddKind.catalog) {
+      await Navigator.of(context).push<int>(
+        MaterialPageRoute(
+          builder: (_) => kind == _AddKind.list
+              ? const ListImportScreen()
+              : const CatalogsScreen(),
+        ),
+      );
       return;
     }
     final int? id;
-    if (kind == _AddKind.file) {
+    if (kind == _AddKind.isbn) {
+      id = await _addByIsbn();
+    } else if (kind == _AddKind.file) {
       id = await _importFile();
     } else {
       id = await Navigator.of(context).push<int>(
@@ -259,6 +304,46 @@ class _LibraryScreenState extends State<LibraryScreen> {
       );
     }
     if (id != null && mounted) _open(id, wide: wide);
+  }
+
+  /// Asks for an ISBN, looks it up and opens the form with what was found
+  /// (or just the ISBN); returns the new id.
+  Future<int?> _addByIsbn() async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    final input = await showTextPrompt(
+      context,
+      title: l10n.addByIsbn,
+      hint: '978-3-…',
+    );
+    if (input == null || input.isEmpty || !mounted) return null;
+    final isbn = isbnOf(input);
+    if (isbn == null) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.isbnInvalid)));
+      return null;
+    }
+    BookDetails? details;
+    final fetcher = HttpFetcher();
+    try {
+      details = await lookupIsbn(isbn, fetcher);
+      if (details == null) {
+        messenger.showSnackBar(SnackBar(content: Text(l10n.isbnNotFound)));
+      }
+    } on SourceException catch (e) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.isbnLookupFailed(e.message))),
+      );
+    } finally {
+      await fetcher.close();
+    }
+    return navigator.push<int>(
+      MaterialPageRoute(
+        builder: (_) => WorkEditScreen(
+          details: details ?? BookDetails(isbn: isbn, title: ''),
+        ),
+      ),
+    );
   }
 
   /// Lets the user pick a book file, shows its details in the form and
@@ -391,6 +476,13 @@ class _LibraryScreenState extends State<LibraryScreen> {
                           : l10n.showAsGrid,
                       onPressed: () => settings.setGridView(!settings.gridView),
                     ),
+                  IconButton(
+                    icon: const Icon(Icons.insights),
+                    tooltip: l10n.statsTitle,
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const StatsScreen()),
+                    ),
+                  ),
                   IconButton(
                     icon: const Icon(Icons.settings_outlined),
                     tooltip: l10n.settingsTitle,
@@ -546,7 +638,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
   }
 }
 
-enum _AddKind { link, list, file, manual }
+enum _AddKind { link, list, catalog, file, isbn, manual }
 
 class _EmptyState extends StatelessWidget {
   const _EmptyState({required this.filtered});
