@@ -78,6 +78,23 @@ flutter run -d linux             # debug mode with hot reload (janky, that's nor
 Flutter's **debug mode is always janky** (JIT compilation, extra checks). Only
 `--profile` or `--release` show how the app really feels.
 
+## Downloads
+
+Each version tag (`v1.2.3`) builds ReadTrack for every platform and
+attaches the files to the GitHub release
+(`.github/workflows/release.yml`):
+
+| Platform | File |
+| --- | --- |
+| Linux | `ReadTrack-x86_64.AppImage`, or `readtrack-linux-x64.tar.gz` |
+| Android | `readtrack-android.apk` (or one per CPU: `-arm64-v8a`, `-armeabi-v7a`, `-x86_64`); works with Obtainium |
+| Windows | `readtrack-windows-x64.zip` |
+| macOS | `readtrack-macos.dmg` (not notarized: open with right-click → Open the first time) |
+
+Android APKs are signed with the key from the repository secrets
+`ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`
+and `ANDROID_KEY_PASSWORD`; without them, with a debug key.
+
 ## Installing on Linux
 
 ```bash

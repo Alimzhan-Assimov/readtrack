@@ -1,0 +1,179 @@
+name: Release
+
+# Builds ReadTrack for every platform when a version tag (v1.2.3) is
+# pushed, and attaches the files to a GitHub release. Run it by hand to get
+# the builds as workflow artifacts without a release.
+#
+# Android: set the secrets ANDROID_KEYSTORE_BASE64 (the .jks file, base64),
+# ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS and ANDROID_KEY_PASSWORD so
+# APKs are signed with the same key every time (needed for updates, e.g.
+# through Obtainium). Without them the APK is signed with a debug key.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  FLUTTER_VERSION: 3.47.7
+
+jobs:
+  linux:
+    name: Linux (tar.gz, AppImage)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - name: System libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config \
+            libgtk-3-dev libsecret-1-dev libwebkit2gtk-4.1-dev \
+            libsoup-3.0-dev libfuse2
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+      - run: flutter build linux --release
+      - name: Package
+        run: |
+          bundle=build/linux/x64/release/bundle
+          tar -czf readtrack-linux-x64.tar.gz -C "$bundle" .
+
+          # AppImage: the bundle with a launcher, desktop file and icon.
+          appdir=ReadTrack.AppDir
+          mkdir -p "$appdir"
+          cp -r "$bundle"/. "$appdir/"
+          cp assets/icon/readtrack.svg "$appdir/de.alimi.readtrack.svg"
+          cat > "$appdir/de.alimi.readtrack.desktop" <<'EOF'
+          [Desktop Entry]
+          Type=Application
+          Name=ReadTrack
+          Comment=Track and read books, fanfiction, web novels and manga
+          Exec=readtrack
+          Icon=de.alimi.readtrack
+          Categories=Office;Education;
+          Terminal=false
+          EOF
+          sed -i 's/^ *//' "$appdir/de.alimi.readtrack.desktop"
+          printf '#!/bin/sh\nexec "$(dirname "$(readlink -f "$0")")/readtrack" "$@"\n' > "$appdir/AppRun"
+          chmod +x "$appdir/AppRun"
+          curl -sSL -o appimagetool \
+            https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool
+          ARCH=x86_64 ./appimagetool --appimage-extract-and-run "$appdir" ReadTrack-x86_64.AppImage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: |
+            readtrack-linux-x64.tar.gz
+            ReadTrack-x86_64.AppImage
+
+  android:
+    name: Android (APK)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      HAS_KEY: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+      - name: Signing key
+        env:
+          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        if: env.HAS_KEY == 'true'
+        run: |
+          echo "$KEYSTORE" | base64 -d > android/app/upload.jks
+          cat > android/key.properties <<EOF
+          storeFile=upload.jks
+          storePassword=$STORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEY_PASSWORD
+          EOF
+      - run: flutter build apk --release
+      - run: flutter build apk --release --split-per-abi
+      - name: Rename
+        run: |
+          out=build/app/outputs/flutter-apk
+          mv "$out/app-release.apk" readtrack-android.apk
+          for abi in arm64-v8a armeabi-v7a x86_64; do
+            mv "$out/app-$abi-release.apk" "readtrack-android-$abi.apk"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android
+          path: readtrack-android*.apk
+
+  windows:
+    name: Windows (zip)
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+      - run: flutter build windows --release
+      - run: Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath readtrack-windows-x64.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: readtrack-windows-x64.zip
+
+  macos:
+    name: macOS (dmg)
+    runs-on: macos-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+      - run: flutter build macos --release
+      # Not notarized: open it the first time with right-click > Open.
+      - run: |
+          hdiutil create -volname ReadTrack \
+            -srcfolder build/macos/Build/Products/Release/ReadTrack.app \
+            -ov -format UDZO readtrack-macos.dmg
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: readtrack-macos.dmg
+
+  release:
+    name: GitHub release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [linux, android, windows, macos]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            readtrack-linux-x64.tar.gz
+            ReadTrack-x86_64.AppImage
+            readtrack-android*.apk
+            readtrack-windows-x64.zip
+            readtrack-macos.dmg
