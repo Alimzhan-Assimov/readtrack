@@ -586,6 +586,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteDownload => 'Delete download';
 
   @override
+  String get suggestTags => 'Suggest tags';
+
+  @override
+  String tagSuggestionWhy(String reason) {
+    return '$reason. Tap to add the tag.';
+  }
+
+  @override
+  String tagReasonKeyword(String word) {
+    return 'The summary mentions “$word”';
+  }
+
+  @override
+  String tagsSuggested(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tags suggested',
+      one: '1 tag suggested',
+      zero: 'No new tag suggestions',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get findCharacters => 'Find in the text';
 
   @override

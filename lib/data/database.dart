@@ -120,6 +120,26 @@ class WorkCharacters extends Table {
   Set<Column> get primaryKey => {workId, characterId};
 }
 
+/// A tag the app proposes for a work (from keywords in the summary, or an
+/// AI provider), with why; it becomes a real tag once the user confirms
+/// it. Dismissed ones are kept so they aren't proposed again.
+class TagSuggestions extends Table {
+  IntColumn get workId =>
+      integer().references(Works, #id, onDelete: KeyAction.cascade)();
+  IntColumn get tagId =>
+      integer().references(Tags, #id, onDelete: KeyAction.cascade)();
+
+  /// e.g. "The summary mentions “reborn”".
+  TextColumn get reason => text().nullable()();
+
+  /// "keywords", or the AI provider's name.
+  TextColumn get source => text().withDefault(const Constant('keywords'))();
+  BoolColumn get dismissed => boolean().withDefault(const Constant(false))();
+
+  @override
+  Set<Column> get primaryKey => {workId, tagId};
+}
+
 /// Another name for a tag: tags saved under it go to [tagId] instead.
 class TagSynonyms extends Table {
   /// Lowercase.
@@ -393,6 +413,7 @@ class ReadingDays extends Table {
 
 @DriftDatabase(
   tables: [
+    TagSuggestions,
     FandomAliases,
     TagSynonyms,
     Characters,
@@ -418,7 +439,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 18;
+  int get schemaVersion => 19;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -487,6 +508,7 @@ class AppDatabase extends _$AppDatabase {
       if (from < 16) await _addColumnIfMissing(m, works, works.currentPage);
       if (from < 17) await m.createTable(fandomAliases);
       if (from < 18) await _addColumnIfMissing(m, works, works.anilistId);
+      if (from < 19) await m.createTable(tagSuggestions);
       if (from < 14) {
         await m.createTable(characters);
         await m.createTable(characterAliases);
@@ -1852,6 +1874,82 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> removeTagSynonym(String synonym) =>
       (delete(tagSynonyms)..where((s) => s.synonym.equals(synonym))).go();
+
+  /// Open suggestions for [workId] (not dismissed, not already tags).
+  Stream<List<({Tag tag, TagSuggestion suggestion})>> watchTagSuggestions(
+    int workId,
+  ) {
+    final query =
+        select(tagSuggestions)
+            .join([innerJoin(tags, tags.id.equalsExp(tagSuggestions.tagId))])
+          ..where(
+            tagSuggestions.workId.equals(workId) &
+                tagSuggestions.dismissed.equals(false) &
+                tagSuggestions.tagId
+                    .isInQuery(
+                      selectOnly(workTags)
+                        ..addColumns([workTags.tagId])
+                        ..where(workTags.workId.equals(workId)),
+                    )
+                    .not(),
+          )
+          ..orderBy([OrderingTerm.asc(tags.name)]);
+    return query.watch().map(
+      (rows) => [
+        for (final r in rows)
+          (tag: r.readTable(tags), suggestion: r.readTable(tagSuggestions)),
+      ],
+    );
+  }
+
+  /// Proposes tags by name with a reason each; ones the work has, or the
+  /// user dismissed before, are skipped. Returns how many are new.
+  Future<int> suggestTags(
+    int workId,
+    Map<String, String> reasons, {
+    String source = 'keywords',
+  }) async {
+    var added = 0;
+    final has = {
+      for (final t in (await watchWork(workId).first)?.tags ?? const <Tag>[])
+        t.id,
+    };
+    for (final MapEntry(key: name, value: reason) in reasons.entries) {
+      final tagId = await _tagIdFor(name);
+      if (tagId == null || has.contains(tagId)) continue;
+      final known =
+          await (select(tagSuggestions)
+                ..where((x) => x.workId.equals(workId) & x.tagId.equals(tagId)))
+              .getSingleOrNull();
+      if (known != null) continue;
+      await into(tagSuggestions).insert(
+        TagSuggestionsCompanion.insert(
+          workId: workId,
+          tagId: tagId,
+          reason: Value(reason),
+          source: Value(source),
+        ),
+      );
+      added++;
+    }
+    return added;
+  }
+
+  Future<void> acceptTagSuggestion(int workId, int tagId) =>
+      transaction(() async {
+        await into(workTags).insert(
+          WorkTagsCompanion.insert(workId: workId, tagId: tagId),
+          mode: InsertMode.insertOrIgnore,
+        );
+        await (delete(
+          tagSuggestions,
+        )..where((s) => s.workId.equals(workId) & s.tagId.equals(tagId))).go();
+      });
+
+  Future<void> dismissTagSuggestion(int workId, int tagId) =>
+      (update(tagSuggestions)
+            ..where((s) => s.workId.equals(workId) & s.tagId.equals(tagId)))
+          .write(const TagSuggestionsCompanion(dismissed: Value(true)));
 
   Future<void> setTagAdult(int tagId, bool adult) =>
       (update(tags)..where((t) => t.id.equals(tagId))).write(

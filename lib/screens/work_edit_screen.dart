@@ -449,6 +449,9 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
         await _db.saveChapterList(id, chapterListing(info));
       }
       await _db.fillMissingCounts(id);
+      if (widget.existing == null) {
+        await suggestKeywordTags(_db, id, '${_title.text}\n${_summary.text}');
+      }
     } catch (e, stack) {
       logError('save', 'Saving an entry failed', error: e, stack: stack);
       // Never leave the button stuck without saying why.

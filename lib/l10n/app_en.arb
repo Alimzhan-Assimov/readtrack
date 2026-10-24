@@ -329,6 +329,31 @@
     }
   },
   "deleteDownload": "Delete download",
+  "suggestTags": "Suggest tags",
+  "tagSuggestionWhy": "{reason}. Tap to add the tag.",
+  "@tagSuggestionWhy": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "tagReasonKeyword": "The summary mentions “{word}”",
+  "@tagReasonKeyword": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "tagsSuggested": "{count, plural, =0{No new tag suggestions} =1{1 tag suggested} other{{count} tags suggested}}",
+  "@tagsSuggested": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "findCharacters": "Find in the text",
   "suggestedCharacter": "Found in the text. Tap to confirm.",
   "dismissSuggestion": "Not in this story",
