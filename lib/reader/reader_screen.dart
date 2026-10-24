@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../diagnostics/app_log.dart';
 import '../data/database.dart';
 import '../data/database_scope.dart';
 import '../l10n/l10n.dart';
@@ -300,11 +301,26 @@ class _ReaderScreenState extends State<ReaderScreen> {
       throw SourceException(l10n.readerNoSource);
     }
     if (chapter.isLocked) throw SourceException(l10n.readerLockedChapter);
-    final cached = _onlineCache[number] ??= await source.fetchChapter(
-      chapterRefOf(chapter),
-      _fetcher ??= openFetcher(source),
-    );
-    return _LoadedChapter(cached.title ?? chapter.title, cached.html);
+    try {
+      final cached = _onlineCache[number] ??= await source.fetchChapter(
+        chapterRefOf(chapter),
+        _fetcher ??= openFetcher(source),
+      );
+      return _LoadedChapter(cached.title ?? chapter.title, cached.html);
+    } on SourceException catch (e) {
+      logWarning(
+        'reader',
+        'Chapter failed to load',
+        context: {
+          'workId': widget.work.id,
+          'source': source.name,
+          'chapter': number,
+          'url': chapter.url,
+        },
+        error: e.message,
+      );
+      rethrow;
+    }
   }
 
   ImageProvider? _resolveImage(String src) {

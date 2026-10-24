@@ -509,6 +509,45 @@ class AppLocalizationsEn extends AppLocalizations {
   String get openFile => 'Open file';
 
   @override
+  String get logTitle => 'Diagnostic log';
+
+  @override
+  String get logHint =>
+      'Errors and download problems, for bug reports. No passwords or book text.';
+
+  @override
+  String get logEmpty => 'Nothing logged yet.';
+
+  @override
+  String get copyLog => 'Copy log';
+
+  @override
+  String get exportLog => 'Save log as file';
+
+  @override
+  String get clearLog => 'Clear log';
+
+  @override
+  String get clearLogTitle => 'Clear the diagnostic log?';
+
+  @override
+  String logExported(String path) {
+    return 'Log saved: $path';
+  }
+
+  @override
+  String get showLog => 'Show log';
+
+  @override
+  String get crashNotice =>
+      'ReadTrack didn\'t close normally last time. The log may show why.';
+
+  @override
+  String crashDuringDownload(String title, String done, String total) {
+    return 'ReadTrack stopped unexpectedly while downloading “$title” ($done of $total chapters). Downloaded chapters are kept; start the download again to continue.';
+  }
+
+  @override
   String openFileFormat(String format) {
     return 'Open $format file';
   }

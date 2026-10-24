@@ -9,6 +9,7 @@ import '../data/database_scope.dart';
 import '../l10n/l10n.dart';
 import '../library/backup.dart';
 import '../library/library_scope.dart';
+import 'log_screen.dart';
 import 'trash_screen.dart';
 import '../ui/app_settings.dart';
 import '../ui/layout.dart';
@@ -184,6 +185,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   leading: const Icon(Icons.settings_backup_restore),
                   title: Text(l10n.restoreBackup),
                   onTap: _restoreBackup,
+                ),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.bug_report_outlined),
+                  title: Text(l10n.logTitle),
+                  subtitle: Text(l10n.logHint),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(
+                    context,
+                  ).push(MaterialPageRoute(builder: (_) => const LogScreen())),
                 ),
                 StreamBuilder<List<Work>>(
                   stream: _trash,

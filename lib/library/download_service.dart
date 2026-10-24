@@ -4,6 +4,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter/foundation.dart';
 
 import '../data/database.dart';
+import '../diagnostics/app_log.dart';
 import '../sources/html_clean.dart';
 import '../sources/fetcher.dart' show SourceAccessException;
 import '../sources/sources.dart';
@@ -84,6 +85,18 @@ class DownloadService extends ChangeNotifier {
     final fetcher = openFetcherFor(source);
     var downloaded = 0, failed = 0;
     String? firstError;
+    final where = {'workId': id, 'source': source.name};
+    DownloadResult done(DownloadResult result) {
+      logInfo('download', result.cancelled ? 'Cancelled' : 'Finished', {
+        ...where,
+        'downloaded': result.downloaded,
+        'failed': result.failed,
+        'locked': result.locked,
+        'file': result.file == null ? null : 'written',
+      });
+      return result;
+    }
+
     try {
       await _saveCover(work, fetcher);
       final start = appendTo?.fromChapter ?? from;
@@ -96,6 +109,14 @@ class DownloadService extends ChangeNotifier {
       final todo = inRange
           .where((c) => c.content == null && !c.isLocked && c.url != null)
           .toList();
+      logInfo('download', 'Started', {
+        ...where,
+        'title': work.title,
+        'from': start,
+        'to': to,
+        'toFetch': todo.length,
+        'locked': locked,
+      });
 
       for (final chapter in todo) {
         if (_cancelled.contains(id)) break;
@@ -105,6 +126,13 @@ class DownloadService extends ChangeNotifier {
           chapterTitle: chapter.title,
         );
         notifyListeners();
+        await AppLog.instance?.setSessionState('download', {
+          ...where,
+          'title': work.title,
+          'chapter': chapter.number,
+          'done': downloaded + failed,
+          'total': todo.length,
+        });
         try {
           final content = await source.fetchChapter(
             chapterRefOf(chapter),
@@ -121,7 +149,14 @@ class DownloadService extends ChangeNotifier {
         } on SourceException catch (error) {
           failed++;
           firstError ??= error.message;
-          if (error is SourceAccessException) {
+          final access = error is SourceAccessException;
+          logWarning(
+            'download',
+            access ? 'Stopped: no access to the site' : 'Chapter failed',
+            context: {...where, 'chapter': chapter.number, 'url': chapter.url},
+            error: error.message,
+          );
+          if (access) {
             failed = todo.length - downloaded;
             break;
           }
@@ -129,12 +164,14 @@ class DownloadService extends ChangeNotifier {
       }
 
       if (_cancelled.contains(id)) {
-        return DownloadResult(
-          downloaded: downloaded,
-          failed: failed,
-          locked: locked,
-          cancelled: true,
-          firstError: firstError,
+        return done(
+          DownloadResult(
+            downloaded: downloaded,
+            failed: failed,
+            locked: locked,
+            cancelled: true,
+            firstError: firstError,
+          ),
         );
       }
       final stored = await _db.chaptersOf(id);
@@ -145,12 +182,15 @@ class DownloadService extends ChangeNotifier {
             chapter.content != null,
       );
       if (!hasText) {
-        return DownloadResult(
-          downloaded: downloaded,
-          failed: failed,
-          locked: locked,
-          cancelled: false,
-          firstError: firstError ?? 'No chapter text is available to download.',
+        return done(
+          DownloadResult(
+            downloaded: downloaded,
+            failed: failed,
+            locked: locked,
+            cancelled: false,
+            firstError:
+                firstError ?? 'No chapter text is available to download.',
+          ),
         );
       }
       final file = await _export(
@@ -161,15 +201,27 @@ class DownloadService extends ChangeNotifier {
         // An extended download keeps its format.
         appendTo == null ? format : ExportFormat.fromName(appendTo.format),
       );
-      return DownloadResult(
-        downloaded: downloaded,
-        failed: failed,
-        locked: locked,
-        cancelled: false,
-        file: file,
-        firstError: firstError,
+      return done(
+        DownloadResult(
+          downloaded: downloaded,
+          failed: failed,
+          locked: locked,
+          cancelled: false,
+          file: file,
+          firstError: firstError,
+        ),
       );
+    } catch (error, stack) {
+      logError(
+        'download',
+        'Download crashed',
+        context: {...where, 'downloaded': downloaded, 'failed': failed},
+        error: error,
+        stack: stack,
+      );
+      rethrow;
     } finally {
+      await AppLog.instance?.setSessionState('download', null);
       await fetcher.close();
       _progress.remove(id);
       _cancelled.remove(id);

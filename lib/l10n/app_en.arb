@@ -275,6 +275,37 @@
   },
   "readDownload": "Read",
   "openFile": "Open file",
+  "logTitle": "Diagnostic log",
+  "logHint": "Errors and download problems, for bug reports. No passwords or book text.",
+  "logEmpty": "Nothing logged yet.",
+  "copyLog": "Copy log",
+  "exportLog": "Save log as file",
+  "clearLog": "Clear log",
+  "clearLogTitle": "Clear the diagnostic log?",
+  "logExported": "Log saved: {path}",
+  "@logExported": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "showLog": "Show log",
+  "crashNotice": "ReadTrack didn't close normally last time. The log may show why.",
+  "crashDuringDownload": "ReadTrack stopped unexpectedly while downloading “{title}” ({done} of {total} chapters). Downloaded chapters are kept; start the download again to continue.",
+  "@crashDuringDownload": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "done": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
   "openFileFormat": "Open {format} file",
   "@openFileFormat": {
     "placeholders": {

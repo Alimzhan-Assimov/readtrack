@@ -4,6 +4,7 @@ import 'package:drift/drift.dart' show Value, driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:readtrack/data/database.dart';
+import 'package:readtrack/diagnostics/app_log.dart';
 import 'package:readtrack/library/download_service.dart';
 import 'package:readtrack/library/exporters.dart';
 import 'package:readtrack/library/storage.dart';
@@ -132,6 +133,36 @@ void main() {
   });
 
   tearDown(() => db.close());
+
+  test('failed chapters and the session state go to the log', () async {
+    final dir = Directory.systemTemp.createTempSync('readtrack_dl_log');
+    addTearDown(() {
+      AppLog.instance = null;
+      dir.deleteSync(recursive: true);
+    });
+    final log = await AppLog.open(dir);
+    await log.startSession();
+    await service.download(
+      work: work,
+      source: _FlakySource({3}),
+      from: 1,
+      to: 4,
+    );
+    final text = await log.read();
+    expect(text, contains('[download] Started'));
+    expect(text, contains('"toFetch":4'));
+    expect(text, contains('[download] Chapter failed'));
+    expect(text, contains('"chapter":3,"url":"https://fake.test/3"'));
+    expect(text, contains('error: Connection lost.'));
+    expect(text, contains('"downloaded":3,"failed":1'));
+    // The finished download no longer counts as running after a crash.
+    await log.setSessionState('other', {'x': 1});
+    expect(
+      (await AppLog.open(dir).then((l) => l.startSession()))!
+          .containsKey('download'),
+      isFalse,
+    );
+  });
 
   test('a retry fills the gaps an interrupted download left', () async {
     final first = _FlakySource({2, 4});

@@ -862,6 +862,72 @@ abstract class AppLocalizations {
   /// **'Open file'**
   String get openFile;
 
+  /// No description provided for @logTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Diagnostic log'**
+  String get logTitle;
+
+  /// No description provided for @logHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Errors and download problems, for bug reports. No passwords or book text.'**
+  String get logHint;
+
+  /// No description provided for @logEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing logged yet.'**
+  String get logEmpty;
+
+  /// No description provided for @copyLog.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy log'**
+  String get copyLog;
+
+  /// No description provided for @exportLog.
+  ///
+  /// In en, this message translates to:
+  /// **'Save log as file'**
+  String get exportLog;
+
+  /// No description provided for @clearLog.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear log'**
+  String get clearLog;
+
+  /// No description provided for @clearLogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear the diagnostic log?'**
+  String get clearLogTitle;
+
+  /// No description provided for @logExported.
+  ///
+  /// In en, this message translates to:
+  /// **'Log saved: {path}'**
+  String logExported(String path);
+
+  /// No description provided for @showLog.
+  ///
+  /// In en, this message translates to:
+  /// **'Show log'**
+  String get showLog;
+
+  /// No description provided for @crashNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'ReadTrack didn\'t close normally last time. The log may show why.'**
+  String get crashNotice;
+
+  /// No description provided for @crashDuringDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'ReadTrack stopped unexpectedly while downloading “{title}” ({done} of {total} chapters). Downloaded chapters are kept; start the download again to continue.'**
+  String crashDuringDownload(String title, String done, String total);
+
   /// No description provided for @openFileFormat.
   ///
   /// In en, this message translates to:

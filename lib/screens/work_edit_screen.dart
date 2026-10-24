@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../diagnostics/app_log.dart';
 import '../data/database.dart';
 import '../data/database_scope.dart';
 import '../data/default_tags.dart';
@@ -290,7 +291,8 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
         await _db.saveChapterList(id, chapterListing(info));
       }
       await _db.fillMissingCounts(id);
-    } catch (e) {
+    } catch (e, stack) {
+      logError('save', 'Saving an entry failed', error: e, stack: stack);
       // Never leave the button stuck without saying why.
       if (mounted) {
         setState(() => _saving = false);
