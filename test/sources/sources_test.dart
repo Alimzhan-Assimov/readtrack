@@ -251,6 +251,39 @@ void main() {
     },
   );
 
+  test('Author.Today: explains the Unadulted age gate', () async {
+    final fetcher = FakeFetcher({
+      'https://author.today/reader/564935/chapter?id=5359854': jsonString({
+        'isSuccessful': false,
+        'isWarning': false,
+        'messages': ['Unadulted'],
+        'data': null,
+      }),
+    });
+    await expectLater(
+      const AuthorTodaySource().fetchChapter(
+        ChapterRef(
+          number: 1,
+          title: 'Глава 1: Расклад',
+          url: Uri.parse('https://author.today/reader/564935/5359854'),
+        ),
+        fetcher,
+      ),
+      throwsA(
+        isA<SourceException>().having(
+          (error) => error.message,
+          'message',
+          allOf(
+            contains('requires age confirmation'),
+            contains('ReadTrack browser window'),
+            isNot(contains('Unadulted')),
+          ),
+        ),
+      ),
+    );
+    expect(fetcher.requests, hasLength(1));
+  });
+
   test('Ficbook: details blocks, parts and line-based paragraphs', () async {
     final story = Uri.parse('https://ficbook.net/readfic/0193-abc');
     final fetcher = FakeFetcher({

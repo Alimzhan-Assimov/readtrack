@@ -874,6 +874,18 @@ abstract class AppLocalizations {
   /// **'Delete download'**
   String get deleteDownload;
 
+  /// No description provided for @downloadIncomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 chapter missing} other{{count} chapters missing}}'**
+  String downloadIncomplete(int count);
+
+  /// No description provided for @loadMissingChapters.
+  ///
+  /// In en, this message translates to:
+  /// **'Load missing chapters'**
+  String get loadMissingChapters;
+
   /// No description provided for @downloadButton.
   ///
   /// In en, this message translates to:
@@ -1039,7 +1051,7 @@ abstract class AppLocalizations {
   /// No description provided for @readerBrowserHint.
   ///
   /// In en, this message translates to:
-  /// **'A browser window opens briefly to load this site.'**
+  /// **'If a ReadTrack browser window opens, complete the website’s confirmation or sign-in there. Leave it open while reading or downloading.'**
   String get readerBrowserHint;
 
   /// No description provided for @readerRetry.

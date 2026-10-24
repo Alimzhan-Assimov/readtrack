@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import '../data/enums.dart';
+import 'author_today_fetcher.dart';
 import 'fetcher.dart';
 import 'html_clean.dart';
 import 'source.dart';
@@ -19,7 +20,10 @@ class AuthorTodaySource extends StorySource {
   List<String> get hosts => const [_host];
 
   @override
-  FetchMode get fetchMode => FetchMode.http;
+  FetchMode get fetchMode => FetchMode.httpThenBrowser;
+
+  @override
+  PageFetcher createFetcher() => AuthorTodayFetcher();
 
   @override
   Uri? storyUrl(Uri uri) {
@@ -100,14 +104,26 @@ class AuthorTodaySource extends StorySource {
     final encrypted = data?['text'] as String?;
     final secret = response.headers['reader-secret'];
     if (json['isSuccessful'] != true || encrypted == null || secret == null) {
-      final messages = (json['messages'] as List?)?.join(' ');
+      final errors = json['messages'] as List?;
+      if (errors?.any((message) => '$message'.trim() == 'Unadulted') == true) {
+        throw SourceAccessException(
+          'Author.Today requires age confirmation for this 18+ book. '
+          'Confirm your age or sign in in the ReadTrack browser window, '
+          'then retry.',
+        );
+      }
+      final messages = errors?.join(' ');
       throw SourceException(
         messages?.isNotEmpty == true
             ? messages!
             : 'Chapter "${chapter.title}" is not available to read for free.',
       );
     }
-    final html = decryptChapter(encrypted, secret);
+    final html = decryptChapter(
+      encrypted,
+      secret,
+      userId: response.headers['readtrack-user-id'] ?? '',
+    );
     return ChapterContent(
       title: chapter.title,
       html: cleanHtml(parseHtml(html).body!, base: chapter.url),
@@ -117,8 +133,12 @@ class AuthorTodaySource extends StorySource {
   /// The reader sends chapter text XOR-ed with a key derived from the
   /// `Reader-Secret` response header (reversed, plus "@_@" and the user id,
   /// which is empty for guests). This is what the site's own reader does.
-  static String decryptChapter(String text, String secret) {
-    final key = '${secret.split('').reversed.join()}@_@';
+  static String decryptChapter(
+    String text,
+    String secret, {
+    String userId = '',
+  }) {
+    final key = '${secret.split('').reversed.join()}@_@$userId';
     final out = StringBuffer();
     for (var i = 0; i < text.length; i++) {
       out.writeCharCode(text.codeUnitAt(i) ^ key.codeUnitAt(i % key.length));

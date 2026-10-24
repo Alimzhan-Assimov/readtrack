@@ -108,6 +108,15 @@ abstract class StorySource {
 
   FetchMode get fetchMode;
 
+  PageFetcher createFetcher() => switch (fetchMode) {
+    FetchMode.http => HttpFetcher(),
+    FetchMode.browser => BrowserFetcher(windowTitle: 'ReadTrack · $name'),
+    FetchMode.httpThenBrowser => FallbackFetcher(
+      HttpFetcher(),
+      () => BrowserFetcher(windowTitle: 'ReadTrack · $name'),
+    ),
+  };
+
   /// False for catalog sites that only describe a story but don't host it.
   bool get canRead => true;
 
@@ -131,16 +140,7 @@ abstract class StorySource {
 }
 
 /// Opens the right kind of [PageFetcher] for a source. Close it when done.
-PageFetcher openFetcher(StorySource source) => switch (source.fetchMode) {
-  FetchMode.http => HttpFetcher(),
-  FetchMode.browser => BrowserFetcher(
-    windowTitle: 'ReadTrack · ${source.name}',
-  ),
-  FetchMode.httpThenBrowser => FallbackFetcher(
-    HttpFetcher(),
-    () => BrowserFetcher(windowTitle: 'ReadTrack · ${source.name}'),
-  ),
-};
+PageFetcher openFetcher(StorySource source) => source.createFetcher();
 
 /// Uses [primary] until it fails once, then switches to the fallback for the
 /// rest of the session.

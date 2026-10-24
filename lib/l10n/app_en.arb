@@ -284,6 +284,15 @@
     }
   },
   "deleteDownload": "Delete download",
+  "downloadIncomplete": "{count, plural, =1{1 chapter missing} other{{count} chapters missing}}",
+  "@downloadIncomplete": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "loadMissingChapters": "Load missing chapters",
   "downloadButton": "Download…",
   "downloadPreparing": "Preparing download…",
   "downloadProgress": "Downloading chapter {current} of {total}…",
@@ -419,7 +428,7 @@
     }
   },
   "readerLoading": "Loading chapter…",
-  "readerBrowserHint": "A browser window opens briefly to load this site.",
+  "readerBrowserHint": "If a ReadTrack browser window opens, complete the website’s confirmation or sign-in there. Leave it open while reading or downloading.",
   "readerRetry": "Try again",
   "readerNoChapters": "No chapters yet. Load the chapter list first.",
   "readerNoSource": "This entry's site isn't supported for reading in the app.",
