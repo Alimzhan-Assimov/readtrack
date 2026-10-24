@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../data/database.dart';
 import '../data/database_scope.dart';
 import '../l10n/l10n.dart';
+import '../library/character_detection.dart';
 import '../library/story_sync.dart';
 import '../sources/sources.dart';
 import '../ui/app_settings.dart';
@@ -96,6 +97,38 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
       }
     } finally {
       if (mounted) setState(() => _estimating = false);
+    }
+  }
+
+  bool _detecting = false;
+
+  /// Looks for the category's known characters in the downloaded text and
+  /// adds them as suggestions.
+  Future<void> _findCharacters(WorkWithDetails item) async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _detecting = true);
+    try {
+      final known = await _db.charactersOf(item.fandom!.id);
+      final text = await _db.textOf(item.work.id);
+      if (known.isEmpty || text.trim().isEmpty) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(
+              known.isEmpty ? l10n.noKnownCharacters : l10n.noTextToSearch,
+            ),
+          ),
+        );
+        return;
+      }
+      final found = detectCharacters(text, known)
+        ..removeWhere((id, _) => item.characters.any((c) => c.id == id));
+      await _db.suggestCharacters(item.work.id, found);
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.charactersFound(found.length))),
+      );
+    } finally {
+      if (mounted) setState(() => _detecting = false);
     }
   }
 
@@ -326,17 +359,46 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
                   ],
                 ),
               ),
-            if (item.characters.isNotEmpty)
+            if (item.characters.isNotEmpty || item.fandom != null)
               _Section(
                 title: l10n.sectionCharacters,
                 child: Wrap(
                   spacing: 8,
                   runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     for (final c in item.characters)
-                      Chip(
-                        avatar: const Icon(Icons.person_outline, size: 18),
-                        label: Text(c.name),
+                      if (item.suggestedCharacters.contains(c.id))
+                        InputChip(
+                          avatar: const Icon(Icons.help_outline, size: 18),
+                          label: Text(c.name),
+                          tooltip: l10n.suggestedCharacter,
+                          onPressed: () => _db.confirmCharacter(w.id, c.id),
+                          onDeleted: () => _db.removeCharacter(w.id, c.id),
+                          deleteButtonTooltipMessage: l10n.dismissSuggestion,
+                        )
+                      else
+                        Chip(
+                          avatar: const Icon(Icons.person_outline, size: 18),
+                          label: Text(c.name),
+                        ),
+                    if (item.fandom != null)
+                      TextButton.icon(
+                        icon: _detecting
+                            ? const SizedBox.square(
+                                dimension: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(
+                                Icons.person_search_outlined,
+                                size: 18,
+                              ),
+                        label: Text(l10n.findCharacters),
+                        onPressed: _detecting
+                            ? null
+                            : () => _findCharacters(item),
                       ),
                   ],
                 ),

@@ -324,9 +324,19 @@ class WorkWithDetails {
     this.series,
     this.crossovers = const [],
     this.characters = const [],
+    this.suggestedCharacters = const {},
   });
 
+  /// Including [suggestedCharacters].
   final List<Character> characters;
+
+  /// Ids of characters found in the text but not confirmed yet.
+  final Set<int> suggestedCharacters;
+
+  List<Character> get confirmedCharacters => [
+    for (final c in characters)
+      if (!suggestedCharacters.contains(c.id)) c,
+  ];
 
   /// Further categories, e.g. the other side of a crossover.
   final List<Fandom> crossovers;
@@ -806,10 +816,17 @@ class AppDatabase extends _$AppDatabase {
                 ..orderBy([OrderingTerm.asc(characters.name)]))
               .get();
     final charactersByWork = <int, List<Character>>{};
+    final suggestedByWork = <int, Set<int>>{};
     for (final r in characterRows) {
+      final link = r.readTable(workCharacters);
       charactersByWork
-          .putIfAbsent(r.readTable(workCharacters).workId, () => [])
+          .putIfAbsent(link.workId, () => [])
           .add(r.readTable(characters));
+      if (link.confidence < 1) {
+        suggestedByWork
+            .putIfAbsent(link.workId, () => {})
+            .add(link.characterId);
+      }
     }
     final crossoversByWork = <int, List<Fandom>>{};
     for (final r in crossoverRows) {
@@ -857,6 +874,8 @@ class AppDatabase extends _$AppDatabase {
           series: r.readTableOrNull(series),
           crossovers: crossoversByWork[r.readTable(works).id] ?? const [],
           characters: charactersByWork[r.readTable(works).id] ?? const [],
+          suggestedCharacters:
+              suggestedByWork[r.readTable(works).id] ?? const {},
         ),
     ];
   }
@@ -1003,16 +1022,20 @@ class AppDatabase extends _$AppDatabase {
         );
       }
       if (characterNames != null) {
-        await (delete(workCharacters)..where((c) => c.workId.equals(id))).go();
+        // Suggestions found in the text stay until confirmed or dismissed.
+        await (delete(workCharacters)..where(
+              (c) => c.workId.equals(id) & c.confidence.isBiggerOrEqualValue(1),
+            ))
+            .go();
         for (final name in characterNames) {
           final characterId = await _characterIdFor(name, row.fandomId.value);
           if (characterId == null) continue;
-          await into(workCharacters).insert(
+          // Naming a suggested character confirms it.
+          await into(workCharacters).insertOnConflictUpdate(
             WorkCharactersCompanion.insert(
               workId: id,
               characterId: characterId,
             ),
-            mode: InsertMode.insertOrIgnore,
           );
         }
       }
@@ -1658,6 +1681,70 @@ class AppDatabase extends _$AppDatabase {
   /// The character [name] of [fandomId] (created if new).
   Future<int?> characterIdFor(String name, int? fandomId) =>
       _characterIdFor(name, fandomId);
+
+  /// The characters of category [fandomId] with all their names.
+  Future<List<({Character character, List<String> names})>> charactersOf(
+    int fandomId,
+  ) async {
+    final rows = await (select(
+      characters,
+    )..where((c) => c.fandomId.equals(fandomId))).get();
+    final aliases = await (select(
+      characterAliases,
+    )..where((a) => a.characterId.isIn([for (final c in rows) c.id]))).get();
+    return [
+      for (final c in rows)
+        (
+          character: c,
+          names: [
+            c.name,
+            for (final a in aliases)
+              if (a.characterId == c.id) a.alias,
+          ],
+        ),
+    ];
+  }
+
+  /// Adds characters found in the text with how sure the guess is (below
+  /// 1); confirmed ones stay as they are.
+  Future<void> suggestCharacters(int workId, Map<int, double> found) =>
+      batch((b) {
+        for (final MapEntry(key: id, value: confidence) in found.entries) {
+          b.insert(
+            workCharacters,
+            WorkCharactersCompanion.insert(
+              workId: workId,
+              characterId: id,
+              confidence: Value(confidence.clamp(0, 0.99)),
+            ),
+            mode: InsertMode.insertOrIgnore,
+          );
+        }
+      });
+
+  Future<void> confirmCharacter(int workId, int characterId) =>
+      (update(workCharacters)..where(
+            (c) => c.workId.equals(workId) & c.characterId.equals(characterId),
+          ))
+          .write(const WorkCharactersCompanion(confidence: Value(1)));
+
+  Future<void> removeCharacter(int workId, int characterId) =>
+      (delete(workCharacters)..where(
+            (c) => c.workId.equals(workId) & c.characterId.equals(characterId),
+          ))
+          .go();
+
+  /// The text of [workId]'s chapters that have any, up to [maxChars].
+  Future<String> textOf(int workId, {int maxChars = 400000}) async {
+    final buffer = StringBuffer();
+    for (final c in await chaptersOf(workId)) {
+      final html = c.content;
+      if (html == null) continue;
+      buffer.writeln(html.replaceAll(RegExp(r'<[^>]*>'), ' '));
+      if (buffer.length > maxChars) break;
+    }
+    return '$buffer';
+  }
 
   Future<void> setCharacterAniListId(int characterId, int anilistId) =>
       (update(characters)..where((c) => c.id.equals(characterId))).write(
