@@ -207,4 +207,40 @@ void main() {
     }
     expect(await db.usedPairings(), hasLength(1));
   });
+
+  test('franchises are proposed for entries without one', () async {
+    Future<int> add(
+      String title,
+      WorkType type, {
+      List<String> tags = const [],
+      String? fandom,
+    }) => db.saveWork(
+      WorksCompanion.insert(
+        type: type,
+        format: WorkFormat.digital,
+        title: title,
+      ),
+      tagNames: tags,
+      fandomName: fandom,
+    );
+    await add('Хякки Яко', WorkType.fanfiction, tags: ['наруто']);
+    await add('Жизнь внутри Наруто', WorkType.fanfiction);
+    final book = await add('Naruto: The Official Guide', WorkType.book);
+    await add('Naruto Again', WorkType.fanfiction, fandom: 'Naruto');
+    await add('Глобальная Миссия', WorkType.webnovel, tags: ['боевик']);
+
+    final proposals = await db.proposeFandoms();
+    expect(
+      {for (final p in proposals) p.item.work.title: (p.fandom, p.sure)},
+      {
+        'Хякки Яко': ('Naruto', true),
+        'Жизнь внутри Наруто': ('Naruto', true),
+        // A book's title alone is only a guess to confirm.
+        'Naruto: The Official Guide': ('Naruto', false),
+      },
+    );
+    await db.setFandom(book, 'Наруто');
+    expect((await db.watchWork(book).first)!.fandom!.name, 'Naruto');
+    expect(await db.proposeFandoms(), hasLength(2));
+  });
 }

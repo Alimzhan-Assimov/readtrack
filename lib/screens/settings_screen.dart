@@ -84,6 +84,69 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  /// Proposes franchises for entries without one and files the confirmed
+  /// ones; guesses from a book's title alone start unchecked.
+  Future<void> _findFandoms() async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    final proposals = await _db.proposeFandoms();
+    if (!mounted) return;
+    if (proposals.isEmpty) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.noFandomsFound)));
+      return;
+    }
+    final chosen = {
+      for (final (i, p) in proposals.indexed)
+        if (p.sure) i,
+    };
+    final apply = await showDialog<bool>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text(l10n.findFandoms),
+          content: SizedBox(
+            width: 480,
+            child: ListView(
+              shrinkWrap: true,
+              children: [
+                Text(l10n.findFandomsReview),
+                for (final (i, p) in proposals.indexed)
+                  CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    value: chosen.contains(i),
+                    title: Text(p.item.work.title),
+                    subtitle: Text(
+                      p.sure ? p.fandom : l10n.fandomFromTitle(p.fandom),
+                    ),
+                    onChanged: (on) => setDialogState(
+                      () => on! ? chosen.add(i) : chosen.remove(i),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(l10n.assignFandoms),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (apply != true) return;
+    for (final i in chosen) {
+      await _db.setFandom(proposals[i].item.work.id, proposals[i].fandom);
+    }
+    messenger.showSnackBar(
+      SnackBar(content: Text(l10n.fandomsAssigned(chosen.length))),
+    );
+  }
+
   Future<void> _createBackup() async {
     final l10n = context.l10n;
     final messenger = ScaffoldMessenger.of(context);
@@ -231,6 +294,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   }),
                   enabled: _refreshing == null,
                   onTap: _refreshAll,
+                ),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.category_outlined),
+                  title: Text(l10n.findFandoms),
+                  subtitle: Text(l10n.findFandomsHint),
+                  onTap: _findFandoms,
                 ),
                 const SizedBox(height: 16),
                 Text(

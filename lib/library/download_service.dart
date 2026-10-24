@@ -290,6 +290,7 @@ class DownloadService extends ChangeNotifier {
         to: to,
         storage: storage,
         tags: [for (final t in details.tags) t.name],
+        fandom: details.fandom?.name,
         withImages: withImages,
       ),
       file,

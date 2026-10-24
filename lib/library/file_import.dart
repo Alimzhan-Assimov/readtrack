@@ -32,7 +32,11 @@ class ImportedBook {
     this.isFanfiction = false,
     this.type,
     this.rightToLeft = false,
+    this.fandom,
   });
+
+  /// The category the file names, e.g. in a ReadTrack EPUB.
+  final String? fandom;
 
   /// What the file says it is, e.g. manga for a CBZ; null for a book.
   final WorkType? type;
@@ -63,6 +67,7 @@ class ImportedBook {
     isFanfiction: isFanfiction,
     type: type,
     rightToLeft: rightToLeft,
+    fandom: fandom,
   );
 
   final String title;
@@ -445,8 +450,15 @@ ImportedBook readEpub(List<int> bytes) {
     ])
       e.innerText.trim(),
   ];
+  final fandom = opf
+      .findAllElements('meta', namespaceUri: '*')
+      .where((m) => m.getAttribute('name') == 'readtrack:fandom')
+      .map((m) => m.getAttribute('content')?.trim() ?? '')
+      .where((f) => f.isNotEmpty)
+      .firstOrNull;
   return ImportedBook(
     title: meta('title') ?? 'Untitled',
+    fandom: fandom,
     sourceUrl: identifiers.where(_isWebLink).firstOrNull,
     isbn: identifiers.map(isbnOf).nonNulls.firstOrNull,
     author: creators.isEmpty ? null : creators.join(', '),

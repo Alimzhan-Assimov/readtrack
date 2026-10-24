@@ -1955,4 +1955,48 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiSend => 'Send';
+
+  @override
+  String categorySuggestion(String name) {
+    return 'Category: $name?';
+  }
+
+  @override
+  String get categorySuggestionHint =>
+      'The title mentions this franchise. Tap to use it.';
+
+  @override
+  String get findFandoms => 'Find franchises for entries without one';
+
+  @override
+  String get findFandomsHint =>
+      'From tags and titles; you confirm before anything changes.';
+
+  @override
+  String get findFandomsReview =>
+      'Check the franchises to assign. Guesses only from a book\'s title are not checked.';
+
+  @override
+  String fandomFromTitle(String name) {
+    return '$name (from the title)';
+  }
+
+  @override
+  String get noFandomsFound =>
+      'No franchise found for the entries without one.';
+
+  @override
+  String fandomsAssigned(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries filed under their franchises',
+      one: '1 entry filed under its franchise',
+      zero: 'Nothing changed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get assignFandoms => 'Assign';
 }

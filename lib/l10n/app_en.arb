@@ -1242,5 +1242,35 @@
     }
   },
   "aiNoChapters": "No downloaded chapters: only the summary is sent.",
-  "aiSend": "Send"
+  "aiSend": "Send",
+  "categorySuggestion": "Category: {name}?",
+  "@categorySuggestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "categorySuggestionHint": "The title mentions this franchise. Tap to use it.",
+  "findFandoms": "Find franchises for entries without one",
+  "findFandomsHint": "From tags and titles; you confirm before anything changes.",
+  "findFandomsReview": "Check the franchises to assign. Guesses only from a book's title are not checked.",
+  "fandomFromTitle": "{name} (from the title)",
+  "@fandomFromTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "noFandomsFound": "No franchise found for the entries without one.",
+  "fandomsAssigned": "{count, plural, =0{Nothing changed} =1{1 entry filed under its franchise} other{{count} entries filed under their franchises}}",
+  "@fandomsAssigned": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "assignFandoms": "Assign"
 }

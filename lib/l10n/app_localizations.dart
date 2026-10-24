@@ -2949,6 +2949,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Send'**
   String get aiSend;
+
+  /// No description provided for @categorySuggestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Category: {name}?'**
+  String categorySuggestion(String name);
+
+  /// No description provided for @categorySuggestionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The title mentions this franchise. Tap to use it.'**
+  String get categorySuggestionHint;
+
+  /// No description provided for @findFandoms.
+  ///
+  /// In en, this message translates to:
+  /// **'Find franchises for entries without one'**
+  String get findFandoms;
+
+  /// No description provided for @findFandomsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'From tags and titles; you confirm before anything changes.'**
+  String get findFandomsHint;
+
+  /// No description provided for @findFandomsReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the franchises to assign. Guesses only from a book\'s title are not checked.'**
+  String get findFandomsReview;
+
+  /// No description provided for @fandomFromTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} (from the title)'**
+  String fandomFromTitle(String name);
+
+  /// No description provided for @noFandomsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No franchise found for the entries without one.'**
+  String get noFandomsFound;
+
+  /// No description provided for @fandomsAssigned.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Nothing changed} =1{1 entry filed under its franchise} other{{count} entries filed under their franchises}}'**
+  String fandomsAssigned(int count);
+
+  /// No description provided for @assignFandoms.
+  ///
+  /// In en, this message translates to:
+  /// **'Assign'**
+  String get assignFandoms;
 }
 
 class _AppLocalizationsDelegate

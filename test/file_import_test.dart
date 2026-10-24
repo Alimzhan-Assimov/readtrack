@@ -123,9 +123,12 @@ void main() {
       from: 1,
       to: 2,
       storage: storage,
+      fandom: 'Naruto & Boruto',
     );
     final epub = readEpub(buildEpub(fic));
     expect(epub.sourceUrl, 'https://archiveofourown.org/works/1');
+    expect(epub.fandom, 'Naruto & Boruto');
+    expect(readEpub(buildEpub(exported)).fandom, isNull);
     final fb2 = readFb2(utf8.encode(buildFb2(fic)));
     expect(
       (fb2.sourceUrl, fb2.isFanfiction),
