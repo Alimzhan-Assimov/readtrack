@@ -982,6 +982,12 @@ abstract class AppLocalizations {
   /// **'Delete download'**
   String get deleteDownload;
 
+  /// No description provided for @adultTagsHidden.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 tag marked 18+ is hidden} other{{count} tags marked 18+ are hidden}} because “Hide 18+ tags” is on.'**
+  String adultTagsHidden(int count);
+
   /// No description provided for @suggestTags.
   ///
   /// In en, this message translates to:

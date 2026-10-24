@@ -190,6 +190,10 @@ class _ReadSectionState extends State<ReadSection> {
                 label: l10n.openFile,
                 onPressed: () => openFile(file.path),
               ),
+        // With an action it would stay until dismissed.
+        persist: false,
+        duration: const Duration(seconds: 5),
+        showCloseIcon: true,
       ),
     );
   }
@@ -494,11 +498,6 @@ class _ReadSectionState extends State<ReadSection> {
                         ),
                       ),
                     ),
-                  _AnnotationsPreview(
-                    annotations: _annotations,
-                    onOpen: (a) => _openAnnotation(a, downloads),
-                    onDelete: (a) => _db.deleteAnnotation(a.id),
-                  ),
                   ListenableBuilder(
                     listenable: service,
                     builder: (context, _) {
@@ -550,6 +549,13 @@ class _ReadSectionState extends State<ReadSection> {
                         ),
                       );
                     },
+                  ),
+                  // Below the download button, which belongs to the
+                  // downloads above.
+                  _AnnotationsPreview(
+                    annotations: _annotations,
+                    onOpen: (a) => _openAnnotation(a, downloads),
+                    onDelete: (a) => _db.deleteAnnotation(a.id),
                   ),
                 ],
               );

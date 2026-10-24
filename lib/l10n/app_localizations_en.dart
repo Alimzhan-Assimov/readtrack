@@ -586,6 +586,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteDownload => 'Delete download';
 
   @override
+  String adultTagsHidden(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tags marked 18+ are hidden',
+      one: '1 tag marked 18+ is hidden',
+    );
+    return '$_temp0 because “Hide 18+ tags” is on.';
+  }
+
+  @override
   String get suggestTags => 'Suggest tags';
 
   @override
