@@ -982,6 +982,24 @@ abstract class AppLocalizations {
   /// **'Delete download'**
   String get deleteDownload;
 
+  /// No description provided for @autoDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download new chapters'**
+  String get autoDownload;
+
+  /// No description provided for @autoDownloadHint.
+  ///
+  /// In en, this message translates to:
+  /// **'When a check finds new chapters, stories you have downloaded get them too, in the same file.'**
+  String get autoDownloadHint;
+
+  /// No description provided for @autoDownloaded.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Downloaded 1 new chapter} other{Downloaded {count} new chapters}}'**
+  String autoDownloaded(int count);
+
   /// No description provided for @mangaMode.
   ///
   /// In en, this message translates to:

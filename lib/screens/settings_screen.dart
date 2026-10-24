@@ -180,6 +180,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     value: settings.checkOnStart,
                     onChanged: settings.setCheckOnStart,
                   ),
+                if (settings != null)
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    secondary: const Icon(Icons.download_for_offline_outlined),
+                    title: Text(l10n.autoDownload),
+                    subtitle: Text(l10n.autoDownloadHint),
+                    value: settings.autoDownload,
+                    onChanged: settings.setAutoDownload,
+                  ),
                 const SizedBox(height: 16),
                 Text(
                   l10n.backupHeading,

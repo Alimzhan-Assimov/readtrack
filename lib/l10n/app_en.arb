@@ -329,6 +329,16 @@
     }
   },
   "deleteDownload": "Delete download",
+  "autoDownload": "Download new chapters",
+  "autoDownloadHint": "When a check finds new chapters, stories you have downloaded get them too, in the same file.",
+  "autoDownloaded": "{count, plural, =1{Downloaded 1 new chapter} other{Downloaded {count} new chapters}}",
+  "@autoDownloaded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "mangaMode": "Page layout",
   "mangaPages": "Pages, left to right",
   "mangaPagesRtl": "Pages, right to left (manga)",

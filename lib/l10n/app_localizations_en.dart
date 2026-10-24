@@ -586,6 +586,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteDownload => 'Delete download';
 
   @override
+  String get autoDownload => 'Download new chapters';
+
+  @override
+  String get autoDownloadHint =>
+      'When a check finds new chapters, stories you have downloaded get them too, in the same file.';
+
+  @override
+  String autoDownloaded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Downloaded $count new chapters',
+      one: 'Downloaded 1 new chapter',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get mangaMode => 'Page layout';
 
   @override
