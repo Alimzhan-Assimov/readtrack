@@ -982,6 +982,36 @@ abstract class AppLocalizations {
   /// **'Delete download'**
   String get deleteDownload;
 
+  /// No description provided for @sectionCharacters.
+  ///
+  /// In en, this message translates to:
+  /// **'Characters'**
+  String get sectionCharacters;
+
+  /// No description provided for @addCharacter.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a character'**
+  String get addCharacter;
+
+  /// No description provided for @addCharacterHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Fujiwara Chika'**
+  String get addCharacterHint;
+
+  /// No description provided for @pickCharacters.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose characters'**
+  String get pickCharacters;
+
+  /// No description provided for @filterCharacter.
+  ///
+  /// In en, this message translates to:
+  /// **'Character'**
+  String get filterCharacter;
+
   /// No description provided for @sectionCrossovers.
   ///
   /// In en, this message translates to:

@@ -296,6 +296,21 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
                   ],
                 ),
               ),
+            if (item.characters.isNotEmpty)
+              _Section(
+                title: l10n.sectionCharacters,
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: [
+                    for (final c in item.characters)
+                      Chip(
+                        avatar: const Icon(Icons.person_outline, size: 18),
+                        label: Text(c.name),
+                      ),
+                  ],
+                ),
+              ),
             if (item.pairings.isNotEmpty)
               _Section(
                 title: l10n.sectionPairings,

@@ -586,6 +586,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteDownload => 'Delete download';
 
   @override
+  String get sectionCharacters => 'Characters';
+
+  @override
+  String get addCharacter => 'Add a character';
+
+  @override
+  String get addCharacterHint => 'e.g. Fujiwara Chika';
+
+  @override
+  String get pickCharacters => 'Choose characters';
+
+  @override
+  String get filterCharacter => 'Character';
+
+  @override
   String get sectionCrossovers => 'Crossover with';
 
   @override

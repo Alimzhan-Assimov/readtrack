@@ -58,6 +58,9 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
   final _fandom = TextEditingController();
   final _series = TextEditingController();
   final _crossoverInput = TextEditingController();
+  final _characterInput = TextEditingController();
+  List<String> _characters = const [];
+  List<String> _characterSuggestions = const [];
   List<String> _crossovers = const [];
   final _seriesIndex = TextEditingController();
   final _url = TextEditingController();
@@ -102,6 +105,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _series,
     _seriesIndex,
     _crossoverInput,
+    _characterInput,
     _url,
     _chapters,
     _currentChapter,
@@ -138,6 +142,9 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _series.text = existing?.series?.name ?? '';
     _crossovers = [
       for (final f in existing?.crossovers ?? const <Fandom>[]) f.name,
+    ];
+    _characters = [
+      for (final c in existing?.characters ?? const <Character>[]) c.name,
     ];
     _seriesIndex.text = _formatIndex(w?.seriesIndex);
     _url.text = w?.sourceUrl ?? '';
@@ -179,6 +186,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _fandom.text = info.fandom ?? '';
     _series.text = info.series?.name ?? '';
     _crossovers = info.crossovers;
+    _characters = info.characters;
     _seriesIndex.text = _formatIndex(info.series?.index);
     _url.text = info.url.toString();
     _chapters.text = '${info.chapterCount}';
@@ -273,6 +281,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
   Future<void> _loadSuggestions() async {
     final fandoms = await _db.fandomNames();
     final seriesNames = await _db.seriesNames();
+    final characterNames = await _db.characterNames();
     final authors = await _db.authorNames();
     final tags = await _db.tagNames();
     final frequent = await _db.frequentTags();
@@ -288,6 +297,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
       };
       _fandomSuggestions = fandoms;
       _seriesSuggestions = seriesNames;
+      _characterSuggestions = characterNames;
       _authorSuggestions = authors;
       _frequentTags = frequent;
       _tagSuggestions = TagInput.merge(tags, kDefaultTags.join(','))
@@ -362,6 +372,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     final tags = TagInput.merge(_tags, _tagInput.text);
     final pairings = TagInput.merge(_pairings, _pairingInput.text);
     final crossovers = TagInput.merge(_crossovers, _crossoverInput.text);
+    final characterList = TagInput.merge(_characters, _characterInput.text);
     final w = widget.existing?.work;
     final data = WorksCompanion(
       id: w == null ? const Value.absent() : Value(w.id),
@@ -416,6 +427,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
               fandomName: _fandom.text,
               seriesName: _series.text,
               crossoverNames: crossovers,
+              characterNames: characterList,
               tagNames: tags,
               pairingNames: pairings,
             )
@@ -424,6 +436,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
               fandomName: _fandom.text,
               seriesName: _series.text,
               crossoverNames: crossovers,
+              characterNames: characterList,
               tagNames: tags,
               pairingNames: pairings,
               adultTags: widget.imported?.adultTags ?? const {},
@@ -792,6 +805,16 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
         hint: l10n.addCrossoverHint,
         pickerTitle: l10n.pickCategory,
         onChanged: (c) => _change(() => _crossovers = c),
+      ),
+      _Heading(l10n.sectionCharacters),
+      TagInput(
+        controller: _characterInput,
+        tags: _characters,
+        suggestions: _characterSuggestions,
+        label: l10n.addCharacter,
+        hint: l10n.addCharacterHint,
+        pickerTitle: l10n.pickCharacters,
+        onChanged: (c) => _change(() => _characters = c),
       ),
       _Heading(l10n.sectionPairings),
       TagInput(

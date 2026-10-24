@@ -329,6 +329,11 @@
     }
   },
   "deleteDownload": "Delete download",
+  "sectionCharacters": "Characters",
+  "addCharacter": "Add a character",
+  "addCharacterHint": "e.g. Fujiwara Chika",
+  "pickCharacters": "Choose characters",
+  "filterCharacter": "Character",
   "sectionCrossovers": "Crossover with",
   "addCrossover": "Add a category",
   "addCrossoverHint": "The other franchises of a crossover",

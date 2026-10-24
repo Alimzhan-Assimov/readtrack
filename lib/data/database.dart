@@ -69,6 +69,43 @@ class Tags extends Table {
 }
 
 /// A relationship such as "Naruto/Hinata", kept apart from tags.
+/// A character of a franchise, e.g. "Fujiwara Chika" in Kaguya-sama.
+class Characters extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  IntColumn get fandomId => integer().nullable().references(
+    Fandoms,
+    #id,
+    onDelete: KeyAction.setNull,
+  )();
+
+  /// The character's AniList id, once looked up there.
+  IntColumn get anilistId => integer().nullable()();
+}
+
+/// Other names of a character ("Chika", "Fujiwara Chika").
+class CharacterAliases extends Table {
+  IntColumn get characterId =>
+      integer().references(Characters, #id, onDelete: KeyAction.cascade)();
+  TextColumn get alias => text()();
+
+  @override
+  Set<Column> get primaryKey => {characterId, alias};
+}
+
+class WorkCharacters extends Table {
+  IntColumn get workId =>
+      integer().references(Works, #id, onDelete: KeyAction.cascade)();
+  IntColumn get characterId =>
+      integer().references(Characters, #id, onDelete: KeyAction.cascade)();
+
+  /// 1 when the site or the user names the character; lower when guessed.
+  RealColumn get confidence => real().withDefault(const Constant(1.0))();
+
+  @override
+  Set<Column> get primaryKey => {workId, characterId};
+}
+
 class Pairings extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text().unique()();
@@ -241,7 +278,7 @@ class Downloads extends Table {
 /// [url] is null for chapters of imported files.
 typedef ChapterListing = ({int number, String title, String? url, bool locked});
 
-enum UsageKind { fandom, tag, pairing, series }
+enum UsageKind { fandom, tag, pairing, series, character }
 
 class WorkWithDetails {
   WorkWithDetails(
@@ -251,7 +288,10 @@ class WorkWithDetails {
     this.pairings = const [],
     this.series,
     this.crossovers = const [],
+    this.characters = const [],
   });
+
+  final List<Character> characters;
 
   /// Further categories, e.g. the other side of a crossover.
   final List<Fandom> crossovers;
@@ -275,9 +315,11 @@ class DeletedWork {
     this.relations = const [],
     this.readingDays = const [],
     this.crossovers = const [],
+    this.characters = const [],
   });
 
   final Work work;
+  final List<WorkCharacter> characters;
   final List<WorkFandom> crossovers;
   final List<WorkRelation> relations;
   final List<ReadingDay> readingDays;
@@ -306,6 +348,9 @@ class ReadingDays extends Table {
 
 @DriftDatabase(
   tables: [
+    Characters,
+    CharacterAliases,
+    WorkCharacters,
     WorkFandoms,
     Series,
     WorkRelations,
@@ -326,7 +371,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 14;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -386,6 +431,11 @@ class AppDatabase extends _$AppDatabase {
         );
       }
       if (from < 13) await m.createTable(workFandoms);
+      if (from < 14) {
+        await m.createTable(characters);
+        await m.createTable(characterAliases);
+        await m.createTable(workCharacters);
+      }
       if (from < 12) {
         await m.createTable(series);
         await m.createTable(workRelations);
@@ -509,6 +559,7 @@ class AppDatabase extends _$AppDatabase {
     int? tagId,
     int? pairingId,
     int? seriesId,
+    int? characterId,
     ReadingStatus? status,
 
     /// At least this many words.
@@ -531,6 +582,15 @@ class AppDatabase extends _$AppDatabase {
       );
     }
     if (seriesId != null) query.where(works.seriesId.equals(seriesId));
+    if (characterId != null) {
+      query.where(
+        works.id.isInQuery(
+          selectOnly(workCharacters)
+            ..addColumns([workCharacters.workId])
+            ..where(workCharacters.characterId.equals(characterId)),
+        ),
+      );
+    }
     if (status != null) query.where(works.status.equalsValue(status));
     if (minWords != null) {
       query.where(works.wordCount.isBiggerOrEqualValue(minWords));
@@ -602,6 +662,7 @@ class AppDatabase extends _$AppDatabase {
     w.series?.name ?? '',
     for (final t in w.tags) t.name,
     for (final p in w.pairings) p.name,
+    for (final c in w.characters) c.name,
   ].join('\n').toLowerCase();
 
   /// How many entries (not in the trash) use each category, tag, pairing or
@@ -622,6 +683,12 @@ class AppDatabase extends _$AppDatabase {
         'SELECT t.tag_id AS id, COUNT(*) AS n FROM work_tags t '
             'JOIN works w ON w.id = t.work_id WHERE w.deleted_at IS NULL '
             'GROUP BY t.tag_id',
+        'id',
+      ),
+      UsageKind.character => (
+        'SELECT c.character_id AS id, COUNT(*) AS n FROM work_characters c '
+            'JOIN works w ON w.id = c.work_id WHERE w.deleted_at IS NULL '
+            'GROUP BY c.character_id',
         'id',
       ),
       UsageKind.series => (
@@ -681,6 +748,23 @@ class AppDatabase extends _$AppDatabase {
                 ..where(workFandoms.workId.isIn(ids))
                 ..orderBy([OrderingTerm.asc(fandoms.name)]))
               .get();
+    final characterRows = ids.isEmpty
+        ? const <TypedResult>[]
+        : await (select(workCharacters).join([
+                  innerJoin(
+                    characters,
+                    characters.id.equalsExp(workCharacters.characterId),
+                  ),
+                ])
+                ..where(workCharacters.workId.isIn(ids))
+                ..orderBy([OrderingTerm.asc(characters.name)]))
+              .get();
+    final charactersByWork = <int, List<Character>>{};
+    for (final r in characterRows) {
+      charactersByWork
+          .putIfAbsent(r.readTable(workCharacters).workId, () => [])
+          .add(r.readTable(characters));
+    }
     final crossoversByWork = <int, List<Fandom>>{};
     for (final r in crossoverRows) {
       crossoversByWork
@@ -726,6 +810,7 @@ class AppDatabase extends _$AppDatabase {
           pairings: pairingsByWork[r.readTable(works).id] ?? const [],
           series: r.readTableOrNull(series),
           crossovers: crossoversByWork[r.readTable(works).id] ?? const [],
+          characters: charactersByWork[r.readTable(works).id] ?? const [],
         ),
     ];
   }
@@ -810,6 +895,9 @@ class AppDatabase extends _$AppDatabase {
 
     /// Categories besides [fandomName]; null leaves them as they are.
     List<String>? crossoverNames,
+
+    /// Null leaves the characters as they are.
+    List<String>? characterNames,
     List<String> tagNames = const [],
     List<String> pairingNames = const [],
 
@@ -867,6 +955,20 @@ class AppDatabase extends _$AppDatabase {
           WorkTagsCompanion.insert(workId: id, tagId: tagId),
           mode: InsertMode.insertOrIgnore,
         );
+      }
+      if (characterNames != null) {
+        await (delete(workCharacters)..where((c) => c.workId.equals(id))).go();
+        for (final name in characterNames) {
+          final characterId = await _characterIdFor(name, row.fandomId.value);
+          if (characterId == null) continue;
+          await into(workCharacters).insert(
+            WorkCharactersCompanion.insert(
+              workId: id,
+              characterId: characterId,
+            ),
+            mode: InsertMode.insertOrIgnore,
+          );
+        }
       }
       await (delete(workPairings)..where((p) => p.workId.equals(id))).go();
       for (final name in pairingNames) {
@@ -967,6 +1069,9 @@ class AppDatabase extends _$AppDatabase {
       final savedCrossovers = await (select(
         workFandoms,
       )..where((f) => f.workId.equals(id))).get();
+      final savedCharacters = await (select(
+        workCharacters,
+      )..where((c) => c.workId.equals(id))).get();
       await (delete(works)..where((w) => w.id.equals(id))).go();
       return DeletedWork(
         work,
@@ -978,6 +1083,7 @@ class AppDatabase extends _$AppDatabase {
         relations: savedRelations,
         readingDays: savedReading,
         crossovers: savedCrossovers,
+        characters: savedCharacters,
       );
     });
   }
@@ -1006,6 +1112,7 @@ class AppDatabase extends _$AppDatabase {
         b.insertAll(annotations, deleted.annotations);
         b.insertAll(readingDays, deleted.readingDays);
         b.insertAll(workFandoms, deleted.crossovers);
+        b.insertAll(workCharacters, deleted.characters);
         // The other work may be gone by now.
         b.insertAll(workRelations, [
           for (final r in deleted.relations)
@@ -1334,6 +1441,10 @@ class AppDatabase extends _$AppDatabase {
         for (final duplicate in group.skip(1)) {
           await (update(works)..where((w) => w.fandomId.equals(duplicate.id)))
               .write(WorksCompanion(fandomId: Value(keep.id)));
+          await customStatement(
+            'UPDATE characters SET fandom_id = ? WHERE fandom_id = ?',
+            [keep.id, duplicate.id],
+          );
           // Crossover links too; one already pointing at [keep] wins.
           await customStatement(
             'UPDATE OR IGNORE work_fandoms SET fandom_id = ? WHERE fandom_id = ?',
@@ -1371,6 +1482,73 @@ class AppDatabase extends _$AppDatabase {
       TagsCompanion.insert(name: n, isAdult: Value(adult || looksAdult(n))),
     );
   }
+
+  /// The character [name] of [fandomId], matched by its name or an alias
+  /// in any order of the parts; created if new.
+  Future<int?> _characterIdFor(String name, int? fandomId) async {
+    final n = name.trim();
+    if (n.isEmpty) return null;
+    final key = characterKey(n);
+    final candidates =
+        await (select(characters)..where(
+              (c) => fandomId == null
+                  ? c.fandomId.isNull()
+                  : c.fandomId.equals(fandomId),
+            ))
+            .get();
+    for (final c in candidates) {
+      if (characterKey(c.name) == key) return c.id;
+    }
+    final aliases =
+        await (select(characterAliases).join([
+              innerJoin(
+                characters,
+                characters.id.equalsExp(characterAliases.characterId),
+              ),
+            ])..where(
+              fandomId == null
+                  ? characters.fandomId.isNull()
+                  : characters.fandomId.equals(fandomId),
+            ))
+            .get();
+    for (final a in aliases) {
+      if (characterKey(a.readTable(characterAliases).alias) == key) {
+        return a.readTable(characterAliases).characterId;
+      }
+    }
+    return into(characters)
+        .insert(CharactersCompanion.insert(name: n, fandomId: Value(fandomId)));
+  }
+
+  /// Characters that appear in at least one work (not in the trash).
+  Future<List<Character>> usedCharacters() =>
+      (select(characters)
+            ..where(
+              (c) => c.id.isInQuery(
+                selectOnly(workCharacters).join([
+                    innerJoin(works, works.id.equalsExp(workCharacters.workId)),
+                  ])
+                  ..addColumns([workCharacters.characterId])
+                  ..where(works.deletedAt.isNull()),
+              ),
+            )
+            ..orderBy([(c) => OrderingTerm.asc(c.name)]))
+          .get();
+
+  Future<List<String>> characterNames() =>
+      (select(characters)..orderBy([(c) => OrderingTerm.asc(c.name)]))
+          .map((c) => c.name)
+          .get()
+          .then((names) => names.toSet().toList());
+
+  Future<void> addCharacterAlias(int characterId, String alias) =>
+      into(characterAliases).insert(
+        CharacterAliasesCompanion.insert(
+          characterId: characterId,
+          alias: alias.trim(),
+        ),
+        mode: InsertMode.insertOrIgnore,
+      );
 
   Future<int?> _pairingIdFor(String name) async {
     final n = name.trim();
@@ -1478,4 +1656,18 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> setSetting(String key, String value) => into(settings)
       .insertOnConflictUpdate(SettingsCompanion.insert(key: key, value: value));
+}
+
+/// Matches a character's names regardless of order and a franchise note:
+/// "Fujiwara Chika", "Chika Fujiwara" and "Fujiwara Chika (Kaguya-sama)".
+String characterKey(String name) {
+  final words =
+      name
+          .replaceAll(RegExp(r'\([^)]*\)'), ' ')
+          .toLowerCase()
+          .split(RegExp(r'[\s.,]+'))
+          .where((w) => w.isNotEmpty)
+          .toList()
+        ..sort();
+  return words.join(' ');
 }

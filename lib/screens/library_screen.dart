@@ -119,6 +119,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     tagId: _filters.tag?.id,
     pairingId: _filters.pairing?.id,
     seriesId: _filters.series?.id,
+    characterId: _filters.character?.id,
     status: _filters.status,
     minWords: _filters.minWords,
     complete: _filters.complete,
@@ -132,6 +133,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final tags = await _db.usedTags();
     final pairings = await _db.usedPairings();
     final series = await _db.usedSeries();
+    final characters = await _db.usedCharacters();
     if (!mounted) return;
     _setFilters(
       LibraryFilters(
@@ -140,6 +142,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
         tag: tags.where((x) => x.id == f.tagId).firstOrNull,
         pairing: pairings.where((x) => x.id == f.pairingId).firstOrNull,
         series: series.where((x) => x.id == f.seriesId).firstOrNull,
+        character: characters.where((x) => x.id == f.characterId).firstOrNull,
         status: f.status,
         minWords: f.minWords,
         complete: f.complete,
