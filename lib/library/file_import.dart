@@ -26,7 +26,17 @@ class ImportedBook {
     this.tags = const [],
     this.cover,
     this.images = const {},
+    this.sourceUrl,
+    this.isbn,
+    this.isFanfiction = false,
   });
+
+  /// Where the book came from, e.g. a ReadTrack export of a web story.
+  final String? sourceUrl;
+  final String? isbn;
+
+  /// The file says it is fan fiction (FB2 genre "fanfiction").
+  final bool isFanfiction;
 
   final String title;
   final String? author;
@@ -307,8 +317,17 @@ ImportedBook readEpub(List<int> bytes) {
     for (final c in opf.findAllElements('creator', namespaceUri: '*'))
       if (squash(c.innerText) case final name when name.isNotEmpty) name,
   ];
+  final identifiers = [
+    for (final e in [
+      ...opf.findAllElements('identifier', namespaceUri: '*'),
+      ...opf.findAllElements('source', namespaceUri: '*'),
+    ])
+      e.innerText.trim(),
+  ];
   return ImportedBook(
     title: meta('title') ?? 'Untitled',
+    sourceUrl: identifiers.where(_isWebLink).firstOrNull,
+    isbn: identifiers.map(isbnOf).nonNulls.firstOrNull,
     author: creators.isEmpty ? null : creators.join(', '),
     // Descriptions are often HTML.
     summary: description == null
@@ -453,8 +472,22 @@ ImportedBook readFb2(List<int> bytes) {
       ?.findElements('annotation', namespaceUri: '*')
       .firstOrNull;
   final keywords = text(info, 'keywords');
+  final documentInfo = doc
+      .findAllElements('document-info', namespaceUri: '*')
+      .firstOrNull;
+  final publishInfo = doc
+      .findAllElements('publish-info', namespaceUri: '*')
+      .firstOrNull;
+  final sourceUrl = text(documentInfo, 'src-url');
   return ImportedBook(
     title: text(info, 'book-title') ?? 'Untitled',
+    sourceUrl: sourceUrl != null && _isWebLink(sourceUrl) ? sourceUrl : null,
+    isbn: isbnOf(text(publishInfo, 'isbn') ?? ''),
+    isFanfiction:
+        info
+            ?.findElements('genre', namespaceUri: '*')
+            .any((g) => g.innerText.trim().toLowerCase() == 'fanfiction') ??
+        false,
     author: authors.isEmpty ? null : authors.join(', '),
     summary: annotation == null ? null : _annotation(annotation),
     tags: keywords == null
@@ -471,6 +504,37 @@ ImportedBook readFb2(List<int> bytes) {
         Uri.https(kBookHost, '/binary/$id').toString(): data,
     },
   );
+}
+
+bool _isWebLink(String text) =>
+    RegExp(r'^https?://\S+$', caseSensitive: false).hasMatch(text);
+
+/// The ISBN-10 or ISBN-13 in [text] ("urn:isbn:978-…", "ISBN 0-306-…"),
+/// digits only, or null.
+String? isbnOf(String text) {
+  final match = RegExp(
+    r'(?:isbn[:\s]*)?((?:97[89][-\s]?)?\d[-\s\d]{7,15}[\dXx])',
+    caseSensitive: false,
+  ).firstMatch(text.trim());
+  if (match == null) return null;
+  final digits = match.group(1)!.replaceAll(RegExp(r'[-\s]'), '');
+  if (digits.length != 10 && digits.length != 13) return null;
+  if (digits.length == 13 && !RegExp(r'^\d+$').hasMatch(digits)) return null;
+  final ok = digits.length == 13
+      ? [for (var i = 0; i < 13; i++) int.parse(digits[i]) * (i.isEven ? 1 : 3)]
+                    .reduce((a, b) => a + b) %
+                10 ==
+            0
+      : [
+                  for (var i = 0; i < 10; i++)
+                    (digits[i].toUpperCase() == 'X'
+                            ? 10
+                            : int.parse(digits[i])) *
+                        (10 - i),
+                ].reduce((a, b) => a + b) %
+                11 ==
+            0;
+  return ok ? digits.toUpperCase() : null;
 }
 
 String? _annotation(XmlElement annotation) {

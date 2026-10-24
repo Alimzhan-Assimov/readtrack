@@ -315,6 +315,25 @@
     }
   },
   "deleteDownload": "Delete download",
+  "importingFromFile": "From file: {name}",
+  "@importingFromFile": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "importedFileSummary": "{format} · {count, plural, =1{1 chapter} other{{count} chapters}}. Check the details, then save to add the book.",
+  "@importedFileSummary": {
+    "placeholders": {
+      "format": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "estimateLength": "Estimate length",
   "estimateLengthHint": "Reads three sample chapters from the site and scales them up.",
   "estimateFailed": "No sample chapter could be loaded.",

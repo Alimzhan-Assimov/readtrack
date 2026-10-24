@@ -7,7 +7,6 @@ import 'package:flutter/services.dart';
 import '../data/database.dart';
 import '../data/database_scope.dart';
 import '../l10n/l10n.dart';
-import '../library/book_importer.dart';
 import '../library/file_import.dart';
 import '../library/library_scope.dart';
 import '../library/shelves.dart';
@@ -259,12 +258,12 @@ class _LibraryScreenState extends State<LibraryScreen> {
     if (id != null && mounted) _open(id, wide: wide);
   }
 
-  /// Lets the user pick a book file and adds it; returns the new id.
+  /// Lets the user pick a book file, shows its details in the form and
+  /// adds it on save; returns the new id.
   Future<int?> _importFile() async {
     final l10n = context.l10n;
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
-    final importer = BookImporter(_db, LibraryScope.of(context).storage);
     final file = await openFile(
       acceptedTypeGroups: [
         XTypeGroup(label: l10n.bookFiles, extensions: kImportExtensions),
@@ -289,18 +288,26 @@ class _LibraryScreenState extends State<LibraryScreen> {
         ),
       ),
     );
+    final ImportedBook book;
     try {
-      final id = await importer.importFile(file.path);
-      messenger.showSnackBar(
-        SnackBar(content: Text(l10n.importedFile(file.name))),
-      );
-      return id;
+      book = await readBookFile(file.path);
     } on Exception catch (e) {
       messenger.showSnackBar(SnackBar(content: Text(l10n.importFailed('$e'))));
       return null;
     } finally {
       navigator.pop(); // the progress dialog
     }
+    final id = await navigator.push<int>(
+      MaterialPageRoute(
+        builder: (_) => WorkEditScreen(file: (book: book, path: file.path)),
+      ),
+    );
+    if (id != null) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.importedFile(file.name))),
+      );
+    }
+    return id;
   }
 
   @override

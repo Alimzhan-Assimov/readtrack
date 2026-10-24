@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,7 +9,11 @@ import '../data/database.dart';
 import '../data/database_scope.dart';
 import '../data/default_tags.dart';
 import '../l10n/l10n.dart';
+import '../library/book_importer.dart';
+import '../library/file_import.dart';
+import '../library/library_scope.dart';
 import '../library/story_sync.dart';
+import '../sources/html_clean.dart';
 import '../sources/sources.dart';
 import '../data/adult_tags.dart';
 import '../ui/app_settings.dart';
@@ -20,12 +26,15 @@ import '../widgets/value_picker.dart';
 /// Form for creating ([existing] == null) or editing a work.
 /// Pops with the work's id as the result after saving.
 class WorkEditScreen extends StatefulWidget {
-  const WorkEditScreen({super.key, this.existing, this.imported});
+  const WorkEditScreen({super.key, this.existing, this.imported, this.file});
 
   final WorkWithDetails? existing;
 
   /// Details loaded from a site to prefill a new entry.
   final StoryInfo? imported;
+
+  /// A book file read for import; saving imports it with the form's values.
+  final ({ImportedBook book, String path})? file;
 
   @override
   State<WorkEditScreen> createState() => _WorkEditScreenState();
@@ -116,6 +125,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _summary.text = w?.summary ?? '';
     _notes.text = w?.notes ?? '';
     if (widget.imported case final info?) _prefill(info);
+    if (widget.file case final file?) _prefillFile(file.book);
     _initialWords = _words.text;
     _initialPages = _pages.text;
   }
@@ -142,6 +152,23 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _pages.text = info.pageCount?.toString() ?? '';
     _summary.text = info.summary ?? '';
     // Not saved yet, so leaving should ask first.
+    _dirty = true;
+  }
+
+  void _prefillFile(ImportedBook book) {
+    final m = BookImporter.metadataOf(book);
+    _type = m.type.value;
+    _format = WorkFormat.digital;
+    _isComplete = true;
+    _tags = TagInput.merge(const [], book.tags.join(','));
+    _title.text = book.title;
+    _author.text = book.author ?? '';
+    _url.text = book.sourceUrl ?? '';
+    _isbn.text = book.isbn ?? '';
+    _summary.text = book.summary ?? '';
+    _chapters.text = '${book.chapters.length}';
+    _words.text =
+        '${[for (final c in book.chapters) countWords(htmlToPlainText(c.html))].fold<int>(0, (a, b) => a + b)}';
     _dirty = true;
   }
 
@@ -283,13 +310,23 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     );
     final int id;
     try {
-      id = await _db.saveWork(
-        data,
-        fandomName: _fandom.text,
-        tagNames: tags,
-        pairingNames: pairings,
-        adultTags: widget.imported?.adultTags ?? const {},
-      );
+      final file = widget.file;
+      id = file != null
+          ? await BookImporter(_db, LibraryScope.of(context).storage).store(
+              file.book,
+              original: File(file.path),
+              work: data,
+              fandomName: _fandom.text,
+              tagNames: tags,
+              pairingNames: pairings,
+            )
+          : await _db.saveWork(
+              data,
+              fandomName: _fandom.text,
+              tagNames: tags,
+              pairingNames: pairings,
+              adultTags: widget.imported?.adultTags ?? const {},
+            );
       if (widget.imported case final info?) {
         await _db.saveChapterList(id, chapterListing(info));
       }
@@ -404,7 +441,28 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     }.contains(_type);
 
     final imported = widget.imported;
+    final file = widget.file;
     return [
+      if (file != null)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Card.filled(
+            child: ListTile(
+              leading: const Icon(Icons.file_present_outlined),
+              title: Text(
+                l10n.importingFromFile(
+                  file.path.split(Platform.pathSeparator).last,
+                ),
+              ),
+              subtitle: Text(
+                l10n.importedFileSummary(
+                  file.book.format.label,
+                  file.book.chapters.length,
+                ),
+              ),
+            ),
+          ),
+        ),
       if (imported != null)
         Padding(
           padding: const EdgeInsets.only(bottom: 16),

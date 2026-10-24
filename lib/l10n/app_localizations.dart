@@ -940,6 +940,18 @@ abstract class AppLocalizations {
   /// **'Delete download'**
   String get deleteDownload;
 
+  /// No description provided for @importingFromFile.
+  ///
+  /// In en, this message translates to:
+  /// **'From file: {name}'**
+  String importingFromFile(String name);
+
+  /// No description provided for @importedFileSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{format} · {count, plural, =1{1 chapter} other{{count} chapters}}. Check the details, then save to add the book.'**
+  String importedFileSummary(String format, int count);
+
   /// No description provided for @estimateLength.
   ///
   /// In en, this message translates to:

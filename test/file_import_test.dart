@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:readtrack/data/database.dart';
@@ -109,6 +110,69 @@ void main() {
     final book = readFb2(bytes);
     expect(book.title, 'Война и мир');
     expect(book.chapters.single.title, 'Глава');
+  });
+
+  test('the source link and fan fiction type come back from exports', () {
+    final fic = ExportBook(
+      work: exported.work.copyWith(
+        type: WorkType.fanfiction,
+        sourceUrl: const Value('https://archiveofourown.org/works/1'),
+      ),
+      chapters: exported.chapters,
+      from: 1,
+      to: 2,
+      storage: storage,
+    );
+    final epub = readEpub(buildEpub(fic));
+    expect(epub.sourceUrl, 'https://archiveofourown.org/works/1');
+    final fb2 = readFb2(utf8.encode(buildFb2(fic)));
+    expect(
+      (fb2.sourceUrl, fb2.isFanfiction),
+      ('https://archiveofourown.org/works/1', true),
+    );
+    expect(readFb2(utf8.encode(buildFb2(exported))).isFanfiction, isFalse);
+  });
+
+  test('ISBNs are found and checked', () {
+    expect(isbnOf('urn:isbn:978-3-16-148410-0'), '9783161484100');
+    expect(isbnOf('ISBN 0-306-40615-2'), '0306406152');
+    expect(isbnOf('080442957X'), '080442957X');
+    expect(isbnOf('978-3-16-148410-1'), isNull); // wrong check digit
+    expect(isbnOf('readtrack:work:12'), isNull);
+    expect(isbnOf('https://example.com/123456789'), isNull);
+  });
+
+  test('form values replace the file\'s when importing', () async {
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+    final book = readEpub(buildEpub(exported));
+    final id = await BookImporter(db, storage).store(
+      book,
+      work: BookImporter.metadataOf(book).copyWith(
+        type: const Value(WorkType.fanfiction),
+        title: const Value('War and Peace'),
+        status: const Value(ReadingStatus.reading),
+        chapterCount: const Value(null),
+      ),
+      fandomName: 'Russian Classics',
+      tagNames: ['Historical'],
+    );
+    final w = (await db.watchWork(id).first)!;
+    expect(
+      (w.work.title, w.work.type, w.work.status, w.work.format),
+      (
+        'War and Peace',
+        WorkType.fanfiction,
+        ReadingStatus.reading,
+        WorkFormat.digital,
+      ),
+    );
+    expect(w.fandom?.name, 'Russian Classics');
+    expect(w.tags.map((t) => t.name), ['Historical']);
+    // Counts the form left empty come from the file.
+    expect(w.work.chapterCount, 2);
+    expect(w.work.wordCount, greaterThan(0));
+    expect(await db.chaptersOf(id), hasLength(2));
   });
 
   test('splits a text file at chapter headings', () {

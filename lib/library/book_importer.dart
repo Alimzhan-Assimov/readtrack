@@ -23,23 +23,38 @@ class BookImporter {
     return store(book, original: File(path));
   }
 
-  Future<int> store(ImportedBook book, {File? original}) async {
+  /// Stores [book]. With [work] (e.g. from the edit form), its fields are
+  /// used instead of the file's; chapter and word counts still come from
+  /// the file unless given.
+  Future<int> store(
+    ImportedBook book, {
+    File? original,
+    WorksCompanion? work,
+    String? fandomName,
+    List<String>? tagNames,
+    List<String> pairingNames = const [],
+    Set<String> adultTags = const {},
+  }) async {
     final chapters = book.chapters;
     final words = [
       for (final c in chapters) countWords(htmlToPlainText(c.html)),
     ];
+    final defaults = metadataOf(book);
+    final given = work ?? defaults;
     final id = await _db.saveWork(
-      WorksCompanion.insert(
-        type: WorkType.book,
-        format: WorkFormat.digital,
-        title: book.title,
-        author: Value(book.author),
-        summary: Value(book.summary),
-        chapterCount: Value(chapters.length),
-        wordCount: Value(words.fold<int>(0, (a, b) => a + b)),
-        isComplete: const Value(true),
+      given.copyWith(
+        format: const Value(WorkFormat.digital),
+        chapterCount: given.chapterCount.value == null
+            ? Value(chapters.length)
+            : given.chapterCount,
+        wordCount: given.wordCount.value == null
+            ? Value(words.fold<int>(0, (a, b) => a + b))
+            : given.wordCount,
       ),
-      tagNames: book.tags,
+      fandomName: fandomName,
+      tagNames: tagNames ?? book.tags,
+      pairingNames: pairingNames,
+      adultTags: adultTags,
     );
 
     if (book.cover case final cover?) {
@@ -86,6 +101,19 @@ class BookImporter {
     );
     return id;
   }
+
+  /// The entry fields the file itself provides.
+  static WorksCompanion metadataOf(ImportedBook book) => WorksCompanion.insert(
+    type: book.isFanfiction ? WorkType.fanfiction : WorkType.book,
+    format: WorkFormat.digital,
+    title: book.title,
+    author: Value(book.author),
+    summary: Value(book.summary),
+    sourceUrl: Value(book.sourceUrl),
+    isbn: Value(book.isbn),
+    chapterCount: Value(book.chapters.length),
+    isComplete: const Value(true),
+  );
 
   /// Copies the imported file into the ReadTrack folder (unless it's already
   /// there), without overwriting another file.

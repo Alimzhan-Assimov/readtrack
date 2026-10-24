@@ -5,7 +5,13 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:readtrack/data/database.dart';
+import 'package:readtrack/l10n/l10n.dart';
+import 'package:readtrack/data/database_scope.dart';
 import 'package:readtrack/library/download_service.dart';
+import 'package:readtrack/library/exporters.dart';
+import 'package:readtrack/library/file_import.dart';
+import 'package:readtrack/library/library_scope.dart';
+import 'package:readtrack/screens/work_edit_screen.dart';
 import 'package:readtrack/library/storage.dart';
 import 'package:readtrack/main.dart';
 import 'package:readtrack/ui/app_settings.dart';
@@ -58,6 +64,80 @@ void main() {
     await tester.pumpWidget(const SizedBox());
     await tester.pump(Duration.zero);
   }
+
+  testWidgets('a book file opens the form prefilled and saves on Save', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final book = ImportedBook(
+      title: 'Война и мир',
+      author: 'Лев Толстой',
+      summary: 'Роман.',
+      tags: const ['Роман'],
+      isbn: '9783161484100',
+      format: ExportFormat.fb2,
+      chapters: const [
+        (title: 'Один', html: '<p>Раз два три.</p>'),
+        (title: 'Два', html: '<p>Четыре.</p>'),
+      ],
+    );
+    final original = File('${storage.dataDir.parent.path}/war.fb2')
+      ..writeAsStringSync('<FictionBook/>');
+    int? saved;
+    await tester.pumpWidget(
+      DatabaseScope(
+        db: db,
+        child: LibraryScope(
+          storage: storage,
+          downloads: DownloadService(db, storage),
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Builder(
+              builder: (context) => TextButton(
+                onPressed: () async => saved = await Navigator.of(context)
+                    .push<int>(
+                      MaterialPageRoute(
+                        builder: (_) => WorkEditScreen(
+                          file: (book: book, path: original.path),
+                        ),
+                      ),
+                    ),
+                child: const Text('open'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    expect(find.text('From file: war.fb2'), findsOneWidget);
+    expect(find.textContaining('FB2 · 2 chapters'), findsOneWidget);
+    expect(find.widgetWithText(TextFormField, 'Война и мир'), findsOneWidget);
+    expect(find.widgetWithText(TextFormField, 'Лев Толстой'), findsOneWidget);
+    expect(find.widgetWithText(TextFormField, '9783161484100'), findsOneWidget);
+    expect(find.widgetWithText(TextFormField, '4'), findsOneWidget); // words
+
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Война и мир'),
+      'War and Peace',
+    );
+    await tester.tap(find.text('Save'));
+    for (var i = 0; i < 20 && saved == null; i++) {
+      await tester.runAsync(() => Future<void>.delayed(Durations.short1));
+      await tester.pump();
+    }
+    expect(find.textContaining('failed'), findsNothing);
+    final w = (await tester.runAsync(() => db.workById(saved!)))!;
+    expect(
+      (w.title, w.format, w.isbn, w.chapterCount),
+      ('War and Peace', WorkFormat.digital, '9783161484100', 2),
+    );
+    await unmount(tester);
+  });
 
   testWidgets('narrow window opens details as a separate page', (tester) async {
     await pumpApp(tester, width: 400);

@@ -556,6 +556,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteDownload => 'Delete download';
 
   @override
+  String importingFromFile(String name) {
+    return 'From file: $name';
+  }
+
+  @override
+  String importedFileSummary(String format, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count chapters',
+      one: '1 chapter',
+    );
+    return '$format · $_temp0. Check the details, then save to add the book.';
+  }
+
+  @override
   String get estimateLength => 'Estimate length';
 
   @override
