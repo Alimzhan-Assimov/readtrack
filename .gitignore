@@ -58,3 +58,8 @@ config.json
 *.keystore
 *.jks
 key.properties
+
+# Packaged releases and temporary signing files
+/dist/
+*.p12
+*.pem

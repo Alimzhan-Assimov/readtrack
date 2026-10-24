@@ -3,6 +3,12 @@
 An app to keep all the books, fanfiction, web novels and manga you read in one
 place, whether they sit on your shelf or live online.
 
+## Download and install
+
+Get Android, Windows and Linux packages from [GitHub Releases](https://github.com/Alimzhan-Assimov/readtrack/releases/latest).
+See [installation instructions](docs/INSTALL.md), [changes by version](CHANGELOG.md)
+and the [release process](docs/RELEASING.md).
+
 ## Features
 
 - Library of books, fanfiction, web novels, manga and comics with categories
