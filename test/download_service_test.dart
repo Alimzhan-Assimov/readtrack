@@ -4,9 +4,12 @@ import 'package:drift/drift.dart' show Value, driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:readtrack/data/database.dart';
+import 'package:readtrack/diagnostics/app_log.dart';
+import 'package:readtrack/library/auto_download.dart';
 import 'package:readtrack/library/download_service.dart';
 import 'package:readtrack/library/exporters.dart';
 import 'package:readtrack/library/storage.dart';
+import 'package:readtrack/library/story_sync.dart';
 import 'package:readtrack/sources/sources.dart';
 import 'package:readtrack/sources/fetcher.dart' show SourceAccessException;
 
@@ -94,9 +97,11 @@ void main() {
   late LibraryStorage storage;
   late DownloadService service;
   late Work work;
+  late List<FakeFetcher> fetchers;
 
   setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
+    fetchers = [];
     final temp = Directory.systemTemp.createTempSync('readtrack_dl');
     addTearDown(() => temp.delete(recursive: true));
     storage = LibraryStorage(
@@ -107,8 +112,14 @@ void main() {
     service = DownloadService(
       db,
       storage,
-      openFetcherFor: (_) =>
-          FakeFetcher(const {}, bytes: {'https://fake.test/map.png': png}),
+      openFetcherFor: (_) {
+        final f = FakeFetcher(
+          const {},
+          bytes: {'https://fake.test/map.png': png},
+        );
+        fetchers.add(f);
+        return f;
+      },
     );
     final id = await db.saveWork(
       WorksCompanion.insert(
@@ -132,6 +143,138 @@ void main() {
   });
 
   tearDown(() => db.close());
+
+  test('failed chapters and the session state go to the log', () async {
+    final dir = Directory.systemTemp.createTempSync('readtrack_dl_log');
+    addTearDown(() {
+      AppLog.instance = null;
+      dir.deleteSync(recursive: true);
+    });
+    final log = await AppLog.open(dir);
+    await log.startSession();
+    await service.download(
+      work: work,
+      source: _FlakySource({3}),
+      from: 1,
+      to: 4,
+    );
+    final text = await log.read();
+    expect(text, contains('[download] Started'));
+    expect(text, contains('"toFetch":4'));
+    expect(text, contains('[download] Chapter failed'));
+    expect(text, contains('"chapter":3,"url":"https://fake.test/3"'));
+    expect(text, contains('error: Connection lost.'));
+    expect(text, contains('"downloaded":3,"failed":1'));
+    // The finished download no longer counts as running after a crash.
+    await log.setSessionState('other', {'x': 1});
+    expect(
+      (await AppLog.open(dir).then((l) => l.startSession()))!
+          .containsKey('download'),
+      isFalse,
+    );
+  });
+
+  test('a download without images fetches and exports none', () async {
+    final result = await service.download(
+      work: work,
+      source: const _FakeSource(),
+      from: 1,
+      to: 2,
+      format: ExportFormat.html,
+      withImages: false,
+    );
+    expect(result.downloaded, 2);
+    expect(
+      fetchers.expand((f) => f.requests).where((r) => r.endsWith('.png')),
+      isEmpty,
+    );
+    expect(await result.file!.readAsString(), isNot(contains('<img')));
+    final download = (await db.downloadsOf(work.id)).single;
+    expect(download.withImages, isFalse);
+
+    // Extending keeps the choice even if the caller asks for images.
+    await service.download(
+      work: work,
+      source: const _FakeSource(),
+      from: 3,
+      to: 4,
+      appendTo: download,
+      withImages: true,
+    );
+    expect(
+      fetchers.expand((f) => f.requests).where((r) => r.endsWith('.png')),
+      isEmpty,
+    );
+    expect((await db.downloadsOf(work.id)).single.withImages, isFalse);
+  });
+
+  test('withoutImages drops images and the wrappers that only held them', () {
+    expect(
+      withoutImages(
+        '<p>a<img src="x.png" alt="y">b</p>'
+        '<figure><img src="z.jpg"><figcaption>Map</figcaption></figure>'
+        '<a href="big.png"><IMG SRC="small.png"></a><a href="/c">link</a>',
+      ),
+      '<p>ab</p><a href="/c">link</a>',
+    );
+  });
+
+  test(
+    'length is estimated from sample chapters spread over the story',
+    () async {
+      await db.updateWork(
+        work.id,
+        const WorksCompanion(chapterCount: Value(5)),
+      );
+      final source = _FlakySource({});
+      final words = await estimateLength(
+        db,
+        (await db.workById(work.id))!,
+        source,
+        open: (_) => FakeFetcher(const {}),
+      );
+      // Chapters 1–4 are readable (5 is locked): start, middle and end.
+      expect(source.requested, [1, 3, 4]);
+      // Each sample is "Text of chapter n." = 4 words, times 5 chapters.
+      expect(words, 20);
+      final w = (await db.workById(work.id))!;
+      expect((w.wordCount, w.wordsEstimated), (20, true));
+      expect((w.pageCount, w.pagesEstimated), (1, true));
+      expect(
+        (await db.chaptersOf(work.id)).every((c) => c.content == null),
+        isTrue,
+      );
+      // A later recount without anything better keeps the estimate.
+      await db.fillMissingCounts(work.id);
+      expect((await db.workById(work.id))!.wordCount, 20);
+    },
+  );
+
+  test('new chapters extend the newest download automatically', () async {
+    await service.download(
+      work: work,
+      source: const _FakeSource(),
+      from: 1,
+      to: 2,
+      format: ExportFormat.epub,
+    );
+    // A check found chapters 3 and 4 (5 is locked).
+    await db.updateWork(work.id, const WorksCompanion(newChapters: Value(3)));
+    final n = await downloadNewChapters(
+      db,
+      service,
+      find: (_) => const _FakeSource(),
+    );
+    expect(n, 2);
+    final d = (await db.downloadsOf(work.id)).single;
+    expect((d.fromChapter, d.toChapter, d.format), (1, 5, 'epub'));
+    // Stories without a download are left alone.
+    await db.deleteDownload(d.id);
+    expect(
+      await downloadNewChapters(db, service, find: (_) => const _FakeSource()),
+      0,
+    );
+  });
 
   test('a retry fills the gaps an interrupted download left', () async {
     final first = _FlakySource({2, 4});

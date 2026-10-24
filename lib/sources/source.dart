@@ -42,6 +42,10 @@ class StoryInfo {
     this.adultTags = const {},
     this.wordCount,
     this.pageCount,
+    this.characterCount,
+    this.series,
+    this.crossovers = const [],
+    this.characters = const [],
     this.isComplete,
     this.updatedOn,
     this._chapterCount,
@@ -65,6 +69,18 @@ class StoryInfo {
   final List<ChapterRef> chapters;
   final int? wordCount;
   final int? pageCount;
+
+  /// Size in characters, for sites that give neither words nor pages.
+  final int? characterCount;
+
+  /// Characters the site lists for the story.
+  final List<String> characters;
+
+  /// Further fandoms of a crossover, besides [fandom].
+  final List<String> crossovers;
+
+  /// The series the story is part of, and its position there.
+  final ({String name, double? index})? series;
   final bool? isComplete;
 
   /// When the story was last updated, if the site says.
@@ -96,6 +112,9 @@ enum FetchMode {
   /// Plain HTTP, falling back to the browser when the site refuses it.
   httpThenBrowser,
 }
+
+/// A story found on a list page (bookmarks, favorites, a reading list).
+typedef ListedStory = ({Uri url, String title});
 
 /// A website ReadTrack can import stories from.
 abstract class StorySource {
@@ -129,6 +148,58 @@ abstract class StorySource {
   Future<StoryInfo> fetchStory(Uri storyUrl, PageFetcher fetcher);
 
   Future<ChapterContent> fetchChapter(ChapterRef chapter, PageFetcher fetcher);
+
+  /// The newest chapters, oldest first, from a light feed the site offers
+  /// (e.g. RSS), with their release time if known; null if there is none.
+  /// Lets the check for new chapters skip loading the whole story.
+  Future<List<({ChapterRef chapter, DateTime? date})>?> recentChapters(
+    Uri storyUrl,
+    PageFetcher fetcher,
+  ) async => null;
+
+  /// What identifies a chapter across [recentChapters] and the story's
+  /// chapter list; the link by default.
+  String chapterKey(Uri chapterUrl) => '$chapterUrl';
+
+  /// Selectors for the story links on this site's list pages, tried in
+  /// order; the first that finds any wins. Empty takes every story link,
+  /// which may include sidebars.
+  List<String> get listLinkSelectors => const [];
+
+  /// The stories on a list page such as bookmarks, favorites or a
+  /// collection, following "next" links for up to [maxPages] pages.
+  Future<List<ListedStory>> fetchList(
+    Uri url,
+    PageFetcher fetcher, {
+    int maxPages = 50,
+  }) async {
+    final found = <String, ListedStory>{};
+    Uri? page = url;
+    final seen = <String>{};
+    for (var n = 0; page != null && n < maxPages; n++) {
+      if (!seen.add('$page')) break;
+      final doc = parseHtml(await fetcher.getText(page));
+      var links = const <dom.Element>[];
+      for (final selector in [...listLinkSelectors, 'a[href]']) {
+        links = doc.querySelectorAll(selector);
+        if (links.isNotEmpty) break;
+      }
+      for (final a in links) {
+        final href = a.attributes['href'];
+        final target = href == null ? null : page.resolve(href);
+        if (target == null || !matches(target)) continue;
+        final story = storyUrl(target);
+        final title = squash(a.text);
+        if (story == null || title.isEmpty) continue;
+        found.putIfAbsent('$story', () => (url: story, title: title));
+      }
+      final next = doc
+          .querySelector('a[rel="next"], li.next a, a.next, .pagination a.next')
+          ?.attributes['href'];
+      page = next == null ? null : page.resolve(next);
+    }
+    return found.values.toList();
+  }
 
   static String _bareHost(Uri uri) {
     final host = uri.host.toLowerCase();

@@ -6,15 +6,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../diagnostics/app_log.dart';
 import '../data/database.dart';
 import '../data/database_scope.dart';
 import '../l10n/l10n.dart';
 import '../library/library_scope.dart';
+import '../library/reading_tracker.dart';
 import '../library/story_sync.dart';
+import '../sources/html_clean.dart';
 import '../sources/sources.dart';
 import '../ui/layout.dart';
 import '../ui/app_settings.dart';
 import 'chapter_blocks.dart';
+import 'manga_pages.dart';
 import 'reader_sheets.dart';
 
 /// What the reader shows: chapters live from the site, or a download.
@@ -77,6 +81,13 @@ class _ReaderScreenState extends State<ReaderScreen> {
 
   // Looked up once: inherited widgets aren't reachable in dispose().
   late final AppDatabase _db = DatabaseScope.of(context);
+  late final _tracker = ReadingTracker(_db, widget.work.id);
+  late final _lifecycle = AppLifecycleListener(
+    onHide: () => unawaited(_tracker.pause()),
+  );
+
+  /// Words of the chapters loaded so far, for the statistics.
+  final _words = <int, int>{};
 
   Download? get _download => switch (widget.mode) {
     DownloadReading(:final download) => download,
@@ -111,6 +122,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
     super.didChangeDependencies();
     if (_content == null) {
       _annotations = _db.watchAnnotations(widget.work.id);
+      _lifecycle; // starts listening
       _init();
     }
   }
@@ -233,6 +245,8 @@ class _ReaderScreenState extends State<ReaderScreen> {
   void dispose() {
     if (_saveOffset?.isActive ?? false) _storeOffset();
     _saveOffset?.cancel();
+    _lifecycle.dispose();
+    unawaited(_tracker.flush());
     _scroll.dispose();
     unawaited(_fetcher?.close());
     super.dispose();
@@ -241,6 +255,8 @@ class _ReaderScreenState extends State<ReaderScreen> {
   void _onScroll() {
     final max = _scroll.position.maxScrollExtent;
     _offset = max <= 0 ? 0.0 : (_scroll.offset / max).clamp(0.0, 1.0);
+    unawaited(_tracker.activity());
+    if (_offset! >= 0.95) _creditChapter(_current);
     _saveOffset?.cancel();
     _saveOffset = Timer(const Duration(milliseconds: 800), _storeOffset);
   }
@@ -253,11 +269,23 @@ class _ReaderScreenState extends State<ReaderScreen> {
     );
   }
 
+  /// Counts chapter [number] as read, once its words are known.
+  void _creditChapter(int number) {
+    final words = _words[number];
+    if (words != null) unawaited(_tracker.chapterRead(number, words));
+  }
+
   void _open(int number, {bool keepOffset = false}) {
     if (!keepOffset) _pendingOffset = null;
+    // Moving on from a chapter means it was read.
+    if (number == _current + 1) _creditChapter(_current);
+    unawaited(_tracker.activity());
     setState(() {
       _current = number;
-      _content = _load(number);
+      _content = _load(number).then((c) {
+        _words[number] = countWords(htmlToPlainText(c.html));
+        return c;
+      });
     });
     if (_scroll.hasClients) _scroll.jumpTo(0);
     unawaited(
@@ -300,11 +328,26 @@ class _ReaderScreenState extends State<ReaderScreen> {
       throw SourceException(l10n.readerNoSource);
     }
     if (chapter.isLocked) throw SourceException(l10n.readerLockedChapter);
-    final cached = _onlineCache[number] ??= await source.fetchChapter(
-      chapterRefOf(chapter),
-      _fetcher ??= openFetcher(source),
-    );
-    return _LoadedChapter(cached.title ?? chapter.title, cached.html);
+    try {
+      final cached = _onlineCache[number] ??= await source.fetchChapter(
+        chapterRefOf(chapter),
+        _fetcher ??= openFetcher(source),
+      );
+      return _LoadedChapter(cached.title ?? chapter.title, cached.html);
+    } on SourceException catch (e) {
+      logWarning(
+        'reader',
+        'Chapter failed to load',
+        context: {
+          'workId': widget.work.id,
+          'source': source.name,
+          'chapter': number,
+          'url': chapter.url,
+        },
+        error: e.message,
+      );
+      rethrow;
+    }
   }
 
   ImageProvider? _resolveImage(String src) {
@@ -321,6 +364,36 @@ class _ReaderScreenState extends State<ReaderScreen> {
       if (!_scroll.hasClients) return;
       _scroll.jumpTo(offset * _scroll.position.maxScrollExtent);
     });
+  }
+
+  /// The open chapter is only images (manga, comics).
+  bool _imageChapter = false;
+  final _pages = GlobalKey<MangaPagesState>();
+
+  Widget _buildPages(List<String> sources, AppSettings? settings) {
+    final count = sources.length;
+    final start = _pendingOffset;
+    _pendingOffset = null;
+    return MangaPages(
+      key: _pages,
+      pages: [for (final s in sources) _resolveImage(s)],
+      rightToLeft: settings?.mangaMode == MangaMode.pagesRtl,
+      doublePage:
+          (settings?.doublePage ?? false) &&
+          MediaQuery.sizeOf(context).width > MediaQuery.sizeOf(context).height,
+      initialPage: start == null || count < 2
+          ? 0
+          : (start * (count - 1)).round(),
+      onPageChanged: (page, count) {
+        _offset = count < 2 ? 1.0 : page / (count - 1);
+        _saveOffset?.cancel();
+        _saveOffset = Timer(const Duration(milliseconds: 800), _storeOffset);
+        unawaited(_tracker.activity());
+        if (page >= count - 2) _creditChapter(_current);
+      },
+      onPastEnd: _next,
+      onBeforeStart: _previous,
+    );
   }
 
   bool get _hasPrevious => _current > _first;
@@ -358,8 +431,15 @@ class _ReaderScreenState extends State<ReaderScreen> {
 
     return CallbackShortcuts(
       bindings: {
-        const SingleActivator(LogicalKeyboardKey.arrowLeft): _previous,
-        const SingleActivator(LogicalKeyboardKey.arrowRight): _next,
+        // In a manga chapter the arrows turn pages instead.
+        const SingleActivator(LogicalKeyboardKey.arrowLeft): () =>
+            _pages.currentState != null
+            ? _pages.currentState!.turn(left: true)
+            : _previous(),
+        const SingleActivator(LogicalKeyboardKey.arrowRight): () =>
+            _pages.currentState != null
+            ? _pages.currentState!.turn(left: false)
+            : _next(),
       },
       child: Focus(
         autofocus: true,
@@ -393,6 +473,8 @@ class _ReaderScreenState extends State<ReaderScreen> {
                 tooltip: l10n.addBookmark,
                 onPressed: _addBookmark,
               ),
+              if (_imageChapter && SettingsScope.maybeOf(context) != null)
+                _MangaModeMenu(settings: SettingsScope.maybeOf(context)!),
               IconButton(
                 icon: const Icon(Icons.text_fields),
                 tooltip: l10n.readerSettings,
@@ -473,6 +555,24 @@ class _ReaderScreenState extends State<ReaderScreen> {
                       ? '${l10n.readerLoading}\n${l10n.readerBrowserHint}'
                       : l10n.readerLoading,
                   loading: true,
+                );
+              }
+              final settings = SettingsScope.maybeOf(context);
+              final pages = imageOnlyPages(loaded.html);
+              if (pages != null) {
+                if (!_imageChapter) {
+                  WidgetsBinding.instance.addPostFrameCallback(
+                    (_) =>
+                        mounted ? setState(() => _imageChapter = true) : null,
+                  );
+                }
+                if ((settings?.mangaMode ?? MangaMode.pages) !=
+                    MangaMode.scroll) {
+                  return _buildPages(pages, settings);
+                }
+              } else if (_imageChapter) {
+                WidgetsBinding.instance.addPostFrameCallback(
+                  (_) => mounted ? setState(() => _imageChapter = false) : null,
                 );
               }
               final prefs = _prefs;
@@ -722,4 +822,48 @@ class _ChapterListSheet extends StatelessWidget {
 Future<bool> openFile(String path) async {
   if (!File(path).existsSync()) return false;
   return launchUrl(Uri.file(path));
+}
+
+/// Chooses how image chapters are shown: pages left to right or right to
+/// left, or one long strip; and two pages side by side.
+class _MangaModeMenu extends StatelessWidget {
+  const _MangaModeMenu({required this.settings});
+
+  final AppSettings settings;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return MenuAnchor(
+      menuChildren: [
+        for (final (mode, label, icon) in [
+          (MangaMode.pages, l10n.mangaPages, Icons.arrow_forward),
+          (MangaMode.pagesRtl, l10n.mangaPagesRtl, Icons.arrow_back),
+          (MangaMode.scroll, l10n.mangaScroll, Icons.swap_vert),
+        ])
+          MenuItemButton(
+            leadingIcon: Icon(icon),
+            trailingIcon: settings.mangaMode == mode
+                ? const Icon(Icons.check)
+                : null,
+            onPressed: () => settings.setMangaMode(mode),
+            child: Text(label),
+          ),
+        const Divider(),
+        CheckboxMenuButton(
+          value: settings.doublePage,
+          onChanged: settings.mangaMode == MangaMode.scroll
+              ? null
+              : (v) => settings.setDoublePage(v ?? false),
+          child: Text(l10n.mangaDoublePage),
+        ),
+      ],
+      builder: (context, controller, _) => IconButton(
+        icon: const Icon(Icons.auto_stories_outlined),
+        tooltip: l10n.mangaMode,
+        onPressed: () =>
+            controller.isOpen ? controller.close() : controller.open(),
+      ),
+    );
+  }
 }

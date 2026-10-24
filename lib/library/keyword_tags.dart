@@ -1,0 +1,197 @@
+/// Words in a summary that point to one of the default tags. Each pattern
+/// matches at the start of a word, case-insensitively, so "reincarnat"
+/// finds "reincarnated" and "reincarnation". English, German and Russian.
+const kTagKeywords = <String, List<String>>{
+  'Time Travel': [
+    'time travel',
+    'travels back in time',
+    'back in time',
+    'sent back',
+    'zeitreise',
+    'in die vergangenheit',
+    'путешеств во времени',
+    'в прошлое',
+    'назад во времени',
+  ],
+  'Reincarnation': [
+    'reincarnat',
+    'reborn',
+    'rebirth',
+    'second life',
+    'past life',
+    'wiedergeboren',
+    'wiedergeburt',
+    'перерожд',
+    'реинкарнац',
+    'переродил',
+  ],
+  'Isekai': [
+    'isekai',
+    'another world',
+    'transported to',
+    'summoned to',
+    'transmigrat',
+    'andere welt',
+    'попаданец',
+    'попаданк',
+    'другой мир',
+    'иной мир',
+  ],
+  'Harem': ['harem', 'гарем'],
+  'Romance': [
+    'romance',
+    'in love',
+    'falls for',
+    'love story',
+    'liebe',
+    'verliebt',
+    'любов',
+  ],
+  'Kingdom Building': [
+    'kingdom building',
+    'build a kingdom',
+    'building a kingdom',
+    'build his kingdom',
+    'nation building',
+    'rule a kingdom',
+    'königreich',
+    'строить королевство',
+    'построить королевство',
+    'государство',
+  ],
+  'Overpowered': [
+    'overpowered',
+    'op mc',
+    'strongest',
+    'unstoppable',
+    'unrivaled',
+    'übermächtig',
+    'stärkste',
+    'сильнейш',
+    'имба',
+    'непобедим',
+  ],
+  'Slow Burn': ['slow burn', 'slow-burn', 'slowburn'],
+  'Fluff': ['fluff', 'fluffy', 'wholesome', 'cute', 'флафф', 'милот'],
+  'Angst': ['angst', 'heartbreak', 'tragedy', 'tragic', 'ангст', 'трагед'],
+  'Hurt/Comfort': ['hurt/comfort', 'hurt comfort', 'h/c'],
+  'Fix-it': [
+    'fix-it',
+    'fix it',
+    'second chance',
+    'do it right',
+    'change the past',
+    'change fate',
+    'исправить',
+    'второй шанс',
+  ],
+  'Alternate Universe': [
+    'alternate universe',
+    'alternative universe',
+    'au ',
+    'what if',
+    'paralleluniversum',
+    'альтернативн',
+    'что если',
+  ],
+  'Crossover': ['crossover', 'кроссовер'],
+  'Child Care': [
+    'raising',
+    'adopts',
+    'adopted',
+    'babysit',
+    'single father',
+    'single mother',
+    'parenting',
+    'adoptiert',
+    'усынов',
+    'воспитыва',
+  ],
+  'Marriage': [
+    'marriage',
+    'married',
+    'wedding',
+    'arranged marriage',
+    'hochzeit',
+    'heirat',
+    'свадьб',
+    'замуж',
+    'женит',
+  ],
+  'Mystery': [
+    'mystery',
+    'mysteries',
+    'detective',
+    'murder',
+    'investigat',
+    'krimi',
+    'detektiv',
+    'детектив',
+    'убийств',
+    'расследов',
+  ],
+  'Humor': [
+    'humor',
+    'humour',
+    'comedy',
+    'funny',
+    'hilarious',
+    'crack',
+    'witzig',
+    'komödie',
+    'юмор',
+    'комеди',
+    'смешн',
+  ],
+  'Action': ['action', 'fight', 'battle', 'kampf', 'битв', 'сражен', 'экшн'],
+  'Adventure': [
+    'adventure',
+    'journey',
+    'quest',
+    'abenteuer',
+    'приключени',
+    'путешеств',
+  ],
+  'Fantasy': [
+    'fantasy',
+    'magic',
+    'mage',
+    'wizard',
+    'sorcer',
+    'dragon',
+    'magie',
+    'zauber',
+    'фэнтези',
+    'маги',
+    'дракон',
+    'волшеб',
+  ],
+  'Slice of Life': [
+    'slice of life',
+    'everyday',
+    'daily life',
+    'alltag',
+    'повседнев',
+  ],
+  'Family': ['family', 'familie', 'семья', 'семейн'],
+};
+
+/// The default tags [text] (a summary) points to, each with the word that
+/// gave it away.
+Map<String, String> keywordTags(String text) {
+  final lower = ' ${text.toLowerCase()} ';
+  final found = <String, String>{};
+  for (final MapEntry(key: tag, value: words) in kTagKeywords.entries) {
+    for (final word in words) {
+      final at = RegExp(
+        '(?<![\\p{L}\\p{N}])${RegExp.escape(word.trim())}',
+        unicode: true,
+      ).firstMatch(lower);
+      if (at != null) {
+        found[tag] = word.trim();
+        break;
+      }
+    }
+  }
+  return found;
+}

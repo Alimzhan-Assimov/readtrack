@@ -7,12 +7,20 @@ import 'package:url_launcher/url_launcher.dart';
 import '../data/database.dart';
 import '../data/database_scope.dart';
 import '../l10n/l10n.dart';
+import '../library/character_detection.dart';
+import '../library/keyword_tags.dart';
+import '../library/story_sync.dart';
+import '../sources/sources.dart';
 import '../ui/app_settings.dart';
 import '../ui/format.dart';
 import '../ui/labels.dart';
 import '../ui/layout.dart';
+import '../widgets/text_prompt.dart';
 import '../widgets/work_cover.dart';
+import 'anilist_dialog.dart';
+import 'franchise_screen.dart';
 import 'read_section.dart';
+import 'related_section.dart';
 import 'work_edit_screen.dart';
 
 class WorkDetailScreen extends StatefulWidget {
@@ -37,6 +45,8 @@ class WorkDetailScreen extends StatefulWidget {
 
 class _WorkDetailScreenState extends State<WorkDetailScreen> {
   late Stream<WorkWithDetails?> _work;
+  late Stream<List<({Tag tag, TagSuggestion suggestion})>> _tagSuggestions;
+  bool _estimating = false;
 
   AppDatabase get _db => DatabaseScope.of(context);
 
@@ -44,6 +54,7 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _work = _db.watchWork(widget.workId);
+    _tagSuggestions = _db.watchTagSuggestions(widget.workId);
     // Opening the story counts as having seen its new chapters.
     _db.markChaptersSeen(widget.workId);
   }
@@ -53,6 +64,7 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.workId != widget.workId) {
       _work = _db.watchWork(widget.workId);
+      _tagSuggestions = _db.watchTagSuggestions(widget.workId);
       _db.markChaptersSeen(widget.workId);
     }
   }
@@ -68,6 +80,71 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
     if (!opened && mounted) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(context.l10n.linkOpenFailed)));
+    }
+  }
+
+  /// The site to read [w] from, if any.
+  StorySource? _sourceOf(Work w) {
+    final url = w.sourceUrl;
+    final source = url == null ? null : sourceFor(Uri.parse(url));
+    return source != null && source.canRead ? source : null;
+  }
+
+  Future<void> _estimate(Work w, StorySource source) async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _estimating = true);
+    try {
+      final words = await estimateLength(_db, w, source);
+      if (words == null) {
+        messenger.showSnackBar(SnackBar(content: Text(l10n.estimateFailed)));
+      }
+    } finally {
+      if (mounted) setState(() => _estimating = false);
+    }
+  }
+
+  bool _detecting = false;
+
+  /// Proposes default tags whose keywords appear in the title or summary.
+  Future<void> _suggestTags(Work w) async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    final found = keywordTags('${w.title}\n${w.summary ?? ''}');
+    final added = await _db.suggestTags(w.id, {
+      for (final MapEntry(key: tag, value: word) in found.entries)
+        tag: l10n.tagReasonKeyword(word),
+    });
+    messenger.showSnackBar(SnackBar(content: Text(l10n.tagsSuggested(added))));
+  }
+
+  /// Looks for the category's known characters in the downloaded text and
+  /// adds them as suggestions.
+  Future<void> _findCharacters(WorkWithDetails item) async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _detecting = true);
+    try {
+      final known = await _db.charactersOf(item.fandom!.id);
+      final text = await _db.textOf(item.work.id);
+      if (known.isEmpty || text.trim().isEmpty) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(
+              known.isEmpty ? l10n.noKnownCharacters : l10n.noTextToSearch,
+            ),
+          ),
+        );
+        return;
+      }
+      final found = detectCharacters(text, known)
+        ..removeWhere((id, _) => item.characters.any((c) => c.id == id));
+      await _db.suggestCharacters(item.work.id, found);
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.charactersFound(found.length))),
+      );
+    } finally {
+      if (mounted) setState(() => _detecting = false);
     }
   }
 
@@ -157,6 +234,27 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
       appBar: AppBar(
         automaticallyImplyLeading: !widget.embedded,
         actions: [
+          if (w.type != WorkType.fanfiction)
+            IconButton(
+              icon: const Icon(Icons.travel_explore),
+              tooltip: l10n.aniListLookUp,
+              onPressed: () async {
+                final messenger = ScaffoldMessenger.of(context);
+                final result = await lookUpOnAniList(context, item);
+                if (result != null) {
+                  messenger.showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        l10n.aniListApplied(
+                          result.characters,
+                          result.relations,
+                        ),
+                      ),
+                    ),
+                  );
+                }
+              },
+            ),
           IconButton(
             icon: const Icon(Icons.edit_outlined),
             tooltip: l10n.editTooltip,
@@ -200,6 +298,11 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
                   avatar: Icon(w.format.icon, size: 18),
                   label: Text(w.format.label(l10n)),
                 ),
+                if (w.ownsPhysicalCopy)
+                  Chip(
+                    avatar: Icon(WorkFormat.physical.icon, size: 18),
+                    label: Text(l10n.paperCopy),
+                  ),
                 _StatusMenu(
                   status: w.status,
                   onChanged: (s) =>
@@ -229,12 +332,31 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
                     value: estimated(l10n.formatNumber(n), w.pagesEstimated),
                     label: l10n.fieldPages,
                   ),
+                if (w.wordCount == null &&
+                    (w.chapterCount ?? 0) > 0 &&
+                    _sourceOf(w) != null)
+                  ActionChip(
+                    avatar: _estimating
+                        ? const SizedBox.square(
+                            dimension: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.straighten, size: 18),
+                    label: Text(l10n.estimateLength),
+                    tooltip: l10n.estimateLengthHint,
+                    onPressed: _estimating
+                        ? null
+                        : () => _estimate(w, _sourceOf(w)!),
+                  ),
               ],
             ),
-            if (w.chapterCount != null || w.currentChapter != null)
+            if (w.format == WorkFormat.physical)
+              _buildPageProgress(l10n, w)
+            else if (w.chapterCount != null || w.currentChapter != null)
               _buildProgress(l10n, w),
             // Shows itself for readable sources and imported books.
             ReadSection(work: w),
+            RelatedSection(item: item),
             if (url != null)
               _Section(
                 title: l10n.sectionLink,
@@ -253,6 +375,50 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
                   ],
                 ),
               ),
+            if (item.characters.isNotEmpty || item.fandom != null)
+              _Section(
+                title: l10n.sectionCharacters,
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    for (final c in item.characters)
+                      if (item.suggestedCharacters.contains(c.id))
+                        InputChip(
+                          avatar: const Icon(Icons.help_outline, size: 18),
+                          label: Text(c.name),
+                          tooltip: l10n.suggestedCharacter,
+                          onPressed: () => _db.confirmCharacter(w.id, c.id),
+                          onDeleted: () => _db.removeCharacter(w.id, c.id),
+                          deleteButtonTooltipMessage: l10n.dismissSuggestion,
+                        )
+                      else
+                        Chip(
+                          avatar: const Icon(Icons.person_outline, size: 18),
+                          label: Text(c.name),
+                        ),
+                    if (item.fandom != null)
+                      TextButton.icon(
+                        icon: _detecting
+                            ? const SizedBox.square(
+                                dimension: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(
+                                Icons.person_search_outlined,
+                                size: 18,
+                              ),
+                        label: Text(l10n.findCharacters),
+                        onPressed: _detecting
+                            ? null
+                            : () => _findCharacters(item),
+                      ),
+                  ],
+                ),
+              ),
             if (item.pairings.isNotEmpty)
               _Section(
                 title: l10n.sectionPairings,
@@ -268,16 +434,47 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
                   ],
                 ),
               ),
-            if (SettingsScope.visibleTags(context, item.tags) case final tags
-                when tags.isNotEmpty)
-              _Section(
-                title: l10n.sectionTags,
-                child: Wrap(
-                  spacing: 8,
-                  runSpacing: 4,
-                  children: [for (final t in tags) Chip(label: Text(t.name))],
-                ),
-              ),
+            StreamBuilder<List<({Tag tag, TagSuggestion suggestion})>>(
+              stream: _tagSuggestions,
+              builder: (context, snapshot) {
+                final tags = SettingsScope.visibleTags(context, item.tags);
+                final suggested = snapshot.data ?? const [];
+                return _Section(
+                  title: l10n.sectionTags,
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      for (final t in tags) Chip(label: Text(t.name)),
+                      for (final s in suggested)
+                        InputChip(
+                          avatar: Icon(
+                            s.suggestion.source == 'keywords'
+                                ? Icons.lightbulb_outline
+                                : Icons.auto_awesome,
+                            size: 18,
+                          ),
+                          label: Text(s.tag.name),
+                          tooltip: l10n.tagSuggestionWhy(
+                            s.suggestion.reason ?? '',
+                          ),
+                          onPressed: () =>
+                              _db.acceptTagSuggestion(w.id, s.tag.id),
+                          onDeleted: () =>
+                              _db.dismissTagSuggestion(w.id, s.tag.id),
+                          deleteButtonTooltipMessage: l10n.dismissSuggestion,
+                        ),
+                      TextButton.icon(
+                        icon: const Icon(Icons.lightbulb_outline, size: 18),
+                        label: Text(l10n.suggestTags),
+                        onPressed: () => _suggestTags(w),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
             if (w.isbn case final isbn?)
               _Section(title: l10n.sectionIsbn, child: SelectableText(isbn)),
             if (w.summary case final summary?)
@@ -314,14 +511,30 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
               color: theme.colorScheme.onSurfaceVariant,
             ),
           ),
-        if (fandom != null)
+        if (fandom != null || item.crossovers.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 8),
-            child: Row(
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                const Icon(Icons.category_outlined, size: 18),
-                const SizedBox(width: 6),
-                Flexible(child: Text(fandom.name)),
+                for (final (i, f) in [?fandom, ...item.crossovers].indexed)
+                  ActionChip(
+                    avatar: Icon(
+                      i == 0 && fandom != null
+                          ? Icons.category_outlined
+                          : Icons.join_inner,
+                      size: 18,
+                    ),
+                    label: Text(f.name),
+                    tooltip: l10n.openFranchise(f.name),
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => FranchiseScreen(fandom: f),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -340,6 +553,75 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
             ),
           ),
       ],
+    );
+  }
+
+  /// Asks for the page the reader is on; pages read count in the
+  /// statistics (estimated words, like elsewhere).
+  Future<void> _setPage(Work w) async {
+    final l10n = context.l10n;
+    final input = await showTextPrompt(
+      context,
+      title: l10n.currentPageTitle,
+      initial: w.currentPage?.toString(),
+    );
+    final page = int.tryParse(input?.trim() ?? '');
+    if (page == null || page < 0) return;
+    final before = w.currentPage ?? 0;
+    await _db.updateWork(
+      w.id,
+      WorksCompanion(
+        currentPage: Value(page),
+        status: w.status == ReadingStatus.planned && page > 0
+            ? const Value(ReadingStatus.reading)
+            : w.pageCount != null && page >= w.pageCount!
+            ? const Value(ReadingStatus.finished)
+            : const Value.absent(),
+      ),
+    );
+    if (page > before) {
+      await _db.addReading(
+        w.id,
+        DateTime.now(),
+        words: (page - before) * AppDatabase.wordsPerPage,
+      );
+    }
+  }
+
+  Widget _buildPageProgress(AppLocalizations l10n, Work w) {
+    final page = w.currentPage ?? 0;
+    final total = w.pageCount;
+    return _Section(
+      title: l10n.sectionProgress,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  total != null
+                      ? l10n.pageProgress(page, total)
+                      : l10n.pageCurrent(page),
+                ),
+              ),
+              FilledButton.tonalIcon(
+                icon: const Icon(Icons.edit_outlined),
+                label: Text(l10n.setPage),
+                onPressed: () => _setPage(w),
+              ),
+            ],
+          ),
+          if (total != null && total > 0)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: LinearProgressIndicator(
+                value: (page / total).clamp(0, 1).toDouble(),
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+        ],
+      ),
     );
   }
 

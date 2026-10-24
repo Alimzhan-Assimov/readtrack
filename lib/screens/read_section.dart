@@ -1,14 +1,22 @@
+import 'dart:io';
+
+import 'package:drift/drift.dart' show Value;
+import 'package:file_selector/file_selector.dart' as fs;
 import 'package:flutter/material.dart';
 
 import '../data/database.dart';
 import '../data/database_scope.dart';
 import '../l10n/l10n.dart';
+import '../library/book_importer.dart';
 import '../library/exporters.dart';
+import '../library/file_import.dart';
 import '../library/library_scope.dart';
 import '../library/story_sync.dart';
 import '../reader/reader_screen.dart';
 import '../reader/reader_sheets.dart';
 import '../sources/sources.dart';
+import '../widgets/text_prompt.dart';
+import 'catalog_screen.dart';
 import 'download_dialog.dart';
 
 /// "Read" part of the detail screen: read online, read a download, start a
@@ -123,6 +131,7 @@ class _ReadSectionState extends State<ReadSection> {
       to: choice.to,
       appendTo: choice.appendTo,
       format: choice.format,
+      withImages: choice.withImages,
     );
   }
 
@@ -144,6 +153,7 @@ class _ReadSectionState extends State<ReadSection> {
     required int to,
     Download? appendTo,
     ExportFormat format = ExportFormat.txt,
+    bool withImages = true,
   }) async {
     final l10n = context.l10n;
     final messenger = ScaffoldMessenger.of(context);
@@ -158,6 +168,7 @@ class _ReadSectionState extends State<ReadSection> {
       to: to,
       appendTo: appendTo,
       format: format,
+      withImages: withImages,
     );
     final file = result.file;
     messenger.showSnackBar(
@@ -181,6 +192,113 @@ class _ReadSectionState extends State<ReadSection> {
               ),
       ),
     );
+  }
+
+  /// For entries without text, e.g. a paper book: attach a file the user
+  /// has, or look for a free legal edition.
+  Widget _buildNoText(AppLocalizations l10n, ThemeData theme) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
+        padding: const EdgeInsets.only(top: 24, bottom: 8),
+        child: Text(
+          l10n.sectionRead,
+          style: theme.textTheme.titleSmall?.copyWith(
+            color: theme.colorScheme.primary,
+          ),
+        ),
+      ),
+      Text(l10n.noTextHint, style: theme.textTheme.bodyMedium),
+      const SizedBox(height: 8),
+      Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          OutlinedButton.icon(
+            icon: const Icon(Icons.attach_file),
+            label: Text(l10n.attachFile),
+            onPressed: _attachFile,
+          ),
+          OutlinedButton.icon(
+            icon: const Icon(Icons.edit_note),
+            label: Text(l10n.addNote),
+            onPressed: _addPageNote,
+          ),
+          if (widget.work.type == WorkType.book)
+            OutlinedButton.icon(
+              icon: const Icon(Icons.travel_explore),
+              label: Text(l10n.findFreeEditions),
+              onPressed: () => Navigator.of(context).push(
+                catalogRoute(
+                  widget.work.id,
+                  (_) => FreeEditionsScreen(
+                    query: [widget.work.title, ?widget.work.author].join(' '),
+                    attachTo: widget.work.id,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+      _AnnotationsPreview(
+        annotations: _annotations,
+        byPage: true,
+        onOpen: _editPageNote,
+        onDelete: (a) => _db.deleteAnnotation(a.id),
+      ),
+    ],
+  );
+
+  /// A note on the page the reader is on (paper books have no reader).
+  Future<void> _addPageNote() async {
+    final l10n = context.l10n;
+    final page = widget.work.currentPage ?? 0;
+    final text = await showTextPrompt(
+      context,
+      title: l10n.pageCurrent(page),
+      hint: l10n.addNote,
+      multiline: true,
+    );
+    if (text == null || text.isEmpty) return;
+    await _db.addAnnotation(
+      AnnotationsCompanion.insert(
+        workId: widget.work.id,
+        chapterNumber: page,
+        kind: AnnotationKind.note,
+        note: Value(text),
+      ),
+    );
+  }
+
+  Future<void> _editPageNote(Annotation a) async {
+    final text = await showTextPrompt(
+      context,
+      title: context.l10n.pageCurrent(a.chapterNumber),
+      initial: a.note,
+      multiline: true,
+    );
+    if (text != null) await _db.updateAnnotationNote(a.id, text);
+  }
+
+  Future<void> _attachFile() async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    final importer = BookImporter(_db, LibraryScope.of(context).storage);
+    final file = await fs.openFile(
+      acceptedTypeGroups: [
+        fs.XTypeGroup(label: l10n.bookFiles, extensions: kImportExtensions),
+      ],
+    );
+    if (file == null) return;
+    try {
+      final book = await readBookFile(file.path);
+      await importer.attach(widget.work.id, book, original: File(file.path));
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.catalogAttached(file.name))),
+      );
+    } on Exception catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.importFailed('$e'))));
+    }
   }
 
   Future<void> _exportAs(Download download, ExportFormat format) async {
@@ -229,7 +347,7 @@ class _ReadSectionState extends State<ReadSection> {
                   .where((n) => n >= d.fromChapter && n <= d.toChapter)
                   .length;
               if (source == null && downloads.isEmpty) {
-                return const SizedBox.shrink();
+                return _buildNoText(l10n, theme);
               }
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -350,7 +468,9 @@ class _ReadSectionState extends State<ReadSection> {
                           SubmenuButton(
                             leadingIcon: const Icon(Icons.ios_share),
                             menuChildren: [
-                              for (final f in ExportFormat.values)
+                              for (final f in ExportFormat.forType(
+                                widget.work.type,
+                              ))
                                 if (f.name != d.format)
                                   MenuItemButton(
                                     onPressed: () => _exportAs(d, f),
@@ -447,7 +567,11 @@ class _AnnotationsPreview extends StatelessWidget {
     required this.annotations,
     required this.onOpen,
     required this.onDelete,
+    this.byPage = false,
   });
+
+  /// Notes on a paper book: numbered by page, not chapter.
+  final bool byPage;
 
   static const _shown = 3;
 
@@ -466,7 +590,9 @@ class _AnnotationsPreview extends StatelessWidget {
         if (items.isEmpty) return const SizedBox.shrink();
         final latest = [...items]
           ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-        String chapter(Annotation a) => l10n.chapterCurrent(a.chapterNumber);
+        String chapter(Annotation a) => byPage
+            ? l10n.pageCurrent(a.chapterNumber)
+            : l10n.chapterCurrent(a.chapterNumber);
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -493,7 +619,8 @@ class _AnnotationsPreview extends StatelessWidget {
                     showDragHandle: true,
                     builder: (_) => AnnotationsSheet(
                       annotations: annotations,
-                      chapterTitle: (n) => l10n.chapterCurrent(n),
+                      chapterTitle: (n) =>
+                          byPage ? l10n.pageCurrent(n) : l10n.chapterCurrent(n),
                       onDelete: onDelete,
                     ),
                   );
