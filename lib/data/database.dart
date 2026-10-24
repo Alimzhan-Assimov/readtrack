@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'adult_tags.dart';
 import 'enums.dart';
+import 'fandom_list.dart';
 import 'fandom_names.dart';
 import 'pairing_tags.dart';
 import 'tag_synonyms.dart';
@@ -20,6 +21,18 @@ part 'database.g.dart';
 class Fandoms extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text().unique()();
+}
+
+/// Another name of a category the user merged into it, so later imports
+/// with that name land in it.
+class FandomAliases extends Table {
+  /// [fandomKey] of the other name.
+  TextColumn get aliasKey => text()();
+  IntColumn get fandomId =>
+      integer().references(Fandoms, #id, onDelete: KeyAction.cascade)();
+
+  @override
+  Set<Column> get primaryKey => {aliasKey};
 }
 
 /// How a further category takes part in a work besides its main one.
@@ -105,6 +118,26 @@ class WorkCharacters extends Table {
 
   @override
   Set<Column> get primaryKey => {workId, characterId};
+}
+
+/// A tag the app proposes for a work (from keywords in the summary, or an
+/// AI provider), with why; it becomes a real tag once the user confirms
+/// it. Dismissed ones are kept so they aren't proposed again.
+class TagSuggestions extends Table {
+  IntColumn get workId =>
+      integer().references(Works, #id, onDelete: KeyAction.cascade)();
+  IntColumn get tagId =>
+      integer().references(Tags, #id, onDelete: KeyAction.cascade)();
+
+  /// e.g. "The summary mentions “reborn”".
+  TextColumn get reason => text().nullable()();
+
+  /// "keywords", or the AI provider's name.
+  TextColumn get source => text().withDefault(const Constant('keywords'))();
+  BoolColumn get dismissed => boolean().withDefault(const Constant(false))();
+
+  @override
+  Set<Column> get primaryKey => {workId, tagId};
 }
 
 /// Another name for a tag: tags saved under it go to [tagId] instead.
@@ -218,6 +251,12 @@ class Works extends Table {
   /// When the status last became "finished" (kept by a trigger).
   DateTimeColumn get finishedAt => dateTime().nullable()();
 
+  /// Where the reader is in a paper book.
+  IntColumn get currentPage => integer().nullable()();
+
+  /// The work's id on AniList, once looked up there.
+  IntColumn get anilistId => integer().nullable()();
+
   /// The user also has the book on paper (for digital or online entries).
   BoolColumn get ownsPhysicalCopy =>
       boolean().withDefault(const Constant(false))();
@@ -305,9 +344,19 @@ class WorkWithDetails {
     this.series,
     this.crossovers = const [],
     this.characters = const [],
+    this.suggestedCharacters = const {},
   });
 
+  /// Including [suggestedCharacters].
   final List<Character> characters;
+
+  /// Ids of characters found in the text but not confirmed yet.
+  final Set<int> suggestedCharacters;
+
+  List<Character> get confirmedCharacters => [
+    for (final c in characters)
+      if (!suggestedCharacters.contains(c.id)) c,
+  ];
 
   /// Further categories, e.g. the other side of a crossover.
   final List<Fandom> crossovers;
@@ -364,6 +413,8 @@ class ReadingDays extends Table {
 
 @DriftDatabase(
   tables: [
+    TagSuggestions,
+    FandomAliases,
     TagSynonyms,
     Characters,
     CharacterAliases,
@@ -388,7 +439,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 15;
+  int get schemaVersion => 19;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -454,6 +505,10 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 13) await m.createTable(workFandoms);
       if (from < 15) await m.createTable(tagSynonyms);
+      if (from < 16) await _addColumnIfMissing(m, works, works.currentPage);
+      if (from < 17) await m.createTable(fandomAliases);
+      if (from < 18) await _addColumnIfMissing(m, works, works.anilistId);
+      if (from < 19) await m.createTable(tagSuggestions);
       if (from < 14) {
         await m.createTable(characters);
         await m.createTable(characterAliases);
@@ -783,10 +838,17 @@ class AppDatabase extends _$AppDatabase {
                 ..orderBy([OrderingTerm.asc(characters.name)]))
               .get();
     final charactersByWork = <int, List<Character>>{};
+    final suggestedByWork = <int, Set<int>>{};
     for (final r in characterRows) {
+      final link = r.readTable(workCharacters);
       charactersByWork
-          .putIfAbsent(r.readTable(workCharacters).workId, () => [])
+          .putIfAbsent(link.workId, () => [])
           .add(r.readTable(characters));
+      if (link.confidence < 1) {
+        suggestedByWork
+            .putIfAbsent(link.workId, () => {})
+            .add(link.characterId);
+      }
     }
     final crossoversByWork = <int, List<Fandom>>{};
     for (final r in crossoverRows) {
@@ -834,6 +896,8 @@ class AppDatabase extends _$AppDatabase {
           series: r.readTableOrNull(series),
           crossovers: crossoversByWork[r.readTable(works).id] ?? const [],
           characters: charactersByWork[r.readTable(works).id] ?? const [],
+          suggestedCharacters:
+              suggestedByWork[r.readTable(works).id] ?? const {},
         ),
     ];
   }
@@ -980,16 +1044,20 @@ class AppDatabase extends _$AppDatabase {
         );
       }
       if (characterNames != null) {
-        await (delete(workCharacters)..where((c) => c.workId.equals(id))).go();
+        // Suggestions found in the text stay until confirmed or dismissed.
+        await (delete(workCharacters)..where(
+              (c) => c.workId.equals(id) & c.confidence.isBiggerOrEqualValue(1),
+            ))
+            .go();
         for (final name in characterNames) {
           final characterId = await _characterIdFor(name, row.fandomId.value);
           if (characterId == null) continue;
-          await into(workCharacters).insert(
+          // Naming a suggested character confirms it.
+          await into(workCharacters).insertOnConflictUpdate(
             WorkCharactersCompanion.insert(
               workId: id,
               characterId: characterId,
             ),
-            mode: InsertMode.insertOrIgnore,
           );
         }
       }
@@ -1438,14 +1506,84 @@ class AppDatabase extends _$AppDatabase {
           .go();
 
   Future<int?> _fandomIdFor(String? name) async {
-    final n = name?.trim() ?? '';
+    var n = name?.trim() ?? '';
     if (n.isEmpty) return null;
-    final key = fandomKey(n);
+    final alias = await (select(
+      fandomAliases,
+    )..where((a) => a.aliasKey.equals(fandomKey(n)))).getSingleOrNull();
+    if (alias != null) return alias.fandomId;
+    n = FandomList.canonical(n) ?? n;
+    final key = FandomList.groupKey(n);
     for (final fandom in await select(fandoms).get()) {
-      if (fandomKey(fandom.name) == key) return fandom.id;
+      if (FandomList.groupKey(fandom.name) == key) return fandom.id;
     }
     return into(fandoms)
         .insert(FandomsCompanion.insert(name: baseFandomName(n)));
+  }
+
+  /// Moves everything of category [fromId] to [intoId], deletes it and
+  /// remembers its name as an alias.
+  Future<void> mergeFandom(int fromId, int intoId) {
+    if (fromId == intoId) return Future.value();
+    return transaction(() async {
+      final from = await (select(
+        fandoms,
+      )..where((f) => f.id.equals(fromId))).getSingle();
+      await _moveFandom(fromId, intoId);
+      await into(fandomAliases).insertOnConflictUpdate(
+        FandomAliasesCompanion.insert(
+          aliasKey: fandomKey(from.name),
+          fandomId: intoId,
+        ),
+      );
+    });
+  }
+
+  Stream<List<Fandom>> watchFandoms() =>
+      (select(fandoms)..orderBy([(f) => OrderingTerm.asc(f.name)])).watch();
+
+  Future<void> renameFandom(int id, String name) =>
+      (update(fandoms)..where((f) => f.id.equals(id))).write(
+        FandomsCompanion(name: Value(name.trim())),
+      );
+
+  /// Each category's learned other names, by id (as comparison keys).
+  Stream<Map<int, List<String>>> watchFandomAliases() =>
+      select(fandomAliases).watch().map((rows) {
+        final byFandom = <int, List<String>>{};
+        for (final r in rows) {
+          byFandom.putIfAbsent(r.fandomId, () => []).add(r.aliasKey);
+        }
+        return byFandom;
+      });
+
+  Future<void> removeFandomAlias(String aliasKey) =>
+      (delete(fandomAliases)..where((a) => a.aliasKey.equals(aliasKey))).go();
+
+  Future<void> _moveFandom(int fromId, int intoId) async {
+    await (update(works)..where((w) => w.fandomId.equals(fromId))).write(
+      WorksCompanion(fandomId: Value(intoId)),
+    );
+    await customStatement(
+      'UPDATE characters SET fandom_id = ? WHERE fandom_id = ?',
+      [intoId, fromId],
+    );
+    // Crossover links too; one already pointing at [intoId] wins.
+    await customStatement(
+      'UPDATE OR IGNORE work_fandoms SET fandom_id = ? WHERE fandom_id = ?',
+      [intoId, fromId],
+    );
+    await customStatement(
+      'UPDATE fandom_aliases SET fandom_id = ? WHERE fandom_id = ?',
+      [intoId, fromId],
+    );
+    await (delete(fandoms)..where((f) => f.id.equals(fromId))).go();
+    // A crossover with its own main category says nothing.
+    await customStatement(
+      'DELETE FROM work_fandoms WHERE fandom_id = ? AND work_id IN '
+      '(SELECT id FROM works WHERE fandom_id = ?)',
+      [intoId, intoId],
+    );
   }
 
   /// Merges categories that are variants of the same franchise, e.g. ones
@@ -1457,25 +1595,18 @@ class AppDatabase extends _$AppDatabase {
       for (final fandom in await (select(
         fandoms,
       )..orderBy([(f) => OrderingTerm.asc(f.id)])).get()) {
-        groups.putIfAbsent(fandomKey(fandom.name), () => []).add(fandom);
+        groups
+            .putIfAbsent(FandomList.groupKey(fandom.name), () => [])
+            .add(fandom);
       }
       for (final group in groups.values) {
         final keep = group.first;
         for (final duplicate in group.skip(1)) {
-          await (update(works)..where((w) => w.fandomId.equals(duplicate.id)))
-              .write(WorksCompanion(fandomId: Value(keep.id)));
-          await customStatement(
-            'UPDATE characters SET fandom_id = ? WHERE fandom_id = ?',
-            [keep.id, duplicate.id],
-          );
-          // Crossover links too; one already pointing at [keep] wins.
-          await customStatement(
-            'UPDATE OR IGNORE work_fandoms SET fandom_id = ? WHERE fandom_id = ?',
-            [keep.id, duplicate.id],
-          );
-          await (delete(fandoms)..where((f) => f.id.equals(duplicate.id))).go();
+          await _moveFandom(duplicate.id, keep.id);
         }
-        final base = baseFandomName(keep.name);
+        final base = baseFandomName(
+          FandomList.canonical(keep.name) ?? keep.name,
+        );
         if (base != keep.name) {
           await (update(fandoms)..where((f) => f.id.equals(keep.id))).write(
             FandomsCompanion(name: Value(base)),
@@ -1569,6 +1700,99 @@ class AppDatabase extends _$AppDatabase {
           .get()
           .then((names) => names.toSet().toList());
 
+  /// The character [name] of [fandomId] (created if new).
+  Future<int?> characterIdFor(String name, int? fandomId) =>
+      _characterIdFor(name, fandomId);
+
+  /// The characters of category [fandomId] with all their names.
+  Future<List<({Character character, List<String> names})>> charactersOf(
+    int fandomId,
+  ) async {
+    final rows = await (select(
+      characters,
+    )..where((c) => c.fandomId.equals(fandomId))).get();
+    final aliases = await (select(
+      characterAliases,
+    )..where((a) => a.characterId.isIn([for (final c in rows) c.id]))).get();
+    return [
+      for (final c in rows)
+        (
+          character: c,
+          names: [
+            c.name,
+            for (final a in aliases)
+              if (a.characterId == c.id) a.alias,
+          ],
+        ),
+    ];
+  }
+
+  /// Adds characters found in the text with how sure the guess is (below
+  /// 1); confirmed ones stay as they are.
+  Future<void> suggestCharacters(int workId, Map<int, double> found) =>
+      batch((b) {
+        for (final MapEntry(key: id, value: confidence) in found.entries) {
+          b.insert(
+            workCharacters,
+            WorkCharactersCompanion.insert(
+              workId: workId,
+              characterId: id,
+              confidence: Value(confidence.clamp(0, 0.99)),
+            ),
+            mode: InsertMode.insertOrIgnore,
+          );
+        }
+      });
+
+  Future<void> confirmCharacter(int workId, int characterId) =>
+      (update(workCharacters)..where(
+            (c) => c.workId.equals(workId) & c.characterId.equals(characterId),
+          ))
+          .write(const WorkCharactersCompanion(confidence: Value(1)));
+
+  Future<void> removeCharacter(int workId, int characterId) =>
+      (delete(workCharacters)..where(
+            (c) => c.workId.equals(workId) & c.characterId.equals(characterId),
+          ))
+          .go();
+
+  /// The text of [workId]'s chapters that have any, up to [maxChars].
+  Future<String> textOf(int workId, {int maxChars = 400000}) async {
+    final buffer = StringBuffer();
+    for (final c in await chaptersOf(workId)) {
+      final html = c.content;
+      if (html == null) continue;
+      buffer.writeln(html.replaceAll(RegExp(r'<[^>]*>'), ' '));
+      if (buffer.length > maxChars) break;
+    }
+    return '$buffer';
+  }
+
+  Future<void> setCharacterAniListId(int characterId, int anilistId) =>
+      (update(characters)..where((c) => c.id.equals(characterId))).write(
+        CharactersCompanion(anilistId: Value(anilistId)),
+      );
+
+  Future<Work?> workByAniListId(int anilistId) =>
+      (select(works)
+            ..where((w) => w.anilistId.equals(anilistId) & w.deletedAt.isNull())
+            ..limit(1))
+          .getSingleOrNull();
+
+  /// Remembers [name] as another name of category [fandomId], unless it
+  /// already names a category.
+  Future<void> addFandomAlias(int fandomId, String name) async {
+    final key = fandomKey(name);
+    if (key.isEmpty) return;
+    for (final f in await select(fandoms).get()) {
+      if (fandomKey(f.name) == key) return;
+    }
+    await into(fandomAliases).insert(
+      FandomAliasesCompanion.insert(aliasKey: key, fandomId: fandomId),
+      mode: InsertMode.insertOrIgnore,
+    );
+  }
+
   Future<void> addCharacterAlias(int characterId, String alias) =>
       into(characterAliases).insert(
         CharacterAliasesCompanion.insert(
@@ -1650,6 +1874,82 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> removeTagSynonym(String synonym) =>
       (delete(tagSynonyms)..where((s) => s.synonym.equals(synonym))).go();
+
+  /// Open suggestions for [workId] (not dismissed, not already tags).
+  Stream<List<({Tag tag, TagSuggestion suggestion})>> watchTagSuggestions(
+    int workId,
+  ) {
+    final query =
+        select(tagSuggestions)
+            .join([innerJoin(tags, tags.id.equalsExp(tagSuggestions.tagId))])
+          ..where(
+            tagSuggestions.workId.equals(workId) &
+                tagSuggestions.dismissed.equals(false) &
+                tagSuggestions.tagId
+                    .isInQuery(
+                      selectOnly(workTags)
+                        ..addColumns([workTags.tagId])
+                        ..where(workTags.workId.equals(workId)),
+                    )
+                    .not(),
+          )
+          ..orderBy([OrderingTerm.asc(tags.name)]);
+    return query.watch().map(
+      (rows) => [
+        for (final r in rows)
+          (tag: r.readTable(tags), suggestion: r.readTable(tagSuggestions)),
+      ],
+    );
+  }
+
+  /// Proposes tags by name with a reason each; ones the work has, or the
+  /// user dismissed before, are skipped. Returns how many are new.
+  Future<int> suggestTags(
+    int workId,
+    Map<String, String> reasons, {
+    String source = 'keywords',
+  }) async {
+    var added = 0;
+    final has = {
+      for (final t in (await watchWork(workId).first)?.tags ?? const <Tag>[])
+        t.id,
+    };
+    for (final MapEntry(key: name, value: reason) in reasons.entries) {
+      final tagId = await _tagIdFor(name);
+      if (tagId == null || has.contains(tagId)) continue;
+      final known =
+          await (select(tagSuggestions)
+                ..where((x) => x.workId.equals(workId) & x.tagId.equals(tagId)))
+              .getSingleOrNull();
+      if (known != null) continue;
+      await into(tagSuggestions).insert(
+        TagSuggestionsCompanion.insert(
+          workId: workId,
+          tagId: tagId,
+          reason: Value(reason),
+          source: Value(source),
+        ),
+      );
+      added++;
+    }
+    return added;
+  }
+
+  Future<void> acceptTagSuggestion(int workId, int tagId) =>
+      transaction(() async {
+        await into(workTags).insert(
+          WorkTagsCompanion.insert(workId: workId, tagId: tagId),
+          mode: InsertMode.insertOrIgnore,
+        );
+        await (delete(
+          tagSuggestions,
+        )..where((s) => s.workId.equals(workId) & s.tagId.equals(tagId))).go();
+      });
+
+  Future<void> dismissTagSuggestion(int workId, int tagId) =>
+      (update(tagSuggestions)
+            ..where((s) => s.workId.equals(workId) & s.tagId.equals(tagId)))
+          .write(const TagSuggestionsCompanion(dismissed: Value(true)));
 
   Future<void> setTagAdult(int tagId, bool adult) =>
       (update(tags)..where((t) => t.id.equals(tagId))).write(
