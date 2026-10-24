@@ -586,6 +586,91 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteDownload => 'Delete download';
 
   @override
+  String get statsTitle => 'Statistics';
+
+  @override
+  String get statsIntro =>
+      'Counts reading in ReadTrack\'s reader: time while you scroll or turn pages, and the words of each chapter read to the end.';
+
+  @override
+  String get statsLast30Days => 'Words per day, last 30 days';
+
+  @override
+  String get statsNothingYet => 'Nothing read in the app yet.';
+
+  @override
+  String statsMostInADay(String words) {
+    return 'Most in a day: $words words';
+  }
+
+  @override
+  String get statsTotals => 'Totals';
+
+  @override
+  String get statsThisWeek => 'this week';
+
+  @override
+  String get statsThisMonth => 'this month';
+
+  @override
+  String get statsThisYear => 'this year';
+
+  @override
+  String statsWordsIn(String span) {
+    return 'words $span';
+  }
+
+  @override
+  String get statsStreaks => 'Streaks';
+
+  @override
+  String get statsCurrentStreak => 'Current streak';
+
+  @override
+  String get statsLongestStreak => 'Longest streak';
+
+  @override
+  String statsDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days',
+      one: '1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsYearInReview(String year) {
+    return '$year in review';
+  }
+
+  @override
+  String get statsRead => 'read';
+
+  @override
+  String get statsDaysRead => 'Days with reading';
+
+  @override
+  String get statsFinished => 'Finished';
+
+  @override
+  String get statsMostRead => 'Most read';
+
+  @override
+  String get statsFinishedList => 'Finished';
+
+  @override
+  String statsMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String statsHours(int hours, int minutes) {
+    return '$hours h $minutes min';
+  }
+
+  @override
   String get addByIsbn => 'By ISBN';
 
   @override

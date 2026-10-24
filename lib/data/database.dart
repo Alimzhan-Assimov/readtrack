@@ -127,6 +127,9 @@ class Works extends Table {
   /// Set while the work is in the trash.
   DateTimeColumn get deletedAt => dateTime().nullable()();
 
+  /// When the status last became "finished" (kept by a trigger).
+  DateTimeColumn get finishedAt => dateTime().nullable()();
+
   /// Whether [wordCount] / [pageCount] were worked out by the app because
   /// the site didn't give them; such values are updated as more is known.
   BoolColumn get wordsEstimated =>
@@ -224,8 +227,25 @@ class DeletedWork {
   final List<Download> downloads;
 }
 
+/// Reading done in the app, per work and day: active time, and the words
+/// and chapters of the chapters read to the end.
+class ReadingDays extends Table {
+  IntColumn get workId =>
+      integer().references(Works, #id, onDelete: KeyAction.cascade)();
+
+  /// Local date as "YYYY-MM-DD".
+  TextColumn get day => text()();
+  IntColumn get seconds => integer().withDefault(const Constant(0))();
+  IntColumn get words => integer().withDefault(const Constant(0))();
+  IntColumn get chapters => integer().withDefault(const Constant(0))();
+
+  @override
+  Set<Column> get primaryKey => {workId, day};
+}
+
 @DriftDatabase(
   tables: [
+    ReadingDays,
     Fandoms,
     Tags,
     Works,
@@ -242,10 +262,14 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (m) async {
+      await m.createAll();
+      await _createFinishedTriggers();
+    },
     onUpgrade: (m, from, to) async {
       if (from < 2) {
         await m.addColumn(works, works.coverPath);
@@ -288,12 +312,83 @@ class AppDatabase extends _$AppDatabase {
       if (from < 10) {
         await _addColumnIfMissing(m, works, works.characterCount);
       }
+      if (from < 11) {
+        await _addColumnIfMissing(m, works, works.finishedAt);
+        await m.createTable(readingDays);
+        await _createFinishedTriggers();
+        // Finished before this was tracked: the last change is the best guess.
+        await customStatement(
+          "UPDATE works SET finished_at = updated_at WHERE status = 'finished'",
+        );
+      }
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
       await mergeSimilarFandoms();
     },
   );
+
+  /// Sets works.finished_at whenever the status becomes "finished", however
+  /// it is changed.
+  Future<void> _createFinishedTriggers() async {
+    for (final (event, condition) in [
+      // A restored work brings its date along.
+      ('INSERT', "NEW.status = 'finished' AND NEW.finished_at IS NULL"),
+      (
+        'UPDATE OF status',
+        "NEW.status = 'finished' AND OLD.status IS NOT 'finished'",
+      ),
+    ]) {
+      final name = event == 'INSERT'
+          ? 'works_finished_insert'
+          : 'works_finished_update';
+      await customStatement('DROP TRIGGER IF EXISTS $name');
+      await customStatement(
+        'CREATE TRIGGER $name AFTER $event ON works '
+        'WHEN $condition BEGIN '
+        "UPDATE works SET finished_at = CAST(strftime('%s', 'now') AS INTEGER) "
+        'WHERE id = NEW.id; END',
+      );
+    }
+  }
+
+  /// Adds reading done on [day] to [workId]'s log.
+  Future<void> addReading(
+    int workId,
+    DateTime day, {
+    int seconds = 0,
+    int words = 0,
+    int chapters = 0,
+  }) => customStatement(
+    'INSERT INTO reading_days (work_id, day, seconds, words, chapters) '
+    'VALUES (?, ?, ?, ?, ?) ON CONFLICT (work_id, day) DO UPDATE SET '
+    'seconds = seconds + excluded.seconds, words = words + excluded.words, '
+    'chapters = chapters + excluded.chapters',
+    [workId, dayKey(day), seconds, words, chapters],
+  );
+
+  static String dayKey(DateTime d) =>
+      '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+  /// The whole reading log, oldest first, with each work's details.
+  Future<List<(ReadingDay, Work)>> readingLog() async {
+    final rows = await (select(readingDays).join([
+      innerJoin(works, works.id.equalsExp(readingDays.workId)),
+    ])..orderBy([OrderingTerm.asc(readingDays.day)])).get();
+    return [
+      for (final r in rows) (r.readTable(readingDays), r.readTable(works)),
+    ];
+  }
+
+  /// Works finished in [year] (not in the trash).
+  Future<List<Work>> finishedIn(int year) =>
+      (select(works)..where(
+            (w) =>
+                w.deletedAt.isNull() &
+                w.finishedAt.isBiggerOrEqualValue(DateTime(year)) &
+                w.finishedAt.isSmallerThanValue(DateTime(year + 1)),
+          ))
+          .get();
 
   /// Adds [column] unless a development build already did; adding it twice
   /// would stop the database from opening.

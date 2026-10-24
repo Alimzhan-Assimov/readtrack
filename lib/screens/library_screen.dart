@@ -22,6 +22,7 @@ import 'import_screen.dart';
 import 'library_filters.dart';
 import 'list_import_screen.dart';
 import 'settings_screen.dart';
+import 'stats_screen.dart';
 import 'work_detail_screen.dart';
 import 'work_edit_screen.dart';
 
@@ -453,6 +454,13 @@ class _LibraryScreenState extends State<LibraryScreen> {
                           : l10n.showAsGrid,
                       onPressed: () => settings.setGridView(!settings.gridView),
                     ),
+                  IconButton(
+                    icon: const Icon(Icons.insights),
+                    tooltip: l10n.statsTitle,
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const StatsScreen()),
+                    ),
+                  ),
                   IconButton(
                     icon: const Icon(Icons.settings_outlined),
                     tooltip: l10n.settingsTitle,

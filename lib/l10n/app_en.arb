@@ -329,6 +329,73 @@
     }
   },
   "deleteDownload": "Delete download",
+  "statsTitle": "Statistics",
+  "statsIntro": "Counts reading in ReadTrack's reader: time while you scroll or turn pages, and the words of each chapter read to the end.",
+  "statsLast30Days": "Words per day, last 30 days",
+  "statsNothingYet": "Nothing read in the app yet.",
+  "statsMostInADay": "Most in a day: {words} words",
+  "@statsMostInADay": {
+    "placeholders": {
+      "words": {
+        "type": "String"
+      }
+    }
+  },
+  "statsTotals": "Totals",
+  "statsThisWeek": "this week",
+  "statsThisMonth": "this month",
+  "statsThisYear": "this year",
+  "statsWordsIn": "words {span}",
+  "@statsWordsIn": {
+    "placeholders": {
+      "span": {
+        "type": "String"
+      }
+    }
+  },
+  "statsStreaks": "Streaks",
+  "statsCurrentStreak": "Current streak",
+  "statsLongestStreak": "Longest streak",
+  "statsDays": "{count, plural, =1{1 day} other{{count} days}}",
+  "@statsDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsYearInReview": "{year} in review",
+  "@statsYearInReview": {
+    "placeholders": {
+      "year": {
+        "type": "String"
+      }
+    }
+  },
+  "statsRead": "read",
+  "statsDaysRead": "Days with reading",
+  "statsFinished": "Finished",
+  "statsMostRead": "Most read",
+  "statsFinishedList": "Finished",
+  "statsMinutes": "{minutes} min",
+  "@statsMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "statsHours": "{hours} h {minutes} min",
+  "@statsHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
   "addByIsbn": "By ISBN",
   "addByIsbnHint": "A paper book: details and cover from Open Library",
   "isbnLookUp": "Look up this ISBN",

@@ -982,6 +982,138 @@ abstract class AppLocalizations {
   /// **'Delete download'**
   String get deleteDownload;
 
+  /// No description provided for @statsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Statistics'**
+  String get statsTitle;
+
+  /// No description provided for @statsIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Counts reading in ReadTrack\'s reader: time while you scroll or turn pages, and the words of each chapter read to the end.'**
+  String get statsIntro;
+
+  /// No description provided for @statsLast30Days.
+  ///
+  /// In en, this message translates to:
+  /// **'Words per day, last 30 days'**
+  String get statsLast30Days;
+
+  /// No description provided for @statsNothingYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing read in the app yet.'**
+  String get statsNothingYet;
+
+  /// No description provided for @statsMostInADay.
+  ///
+  /// In en, this message translates to:
+  /// **'Most in a day: {words} words'**
+  String statsMostInADay(String words);
+
+  /// No description provided for @statsTotals.
+  ///
+  /// In en, this message translates to:
+  /// **'Totals'**
+  String get statsTotals;
+
+  /// No description provided for @statsThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'this week'**
+  String get statsThisWeek;
+
+  /// No description provided for @statsThisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'this month'**
+  String get statsThisMonth;
+
+  /// No description provided for @statsThisYear.
+  ///
+  /// In en, this message translates to:
+  /// **'this year'**
+  String get statsThisYear;
+
+  /// No description provided for @statsWordsIn.
+  ///
+  /// In en, this message translates to:
+  /// **'words {span}'**
+  String statsWordsIn(String span);
+
+  /// No description provided for @statsStreaks.
+  ///
+  /// In en, this message translates to:
+  /// **'Streaks'**
+  String get statsStreaks;
+
+  /// No description provided for @statsCurrentStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Current streak'**
+  String get statsCurrentStreak;
+
+  /// No description provided for @statsLongestStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Longest streak'**
+  String get statsLongestStreak;
+
+  /// No description provided for @statsDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day} other{{count} days}}'**
+  String statsDays(int count);
+
+  /// No description provided for @statsYearInReview.
+  ///
+  /// In en, this message translates to:
+  /// **'{year} in review'**
+  String statsYearInReview(String year);
+
+  /// No description provided for @statsRead.
+  ///
+  /// In en, this message translates to:
+  /// **'read'**
+  String get statsRead;
+
+  /// No description provided for @statsDaysRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Days with reading'**
+  String get statsDaysRead;
+
+  /// No description provided for @statsFinished.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished'**
+  String get statsFinished;
+
+  /// No description provided for @statsMostRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Most read'**
+  String get statsMostRead;
+
+  /// No description provided for @statsFinishedList.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished'**
+  String get statsFinishedList;
+
+  /// No description provided for @statsMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min'**
+  String statsMinutes(int minutes);
+
+  /// No description provided for @statsHours.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours} h {minutes} min'**
+  String statsHours(int hours, int minutes);
+
   /// No description provided for @addByIsbn.
   ///
   /// In en, this message translates to:

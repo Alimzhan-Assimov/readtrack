@@ -11,7 +11,9 @@ import '../data/database.dart';
 import '../data/database_scope.dart';
 import '../l10n/l10n.dart';
 import '../library/library_scope.dart';
+import '../library/reading_tracker.dart';
 import '../library/story_sync.dart';
+import '../sources/html_clean.dart';
 import '../sources/sources.dart';
 import '../ui/layout.dart';
 import '../ui/app_settings.dart';
@@ -78,6 +80,13 @@ class _ReaderScreenState extends State<ReaderScreen> {
 
   // Looked up once: inherited widgets aren't reachable in dispose().
   late final AppDatabase _db = DatabaseScope.of(context);
+  late final _tracker = ReadingTracker(_db, widget.work.id);
+  late final _lifecycle = AppLifecycleListener(
+    onHide: () => unawaited(_tracker.pause()),
+  );
+
+  /// Words of the chapters loaded so far, for the statistics.
+  final _words = <int, int>{};
 
   Download? get _download => switch (widget.mode) {
     DownloadReading(:final download) => download,
@@ -112,6 +121,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
     super.didChangeDependencies();
     if (_content == null) {
       _annotations = _db.watchAnnotations(widget.work.id);
+      _lifecycle; // starts listening
       _init();
     }
   }
@@ -234,6 +244,8 @@ class _ReaderScreenState extends State<ReaderScreen> {
   void dispose() {
     if (_saveOffset?.isActive ?? false) _storeOffset();
     _saveOffset?.cancel();
+    _lifecycle.dispose();
+    unawaited(_tracker.flush());
     _scroll.dispose();
     unawaited(_fetcher?.close());
     super.dispose();
@@ -242,6 +254,8 @@ class _ReaderScreenState extends State<ReaderScreen> {
   void _onScroll() {
     final max = _scroll.position.maxScrollExtent;
     _offset = max <= 0 ? 0.0 : (_scroll.offset / max).clamp(0.0, 1.0);
+    unawaited(_tracker.activity());
+    if (_offset! >= 0.95) _creditChapter(_current);
     _saveOffset?.cancel();
     _saveOffset = Timer(const Duration(milliseconds: 800), _storeOffset);
   }
@@ -254,11 +268,23 @@ class _ReaderScreenState extends State<ReaderScreen> {
     );
   }
 
+  /// Counts chapter [number] as read, once its words are known.
+  void _creditChapter(int number) {
+    final words = _words[number];
+    if (words != null) unawaited(_tracker.chapterRead(number, words));
+  }
+
   void _open(int number, {bool keepOffset = false}) {
     if (!keepOffset) _pendingOffset = null;
+    // Moving on from a chapter means it was read.
+    if (number == _current + 1) _creditChapter(_current);
+    unawaited(_tracker.activity());
     setState(() {
       _current = number;
-      _content = _load(number);
+      _content = _load(number).then((c) {
+        _words[number] = countWords(htmlToPlainText(c.html));
+        return c;
+      });
     });
     if (_scroll.hasClients) _scroll.jumpTo(0);
     unawaited(
