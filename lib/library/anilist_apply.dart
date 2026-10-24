@@ -38,7 +38,7 @@ Future<AniListResult> applyAniList(
     }.toList(),
     pairingNames: [for (final p in item.pairings) p.name],
     characterNames: {
-      for (final c in item.characters) c.name,
+      for (final c in item.confirmedCharacters) c.name,
       for (final c in media.characters) c.name,
     }.toList(),
   );

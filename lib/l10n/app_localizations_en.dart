@@ -586,6 +586,59 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteDownload => 'Delete download';
 
   @override
+  String get suggestTags => 'Suggest tags';
+
+  @override
+  String tagSuggestionWhy(String reason) {
+    return '$reason. Tap to add the tag.';
+  }
+
+  @override
+  String tagReasonKeyword(String word) {
+    return 'The summary mentions “$word”';
+  }
+
+  @override
+  String tagsSuggested(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tags suggested',
+      one: '1 tag suggested',
+      zero: 'No new tag suggestions',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get findCharacters => 'Find in the text';
+
+  @override
+  String get suggestedCharacter => 'Found in the text. Tap to confirm.';
+
+  @override
+  String get dismissSuggestion => 'Not in this story';
+
+  @override
+  String get noKnownCharacters =>
+      'No characters are known for this category yet. Add some, or look the franchise up on AniList.';
+
+  @override
+  String get noTextToSearch => 'There is no downloaded text to search yet.';
+
+  @override
+  String charactersFound(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Found $count characters; confirm them with a tap',
+      one: 'Found 1 character; confirm it with a tap',
+      zero: 'No more known characters found',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get aniListLookUp => 'Look up on AniList';
 
   @override

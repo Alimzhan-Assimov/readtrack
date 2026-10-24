@@ -329,6 +329,44 @@
     }
   },
   "deleteDownload": "Delete download",
+  "suggestTags": "Suggest tags",
+  "tagSuggestionWhy": "{reason}. Tap to add the tag.",
+  "@tagSuggestionWhy": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "tagReasonKeyword": "The summary mentions “{word}”",
+  "@tagReasonKeyword": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "tagsSuggested": "{count, plural, =0{No new tag suggestions} =1{1 tag suggested} other{{count} tags suggested}}",
+  "@tagsSuggested": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "findCharacters": "Find in the text",
+  "suggestedCharacter": "Found in the text. Tap to confirm.",
+  "dismissSuggestion": "Not in this story",
+  "noKnownCharacters": "No characters are known for this category yet. Add some, or look the franchise up on AniList.",
+  "noTextToSearch": "There is no downloaded text to search yet.",
+  "charactersFound": "{count, plural, =0{No more known characters found} =1{Found 1 character; confirm it with a tap} other{Found {count} characters; confirm them with a tap}}",
+  "@charactersFound": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "aniListLookUp": "Look up on AniList",
   "aniListTitle": "AniList",
   "aniListHint": "Pick the matching one. Empty fields are filled in; tags, characters and links to sequels or prequels in your library are added.",
