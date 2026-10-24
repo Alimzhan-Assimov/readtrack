@@ -52,6 +52,7 @@ void main() {
         newChapters: 0,
         wordsEstimated: false,
         pagesEstimated: false,
+        ownsPhysicalCopy: false,
       ),
       chapters: [
         chapter(

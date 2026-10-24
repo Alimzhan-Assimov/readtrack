@@ -41,6 +41,7 @@ void main() {
       newChapters: 0,
       wordsEstimated: false,
       pagesEstimated: false,
+      ownsPhysicalCopy: false,
     );
     Chapter chapter(int n, String? html, {bool locked = false}) => Chapter(
       id: n,

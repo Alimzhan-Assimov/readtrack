@@ -982,6 +982,240 @@ abstract class AppLocalizations {
   /// **'Delete download'**
   String get deleteDownload;
 
+  /// No description provided for @suggestTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest tags'**
+  String get suggestTags;
+
+  /// No description provided for @tagSuggestionWhy.
+  ///
+  /// In en, this message translates to:
+  /// **'{reason}. Tap to add the tag.'**
+  String tagSuggestionWhy(String reason);
+
+  /// No description provided for @tagReasonKeyword.
+  ///
+  /// In en, this message translates to:
+  /// **'The summary mentions “{word}”'**
+  String tagReasonKeyword(String word);
+
+  /// No description provided for @tagsSuggested.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No new tag suggestions} =1{1 tag suggested} other{{count} tags suggested}}'**
+  String tagsSuggested(int count);
+
+  /// No description provided for @findCharacters.
+  ///
+  /// In en, this message translates to:
+  /// **'Find in the text'**
+  String get findCharacters;
+
+  /// No description provided for @suggestedCharacter.
+  ///
+  /// In en, this message translates to:
+  /// **'Found in the text. Tap to confirm.'**
+  String get suggestedCharacter;
+
+  /// No description provided for @dismissSuggestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Not in this story'**
+  String get dismissSuggestion;
+
+  /// No description provided for @noKnownCharacters.
+  ///
+  /// In en, this message translates to:
+  /// **'No characters are known for this category yet. Add some, or look the franchise up on AniList.'**
+  String get noKnownCharacters;
+
+  /// No description provided for @noTextToSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no downloaded text to search yet.'**
+  String get noTextToSearch;
+
+  /// No description provided for @charactersFound.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No more known characters found} =1{Found 1 character; confirm it with a tap} other{Found {count} characters; confirm them with a tap}}'**
+  String charactersFound(int count);
+
+  /// No description provided for @aniListLookUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Look up on AniList'**
+  String get aniListLookUp;
+
+  /// No description provided for @aniListTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AniList'**
+  String get aniListTitle;
+
+  /// No description provided for @aniListHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick the matching one. Empty fields are filled in; tags, characters and links to sequels or prequels in your library are added.'**
+  String get aniListHint;
+
+  /// No description provided for @aniListApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Took AniList\'s details: {characters, plural, =0{no new characters} =1{1 new character} other{{characters} new characters}}, {relations, plural, =0{no links} =1{1 link} other{{relations} links}}'**
+  String aniListApplied(int characters, int relations);
+
+  /// No description provided for @categoriesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get categoriesTitle;
+
+  /// No description provided for @categoriesTileHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename or merge franchises'**
+  String get categoriesTileHint;
+
+  /// No description provided for @categoriesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Merging a category into another moves its entries, crossovers and characters, and remembers its name, so stories imported later with that name land in the right place.'**
+  String get categoriesHint;
+
+  /// No description provided for @renameCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get renameCategory;
+
+  /// No description provided for @mergeCategoryInto.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge into another category…'**
+  String get mergeCategoryInto;
+
+  /// No description provided for @mergeCategoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge “{name}” into'**
+  String mergeCategoryTitle(String name);
+
+  /// No description provided for @categoryAliases.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 other name} other{{count} other names}}'**
+  String categoryAliases(int count);
+
+  /// No description provided for @pageCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {current}'**
+  String pageCurrent(int current);
+
+  /// No description provided for @pageProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {current} of {total}'**
+  String pageProgress(int current, int total);
+
+  /// No description provided for @setPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Set page'**
+  String get setPage;
+
+  /// No description provided for @currentPageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Which page are you on?'**
+  String get currentPageTitle;
+
+  /// No description provided for @autoDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download new chapters'**
+  String get autoDownload;
+
+  /// No description provided for @autoDownloadHint.
+  ///
+  /// In en, this message translates to:
+  /// **'When a check finds new chapters, stories you have downloaded get them too, in the same file.'**
+  String get autoDownloadHint;
+
+  /// No description provided for @autoDownloaded.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Downloaded 1 new chapter} other{Downloaded {count} new chapters}}'**
+  String autoDownloaded(int count);
+
+  /// No description provided for @mangaMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Page layout'**
+  String get mangaMode;
+
+  /// No description provided for @mangaPages.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages, left to right'**
+  String get mangaPages;
+
+  /// No description provided for @mangaPagesRtl.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages, right to left (manga)'**
+  String get mangaPagesRtl;
+
+  /// No description provided for @mangaScroll.
+  ///
+  /// In en, this message translates to:
+  /// **'Long strip (webtoon)'**
+  String get mangaScroll;
+
+  /// No description provided for @mangaDoublePage.
+  ///
+  /// In en, this message translates to:
+  /// **'Two pages side by side (wide windows)'**
+  String get mangaDoublePage;
+
+  /// No description provided for @ownsPaperCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'I also own it on paper'**
+  String get ownsPaperCopy;
+
+  /// No description provided for @paperCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Paper copy'**
+  String get paperCopy;
+
+  /// No description provided for @mergeTagInto.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge into another tag…'**
+  String get mergeTagInto;
+
+  /// No description provided for @mergeTagTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge “{name}” into'**
+  String mergeTagTitle(String name);
+
+  /// No description provided for @tagAlsoCalled.
+  ///
+  /// In en, this message translates to:
+  /// **'Also: {names}'**
+  String tagAlsoCalled(String names);
+
+  /// No description provided for @removeSynonym.
+  ///
+  /// In en, this message translates to:
+  /// **'Forget “{name}”'**
+  String removeSynonym(String name);
+
   /// No description provided for @sectionCharacters.
   ///
   /// In en, this message translates to:

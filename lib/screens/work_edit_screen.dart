@@ -78,6 +78,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
   late WorkFormat _format;
   late ReadingStatus _status;
   late bool _isComplete;
+  bool _ownsPaperCopy = false;
   int? _rating;
   late List<String> _tags;
   late List<String> _pairings;
@@ -127,6 +128,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
     _format = w?.format ?? _type.defaultFormat;
     _status = w?.status ?? ReadingStatus.planned;
     _isComplete = w?.isComplete ?? false;
+    _ownsPaperCopy = w?.ownsPhysicalCopy ?? false;
     _rating = w?.rating;
     _tags = [for (final t in existing?.tags ?? const <Tag>[]) t.name];
     _pairings = [
@@ -144,7 +146,8 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
       for (final f in existing?.crossovers ?? const <Fandom>[]) f.name,
     ];
     _characters = [
-      for (final c in existing?.characters ?? const <Character>[]) c.name,
+      for (final c in existing?.confirmedCharacters ?? const <Character>[])
+        c.name,
     ];
     _seriesIndex.text = _formatIndex(w?.seriesIndex);
     _url.text = w?.sourceUrl ?? '';
@@ -401,6 +404,7 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
           : Value(widget.imported!.characterCount),
       rating: Value(_rating),
       notes: Value(_text(_notes)),
+      ownsPhysicalCopy: Value(_format != WorkFormat.physical && _ownsPaperCopy),
       seriesIndex: Value(
         _series.text.trim().isEmpty ? null : _parseIndex(_seriesIndex.text),
       ),
@@ -445,6 +449,9 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
         await _db.saveChapterList(id, chapterListing(info));
       }
       await _db.fillMissingCounts(id);
+      if (widget.existing == null) {
+        await suggestKeywordTags(_db, id, '${_title.text}\n${_summary.text}');
+      }
     } catch (e, stack) {
       logError('save', 'Saving an entry failed', error: e, stack: stack);
       // Never leave the button stuck without saying why.
@@ -751,6 +758,13 @@ class _WorkEditScreenState extends State<WorkEditScreen> {
           Expanded(child: _numberField(l10n, _pages, l10n.fieldPages)),
         ],
       ),
+      if (_format != WorkFormat.physical)
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(l10n.ownsPaperCopy),
+          value: _ownsPaperCopy,
+          onChanged: (v) => _change(() => _ownsPaperCopy = v),
+        ),
       SwitchListTile(
         contentPadding: EdgeInsets.zero,
         title: Text(l10n.completeTitle),
