@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'adult_tags.dart';
 import 'enums.dart';
+import 'fandom_list.dart';
 import 'fandom_names.dart';
 import 'pairing_tags.dart';
 import 'tag_synonyms.dart';
@@ -20,6 +21,18 @@ part 'database.g.dart';
 class Fandoms extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text().unique()();
+}
+
+/// Another name of a category the user merged into it, so later imports
+/// with that name land in it.
+class FandomAliases extends Table {
+  /// [fandomKey] of the other name.
+  TextColumn get aliasKey => text()();
+  IntColumn get fandomId =>
+      integer().references(Fandoms, #id, onDelete: KeyAction.cascade)();
+
+  @override
+  Set<Column> get primaryKey => {aliasKey};
 }
 
 /// How a further category takes part in a work besides its main one.
@@ -367,6 +380,7 @@ class ReadingDays extends Table {
 
 @DriftDatabase(
   tables: [
+    FandomAliases,
     TagSynonyms,
     Characters,
     CharacterAliases,
@@ -391,7 +405,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 16;
+  int get schemaVersion => 17;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -458,6 +472,7 @@ class AppDatabase extends _$AppDatabase {
       if (from < 13) await m.createTable(workFandoms);
       if (from < 15) await m.createTable(tagSynonyms);
       if (from < 16) await _addColumnIfMissing(m, works, works.currentPage);
+      if (from < 17) await m.createTable(fandomAliases);
       if (from < 14) {
         await m.createTable(characters);
         await m.createTable(characterAliases);
@@ -1442,14 +1457,84 @@ class AppDatabase extends _$AppDatabase {
           .go();
 
   Future<int?> _fandomIdFor(String? name) async {
-    final n = name?.trim() ?? '';
+    var n = name?.trim() ?? '';
     if (n.isEmpty) return null;
-    final key = fandomKey(n);
+    final alias = await (select(
+      fandomAliases,
+    )..where((a) => a.aliasKey.equals(fandomKey(n)))).getSingleOrNull();
+    if (alias != null) return alias.fandomId;
+    n = FandomList.canonical(n) ?? n;
+    final key = FandomList.groupKey(n);
     for (final fandom in await select(fandoms).get()) {
-      if (fandomKey(fandom.name) == key) return fandom.id;
+      if (FandomList.groupKey(fandom.name) == key) return fandom.id;
     }
     return into(fandoms)
         .insert(FandomsCompanion.insert(name: baseFandomName(n)));
+  }
+
+  /// Moves everything of category [fromId] to [intoId], deletes it and
+  /// remembers its name as an alias.
+  Future<void> mergeFandom(int fromId, int intoId) {
+    if (fromId == intoId) return Future.value();
+    return transaction(() async {
+      final from = await (select(
+        fandoms,
+      )..where((f) => f.id.equals(fromId))).getSingle();
+      await _moveFandom(fromId, intoId);
+      await into(fandomAliases).insertOnConflictUpdate(
+        FandomAliasesCompanion.insert(
+          aliasKey: fandomKey(from.name),
+          fandomId: intoId,
+        ),
+      );
+    });
+  }
+
+  Stream<List<Fandom>> watchFandoms() =>
+      (select(fandoms)..orderBy([(f) => OrderingTerm.asc(f.name)])).watch();
+
+  Future<void> renameFandom(int id, String name) =>
+      (update(fandoms)..where((f) => f.id.equals(id))).write(
+        FandomsCompanion(name: Value(name.trim())),
+      );
+
+  /// Each category's learned other names, by id (as comparison keys).
+  Stream<Map<int, List<String>>> watchFandomAliases() =>
+      select(fandomAliases).watch().map((rows) {
+        final byFandom = <int, List<String>>{};
+        for (final r in rows) {
+          byFandom.putIfAbsent(r.fandomId, () => []).add(r.aliasKey);
+        }
+        return byFandom;
+      });
+
+  Future<void> removeFandomAlias(String aliasKey) =>
+      (delete(fandomAliases)..where((a) => a.aliasKey.equals(aliasKey))).go();
+
+  Future<void> _moveFandom(int fromId, int intoId) async {
+    await (update(works)..where((w) => w.fandomId.equals(fromId))).write(
+      WorksCompanion(fandomId: Value(intoId)),
+    );
+    await customStatement(
+      'UPDATE characters SET fandom_id = ? WHERE fandom_id = ?',
+      [intoId, fromId],
+    );
+    // Crossover links too; one already pointing at [intoId] wins.
+    await customStatement(
+      'UPDATE OR IGNORE work_fandoms SET fandom_id = ? WHERE fandom_id = ?',
+      [intoId, fromId],
+    );
+    await customStatement(
+      'UPDATE fandom_aliases SET fandom_id = ? WHERE fandom_id = ?',
+      [intoId, fromId],
+    );
+    await (delete(fandoms)..where((f) => f.id.equals(fromId))).go();
+    // A crossover with its own main category says nothing.
+    await customStatement(
+      'DELETE FROM work_fandoms WHERE fandom_id = ? AND work_id IN '
+      '(SELECT id FROM works WHERE fandom_id = ?)',
+      [intoId, intoId],
+    );
   }
 
   /// Merges categories that are variants of the same franchise, e.g. ones
@@ -1461,25 +1546,18 @@ class AppDatabase extends _$AppDatabase {
       for (final fandom in await (select(
         fandoms,
       )..orderBy([(f) => OrderingTerm.asc(f.id)])).get()) {
-        groups.putIfAbsent(fandomKey(fandom.name), () => []).add(fandom);
+        groups
+            .putIfAbsent(FandomList.groupKey(fandom.name), () => [])
+            .add(fandom);
       }
       for (final group in groups.values) {
         final keep = group.first;
         for (final duplicate in group.skip(1)) {
-          await (update(works)..where((w) => w.fandomId.equals(duplicate.id)))
-              .write(WorksCompanion(fandomId: Value(keep.id)));
-          await customStatement(
-            'UPDATE characters SET fandom_id = ? WHERE fandom_id = ?',
-            [keep.id, duplicate.id],
-          );
-          // Crossover links too; one already pointing at [keep] wins.
-          await customStatement(
-            'UPDATE OR IGNORE work_fandoms SET fandom_id = ? WHERE fandom_id = ?',
-            [keep.id, duplicate.id],
-          );
-          await (delete(fandoms)..where((f) => f.id.equals(duplicate.id))).go();
+          await _moveFandom(duplicate.id, keep.id);
         }
-        final base = baseFandomName(keep.name);
+        final base = baseFandomName(
+          FandomList.canonical(keep.name) ?? keep.name,
+        );
         if (base != keep.name) {
           await (update(fandoms)..where((f) => f.id.equals(keep.id))).write(
             FandomsCompanion(name: Value(base)),

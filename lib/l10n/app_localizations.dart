@@ -982,6 +982,48 @@ abstract class AppLocalizations {
   /// **'Delete download'**
   String get deleteDownload;
 
+  /// No description provided for @categoriesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get categoriesTitle;
+
+  /// No description provided for @categoriesTileHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename or merge franchises'**
+  String get categoriesTileHint;
+
+  /// No description provided for @categoriesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Merging a category into another moves its entries, crossovers and characters, and remembers its name, so stories imported later with that name land in the right place.'**
+  String get categoriesHint;
+
+  /// No description provided for @renameCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get renameCategory;
+
+  /// No description provided for @mergeCategoryInto.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge into another category…'**
+  String get mergeCategoryInto;
+
+  /// No description provided for @mergeCategoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge “{name}” into'**
+  String mergeCategoryTitle(String name);
+
+  /// No description provided for @categoryAliases.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 other name} other{{count} other names}}'**
+  String categoryAliases(int count);
+
   /// No description provided for @pageCurrent.
   ///
   /// In en, this message translates to:

@@ -9,6 +9,7 @@ import '../data/database_scope.dart';
 import '../l10n/l10n.dart';
 import '../library/backup.dart';
 import '../library/library_scope.dart';
+import 'categories_screen.dart';
 import 'log_screen.dart';
 import 'trash_screen.dart';
 import '../ui/app_settings.dart';
@@ -216,6 +217,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   leading: const Icon(Icons.settings_backup_restore),
                   title: Text(l10n.restoreBackup),
                   onTap: _restoreBackup,
+                ),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.category_outlined),
+                  title: Text(l10n.categoriesTitle),
+                  subtitle: Text(l10n.categoriesTileHint),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const CategoriesScreen()),
+                  ),
                 ),
                 ListTile(
                   contentPadding: EdgeInsets.zero,

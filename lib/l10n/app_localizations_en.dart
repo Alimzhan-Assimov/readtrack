@@ -586,6 +586,38 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteDownload => 'Delete download';
 
   @override
+  String get categoriesTitle => 'Categories';
+
+  @override
+  String get categoriesTileHint => 'Rename or merge franchises';
+
+  @override
+  String get categoriesHint =>
+      'Merging a category into another moves its entries, crossovers and characters, and remembers its name, so stories imported later with that name land in the right place.';
+
+  @override
+  String get renameCategory => 'Rename';
+
+  @override
+  String get mergeCategoryInto => 'Merge into another category…';
+
+  @override
+  String mergeCategoryTitle(String name) {
+    return 'Merge “$name” into';
+  }
+
+  @override
+  String categoryAliases(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count other names',
+      one: '1 other name',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String pageCurrent(int current) {
     return 'Page $current';
   }

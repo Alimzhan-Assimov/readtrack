@@ -329,6 +329,27 @@
     }
   },
   "deleteDownload": "Delete download",
+  "categoriesTitle": "Categories",
+  "categoriesTileHint": "Rename or merge franchises",
+  "categoriesHint": "Merging a category into another moves its entries, crossovers and characters, and remembers its name, so stories imported later with that name land in the right place.",
+  "renameCategory": "Rename",
+  "mergeCategoryInto": "Merge into another category…",
+  "mergeCategoryTitle": "Merge “{name}” into",
+  "@mergeCategoryTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryAliases": "{count, plural, =1{1 other name} other{{count} other names}}",
+  "@categoryAliases": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "pageCurrent": "Page {current}",
   "@pageCurrent": {
     "placeholders": {
