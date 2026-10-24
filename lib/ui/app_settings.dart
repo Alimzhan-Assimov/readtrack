@@ -104,6 +104,18 @@ class AppSettings extends ChangeNotifier {
     await _db.setSetting(_checkOnStartKey, '$check');
   }
 
+  static const _autoDownloadKey = 'updates.autoDownload';
+  bool _autoDownload = false;
+
+  /// Whether new chapters found by a check extend existing downloads.
+  bool get autoDownload => _autoDownload;
+
+  Future<void> setAutoDownload(bool value) async {
+    _autoDownload = value;
+    notifyListeners();
+    await _db.setSetting(_autoDownloadKey, '$value');
+  }
+
   static const _shelvesKey = 'library.shelves';
 
   /// Whether the library shows covers in a grid instead of a list.
@@ -217,6 +229,7 @@ class AppSettings extends ChangeNotifier {
         MangaMode.pages;
     _doublePage = await _db.setting(_doublePageKey) == 'true';
     _checkOnStart = await _db.setting(_checkOnStartKey) != 'false';
+    _autoDownload = await _db.setting(_autoDownloadKey) == 'true';
     final shelves = await _db.setting(_shelvesKey);
     if (shelves != null) {
       try {

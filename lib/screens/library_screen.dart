@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import '../data/database.dart';
 import '../data/database_scope.dart';
 import '../l10n/l10n.dart';
+import '../library/auto_download.dart';
 import '../library/file_import.dart';
 import '../sources/fetcher.dart';
 import '../sources/isbn_lookup.dart';
@@ -77,6 +78,21 @@ class _LibraryScreenState extends State<LibraryScreen> {
     setState(() => _checking = true);
     try {
       final summary = await checker.check(all: !quiet);
+      if (summary.newChapters > 0 &&
+          mounted &&
+          (SettingsScope.maybeOf(context)?.autoDownload ?? false)) {
+        final downloads = LibraryScope.of(context).downloads;
+        // In the background; the download list shows the progress.
+        unawaited(
+          downloadNewChapters(_db, downloads).then((n) {
+            if (n > 0) {
+              messenger.showSnackBar(
+                SnackBar(content: Text(l10n.autoDownloaded(n))),
+              );
+            }
+          }),
+        );
+      }
       if (summary.newChapters > 0) {
         messenger.showSnackBar(
           SnackBar(

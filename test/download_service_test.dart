@@ -5,6 +5,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:readtrack/data/database.dart';
 import 'package:readtrack/diagnostics/app_log.dart';
+import 'package:readtrack/library/auto_download.dart';
 import 'package:readtrack/library/download_service.dart';
 import 'package:readtrack/library/exporters.dart';
 import 'package:readtrack/library/storage.dart';
@@ -248,6 +249,32 @@ void main() {
       expect((await db.workById(work.id))!.wordCount, 20);
     },
   );
+
+  test('new chapters extend the newest download automatically', () async {
+    await service.download(
+      work: work,
+      source: const _FakeSource(),
+      from: 1,
+      to: 2,
+      format: ExportFormat.epub,
+    );
+    // A check found chapters 3 and 4 (5 is locked).
+    await db.updateWork(work.id, const WorksCompanion(newChapters: Value(3)));
+    final n = await downloadNewChapters(
+      db,
+      service,
+      find: (_) => const _FakeSource(),
+    );
+    expect(n, 2);
+    final d = (await db.downloadsOf(work.id)).single;
+    expect((d.fromChapter, d.toChapter, d.format), (1, 5, 'epub'));
+    // Stories without a download are left alone.
+    await db.deleteDownload(d.id);
+    expect(
+      await downloadNewChapters(db, service, find: (_) => const _FakeSource()),
+      0,
+    );
+  });
 
   test('a retry fills the gaps an interrupted download left', () async {
     final first = _FlakySource({2, 4});

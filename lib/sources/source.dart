@@ -149,6 +149,18 @@ abstract class StorySource {
 
   Future<ChapterContent> fetchChapter(ChapterRef chapter, PageFetcher fetcher);
 
+  /// The newest chapters, oldest first, from a light feed the site offers
+  /// (e.g. RSS), with their release time if known; null if there is none.
+  /// Lets the check for new chapters skip loading the whole story.
+  Future<List<({ChapterRef chapter, DateTime? date})>?> recentChapters(
+    Uri storyUrl,
+    PageFetcher fetcher,
+  ) async => null;
+
+  /// What identifies a chapter across [recentChapters] and the story's
+  /// chapter list; the link by default.
+  String chapterKey(Uri chapterUrl) => '$chapterUrl';
+
   /// Selectors for the story links on this site's list pages, tried in
   /// order; the first that finds any wins. Empty takes every story link,
   /// which may include sidebars.
