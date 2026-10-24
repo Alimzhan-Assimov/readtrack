@@ -17,6 +17,7 @@ import '../ui/labels.dart';
 import '../ui/layout.dart';
 import '../widgets/text_prompt.dart';
 import '../widgets/work_cover.dart';
+import 'ai_tag_sheet.dart';
 import 'anilist_dialog.dart';
 import 'franchise_screen.dart';
 import 'read_section.dart';
@@ -470,6 +471,26 @@ class _WorkDetailScreenState extends State<WorkDetailScreen> {
                         label: Text(l10n.suggestTags),
                         onPressed: () => _suggestTags(w),
                       ),
+                      if (SettingsScope.maybeOf(context)?.ai case final ai?)
+                        TextButton.icon(
+                          icon: const Icon(Icons.auto_awesome, size: 18),
+                          label: Text(l10n.aiSuggestTags),
+                          onPressed: () async {
+                            final messenger = ScaffoldMessenger.of(context);
+                            final added = await suggestTagsWithAiSheet(
+                              context,
+                              item,
+                              ai,
+                            );
+                            if (added != null) {
+                              messenger.showSnackBar(
+                                SnackBar(
+                                  content: Text(l10n.tagsSuggested(added)),
+                                ),
+                              );
+                            }
+                          },
+                        ),
                     ],
                   ),
                 );

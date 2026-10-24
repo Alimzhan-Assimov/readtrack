@@ -982,6 +982,138 @@ abstract class AppLocalizations {
   /// **'Delete download'**
   String get deleteDownload;
 
+  /// No description provided for @aiSettingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI (optional)'**
+  String get aiSettingsTitle;
+
+  /// No description provided for @aiSettingsIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'An AI service can suggest tags from a story\'s chapters. You choose the service and bring your own key (Ollama runs on your computer for free). Text is sent only when you ask, and you see how much first. ReadTrack never uses texts to train a model.'**
+  String get aiSettingsIntro;
+
+  /// No description provided for @aiProvider.
+  ///
+  /// In en, this message translates to:
+  /// **'Service'**
+  String get aiProvider;
+
+  /// No description provided for @aiOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get aiOff;
+
+  /// No description provided for @aiUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get aiUrl;
+
+  /// No description provided for @aiModel.
+  ///
+  /// In en, this message translates to:
+  /// **'Model'**
+  String get aiModel;
+
+  /// No description provided for @aiModelRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get aiModelRequired;
+
+  /// No description provided for @aiKey.
+  ///
+  /// In en, this message translates to:
+  /// **'API key'**
+  String get aiKey;
+
+  /// No description provided for @aiKeyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Kept in your system\'s keyring, not in ReadTrack\'s database, backups or sync.'**
+  String get aiKeyHint;
+
+  /// No description provided for @aiTest.
+  ///
+  /// In en, this message translates to:
+  /// **'Test'**
+  String get aiTest;
+
+  /// No description provided for @aiTestOk.
+  ///
+  /// In en, this message translates to:
+  /// **'Works.'**
+  String get aiTestOk;
+
+  /// No description provided for @aiTestOdd.
+  ///
+  /// In en, this message translates to:
+  /// **'The service answered, but not as expected. Try another model.'**
+  String get aiTestOdd;
+
+  /// No description provided for @aiSuggestTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest with AI'**
+  String get aiSuggestTags;
+
+  /// No description provided for @aiModeQuick.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick'**
+  String get aiModeQuick;
+
+  /// No description provided for @aiModeQuickHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary and the first three chapters'**
+  String get aiModeQuickHint;
+
+  /// No description provided for @aiModeThorough.
+  ///
+  /// In en, this message translates to:
+  /// **'Thorough'**
+  String get aiModeThorough;
+
+  /// No description provided for @aiModeThoroughHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary and chapters from the start, the middle and the end'**
+  String get aiModeThoroughHint;
+
+  /// No description provided for @aiModeNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New chapters'**
+  String get aiModeNew;
+
+  /// No description provided for @aiModeNewHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Only chapters after chapter {chapter}, analyzed last time'**
+  String aiModeNewHint(int chapter);
+
+  /// No description provided for @aiWillSend.
+  ///
+  /// In en, this message translates to:
+  /// **'About {words} words will be sent to {service}.'**
+  String aiWillSend(int words, String service);
+
+  /// No description provided for @aiNoChapters.
+  ///
+  /// In en, this message translates to:
+  /// **'No downloaded chapters: only the summary is sent.'**
+  String get aiNoChapters;
+
+  /// No description provided for @aiSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get aiSend;
+
   /// No description provided for @suggestTags.
   ///
   /// In en, this message translates to:
