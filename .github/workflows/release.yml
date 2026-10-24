@@ -183,6 +183,11 @@ jobs:
           $process = Start-Process "$folder\readtrack.exe" -PassThru
           Start-Sleep -Seconds 10
           if ($process.HasExited) { throw "ReadTrack exited early: $($process.ExitCode)" }
+          $process.Refresh()
+          if ($process.MainWindowTitle -ne 'ReadTrack') {
+            Stop-Process -Id $process.Id -ErrorAction SilentlyContinue
+            throw 'ReadTrack did not open its main window'
+          }
           Stop-Process -Id $process.Id
       - uses: actions/upload-artifact@v4
         with:
