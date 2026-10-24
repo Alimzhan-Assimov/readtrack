@@ -157,10 +157,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
         builder: (context, constraints) => StreamBuilder<List<Tag>>(
           stream: _tags,
           builder: (context, snapshot) {
-            final tags = [
+            final hideAdult = settings?.hideAdultTags ?? false;
+            final matching = [
               for (final t in snapshot.data ?? const <Tag>[])
                 if (t.name.toLowerCase().contains(query)) t,
             ];
+            final tags = [
+              for (final t in matching)
+                if (!hideAdult || !t.isAdult) t,
+            ];
+            final hiddenAdult = matching.length - tags.length;
             return ListView(
               padding: readablePadding(constraints.maxWidth, bottom: 32),
               children: [
@@ -278,6 +284,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const SizedBox(height: 8),
                 if (tags.isEmpty)
                   ListTile(enabled: false, title: Text(l10n.pickerEmpty)),
+                if (hiddenAdult > 0)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      l10n.adultTagsHidden(hiddenAdult),
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ),
                 StreamBuilder<Map<int, List<String>>>(
                   stream: _synonyms,
                   builder: (context, synonymSnapshot) {

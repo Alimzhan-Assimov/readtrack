@@ -329,6 +329,14 @@
     }
   },
   "deleteDownload": "Delete download",
+  "adultTagsHidden": "{count, plural, =1{1 tag marked 18+ is hidden} other{{count} tags marked 18+ are hidden}} because “Hide 18+ tags” is on.",
+  "@adultTagsHidden": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "suggestTags": "Suggest tags",
   "tagSuggestionWhy": "{reason}. Tap to add the tag.",
   "@tagSuggestionWhy": {
